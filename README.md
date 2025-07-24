@@ -1,1 +1,1 @@
-# theJE-project.io
+# project.io (React + Vite)
