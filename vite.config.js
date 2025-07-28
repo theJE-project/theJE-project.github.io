@@ -8,6 +8,9 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src'),
       '@router': path.resolve(__dirname,'src/router'),
+      '@pages': path.resolve(__dirname,'src/pages'),
+      '@hooks': path.resolve(__dirname,'src/hooks'),
+      '@axios': path.resolve(__dirname,'src/axios'),
     },
   },
 })
