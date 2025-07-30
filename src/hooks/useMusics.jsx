@@ -1,25 +1,39 @@
 import { useEffect, useState } from "react"
-import { youtube } from "@axios";
+import { springBoot } from "@axios";
 
+/** readys의 초기화 */
+const readysInit = {
+    stuck: false,
+    error: null,
+}
 
+const dataInit = []
 
+/** deezer에서 음악을 가져오는 훅 */
+/** 가져오는건 최대 50개 */
 export const useMusic = () => {
-    const [ready, setReady] = useState(false);
-    const [videos, setVideos] = useState([]);
+    const [ ready, setReady ] = useState(readysInit);
+    const [ searchMusics, setSearchMusic ] = useState(dataInit);
 
-    const searchMusic = async ({ search }) => {
+    const searchMusic = async (search) => {
+        let errorMsg = null;
+        setReady(readysInit);
         try {
-            const response = await youtube.get('search', {
-                params: { q:search },
-            });
-            setVideos(response.data.items);
-        } catch (err) {
-            
+            const res = await springBoot.get(`deezer/search`, { params: { q: search }, });
+            setSearchMusic(res.data)
+        } catch (error) { 
+            console.error(error)
+            setSearchMusic(dataInit)
+            errorMsg = error
+        } 
+        finally {
+            setReady({ stuck:true, error:errorMsg }); 
         }
     };
-
     return {
-        videos,
-        searchMusic,
+        musics: searchMusics,
+        ready: ready.stuck,
+        error: ready.error,
+        getMusics: searchMusic,
     }
 }

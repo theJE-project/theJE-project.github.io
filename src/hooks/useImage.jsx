@@ -16,7 +16,7 @@ export const supabase = createClient(url, key, {
   }
 })
 
-export const useImage = () => {
+export const useImage = (user) => {
     const [imageList, setImageList] = useState([]);
 
     // supabase 스토리지에 여러 장 이미지를 webp로 업로드

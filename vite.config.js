@@ -16,5 +16,5 @@ export default defineConfig({
       '@hooks': path.resolve(__dirname, 'src/hooks'),
       '@axios': path.resolve(__dirname, 'src/axios'),
     }
-  }
+  },
 })
