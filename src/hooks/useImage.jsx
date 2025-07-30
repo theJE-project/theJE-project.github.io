@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import imageCompression from 'browser-image-compression';
-import { getUser } from '../utils/getUser';
 import { createClient } from '@supabase/supabase-js'
 
-const url = "https://mkoiswzigibhylmtkzdh.supabase.co";
-const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rb2lzd3ppZ2liaHlsbXRremRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2MjE3NzgsImV4cCI6MjA2MzE5Nzc3OH0.cYGkooDws3gZlgfjjyBXVg0yzA6mPC7Kp7StwHy6XHE'
+const url = "https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/s3";
+const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52dWdqc3Nqanh0YmJqbndpbWVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMzQwMzYsImV4cCI6MjA2ODkxMDAzNn0.YmxytSxfK2XHDmSMT2T9IsTU6O9i-Ekn86k2be9ePCk'
 
 export const supabase = createClient(url, key, {
   auth: {
@@ -16,12 +15,12 @@ export const supabase = createClient(url, key, {
   }
 })
 
-export const useImage = (user) => {
+export const useImage = () => {
     const [imageList, setImageList] = useState([]);
 
     // supabase 스토리지에 여러 장 이미지를 webp로 업로드
     const setWebp = async (e) => {
-        const { user } = await getUser();
+        const user = sessionStorage.getItem('user').id
         const files = Array.from(e.target.files);
         if (!files.length || !user) return;
 
