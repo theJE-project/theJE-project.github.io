@@ -184,7 +184,10 @@ export function Home() {
                                     {musics.length > 0 ? musics.map((m) => (
                                         <div
                                             key={m.id}
-                                            onClick={() => handleMusicSelect(m)}
+                                            onClick={() =>{
+                                                handleMusicSelect(m);
+                                                getMusics(''); // 검색 초기화
+                                            }} 
                                             className="flex items-center gap-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
 
                                         >
@@ -232,10 +235,10 @@ export function Home() {
                     loader.communities.map((c) => (
                         <div key={c.id} className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                             <div className="flex items-center gap-3">
-                                <img src={c.user.img || "https://placehold.co/40x40"} alt="" className="w-10 h-10 rounded-full object-cover" />
+                                {/* <img src={c.user.img || "https://placehold.co/40x40"} alt="" className="w-10 h-10 rounded-full object-cover" /> */}
                                 <div>
-                                    <span className="font-bold">{c.user.name}</span>
-                                    <span className="ml-1 text-gray-500 text-sm">@{c.user.account}</span>
+                                    <span className="font-bold">{c.users.name}</span>
+                                    <span className="ml-1 text-gray-500 text-sm">@{c.users.account}</span>
                                     <span className="ml-2 text-gray-400 text-xs">{c.createdAt}</span>
                                 </div>
                             </div>
