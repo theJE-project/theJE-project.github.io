@@ -14,7 +14,7 @@ export function Layout ( ) {
             : <button onClick={(e)=>{ 
                 localStorage.removeItem('user-id');
                 sessionStorage.clear();
-                
+                window.location.reload();
             }}>로그아웃</button>
         }
         <Outlet />
