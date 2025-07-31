@@ -26,7 +26,7 @@ const getCommunities = async () => {
             user: {
                 name: "김민수",
                 account: "minsu_kim",
-                img: "https://프로필이미지",
+                img: "gromit.jpg",
             },
             createdAt: "2시간 전",
             content: "새로운 인디 밴드 발견했어요! 정말 놀라운 음악들이에요 🎵\n\n오늘 하루 종일 이 앨범만 들었는데 질리지가 않네요. 특히 두 번째 트랙이 정말 좋아요.",
