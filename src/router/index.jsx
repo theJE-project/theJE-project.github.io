@@ -1,42 +1,61 @@
 import { createHashRouter } from "react-router-dom";
-import { 
+import {
     Layout, layoutLoader,
     Home, homeLoader,
     Group, groupLoader,
     GroupOptions, groupOptionsLoader,
     My, myloader,
+    Login,
+    SignUp,
+    Redirect,
 } from "@pages";
 
 export const router = createHashRouter([
     {
-        path:'/',
+        path: '/',
         id: 'defult',
         loader: layoutLoader,
         element: <Layout />,
-        children:[
+        children: [
             {
-                path:'',
-                id:'home',
+                path: '',
+                id: 'home',
                 loader: homeLoader,
-                element:<Home />,
+                element: <Home />,
             },
             {
-                path:'group',
-                id:'group',
+                path: 'group',
+                id: 'group',
                 loader: groupLoader,
-                element:<Group />,
+                element: <Group />,
             },
             {
-                path:'group/:options',
-                id:'groupOptions',
+                path: 'group/:options',
+                id: 'groupOptions',
                 loader: groupOptionsLoader,
-                element:<GroupOptions />,
+                element: <GroupOptions />,
             },
             {
-                path:'my',
-                id:'my',
+                path: 'my',
+                id: 'my',
                 loader: myloader,
-                element:<My />
+                element: <My />
+            },
+            {
+                path: 'login',
+                id: 'login',
+                element: <Login />,
+            },
+            {
+                path: 'login/signUp',
+                id: 'signUp',
+                element: <SignUp />
+
+            },
+            {
+                path: 'login/redirect',
+                id: 'redirect',
+                element: <Redirect />
             }
         ]
     }

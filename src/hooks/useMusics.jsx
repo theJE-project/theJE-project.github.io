@@ -19,7 +19,7 @@ export const useMusic = () => {
         let errorMsg = null;
         setReady(readysInit);
         try {
-            const res = await springBoot.get(`deezer/search`, { params: { q: search }, });
+            const res = await springBoot.get(`Tracks/search`, { params: { q: search }, });
             setSearchMusic(res.data)
         } catch (error) { 
             console.error(error)
