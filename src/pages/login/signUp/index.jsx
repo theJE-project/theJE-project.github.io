@@ -22,7 +22,10 @@ export function SignUp() {
             alert('회원 가입 완료!\n이메일 인증을 해주세요.\n이메일 인증 후 로그인 가능합니다.')
             navigate('/');
         }).catch((error)=>{
-            alert(error.response.data);
+            console.error(!error.response?.data
+                ? error.message
+                : error.response.data
+            );
         })
     })
 
