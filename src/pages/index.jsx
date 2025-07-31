@@ -22,3 +22,9 @@ export {
     My,
     loader as myloader,
 } from './my'
+
+export { 
+    Login,
+    Redirect,
+    SignUp
+} from './login'
