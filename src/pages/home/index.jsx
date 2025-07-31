@@ -85,7 +85,6 @@ export function Home() {
 
     const loader = useLoaderData();
     // console.log(loader);
-
     console.log(musics)
     return (
         <div className="w-full max-w-[600px] mx-auto py-8">
@@ -230,15 +229,17 @@ export function Home() {
             {/* 새 게시글 */}
             < div > 새 게시글</div >
             {/* 피드 목록 */}
+            
             < div className="flex flex-col gap-3" >
                 {
                     loader.communities.map((c) => (
                         <div key={c.id} className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                             <div className="flex items-center gap-3">
-                                {/* <img src={c.user.img || "https://placehold.co/40x40"} alt="" className="w-10 h-10 rounded-full object-cover" /> */}
+                                <img src={user.img || "https://placehold.co/40x40"} alt="" className="w-10 h-10 rounded-full object-cover" />
                                 <div>
-                                    <span className="font-bold">{c.users.name}</span>
-                                    <span className="ml-1 text-gray-500 text-sm">@{c.users.account}</span>
+                                    
+                                    <span className="font-bold">{user.name}</span>
+                                    <span className="ml-1 text-gray-500 text-sm">@{user.account}</span>
                                     <span className="ml-2 text-gray-400 text-xs">{c.createdAt}</span>
                                 </div>
                             </div>
