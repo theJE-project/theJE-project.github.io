@@ -1,8 +1,8 @@
 import { SignUp } from "./signUp";
 import { Redirect } from "./redirect";
 import { useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { springBoot } from "../../axios";
+import { Link, useNavigate, useRevalidator } from 'react-router-dom';
+import { springBoot } from "@axios";
 
 export default function Login() {
     const accountRef = useRef();
@@ -10,6 +10,7 @@ export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    const { revalidate } = useRevalidator();
 
     const handleSubmit = (e) => {
         e.preventDefault();
