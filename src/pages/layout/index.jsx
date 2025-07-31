@@ -7,6 +7,7 @@ export { loader } from './loader'
 export function Layout ( ) {
     const nav = useNavigate();
     const { user } = useLoaderData();
+
     return(<>
         { 
             Object.keys(user).length === 0 

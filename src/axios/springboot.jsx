@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const springBoot = axios.create({
   baseURL: 'http://localhost:8888/api/',
-  timeout: 5000,
+  timeout: 20000,
   headers: {
     'Content-Type': 'application/json',
   }
