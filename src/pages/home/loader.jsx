@@ -2,7 +2,7 @@ import { springBoot } from "@axios";
 
 const getCommunities = async () => {
     // 나중에 교체할거
-    /* 
+    //* 
     try {
         const response = await springBoot.get('/communities');
         const data = response.data;
@@ -20,13 +20,14 @@ const getCommunities = async () => {
     // 3. 글+음악: 글 내용, 음악 제목, 아티스트, 커버이미지, 음악url
 
     // 임시
+    /*
     const dummyFeeds = [
         {
             id: 1,
             user: {
                 name: "김민수",
                 account: "minsu_kim",
-                img: "gromit.jpg",
+                img: "https://프로필이미지",
             },
             createdAt: "2시간 전",
             content: "새로운 인디 밴드 발견했어요! 정말 놀라운 음악들이에요 🎵\n\n오늘 하루 종일 이 앨범만 들었는데 질리지가 않네요. 특히 두 번째 트랙이 정말 좋아요.",
@@ -75,9 +76,8 @@ const getCommunities = async () => {
         }
     ]
     return dummyFeeds;
+/**/ 
 }
-
-
 
 export const loader = async ({ params, request }) => {
     const communities = await getCommunities();
