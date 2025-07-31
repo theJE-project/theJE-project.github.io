@@ -18,18 +18,23 @@ function Login() {
             account: account,
             password: password,
         }).then((obj) => {
-            localStorage.setItem('user-id',obj.data.id)
-            alert(obj.data.name+'님 환영합니다.')
-            nav('/')
-            revalidate();
+            localStorage.setItem('user-id', obj.data.id)
+            alert(obj.data.name + '님 환영합니다.')
+            nav('/');
+            setTimeout(() => {
+                revalidate();
+            }, 100);
         }).catch((error) => {
-            console.error(error.response.data);
+            console.error(!error.response?.data
+                ? error.message
+                : error.response.data
+            );
         })
     })
 
-    useEffect(()=>{
-        if(id) { alert('이미 로그인하였습니다.'); nav('/') }
-    },[id])
+    useEffect(() => {
+        if (id) { alert('이미 로그인하였습니다.'); nav('/') }
+    }, [id])
 
     return (<>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>

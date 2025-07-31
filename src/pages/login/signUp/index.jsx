@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { springBoot } from "../../../axios";
+import { useNavigate } from "react-router-dom";
 export function SignUp() {
     const formRef = useRef();
     const [password, setPassword] = useState('')
+    const navigate = useNavigate();
 
     const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
@@ -18,6 +20,7 @@ export function SignUp() {
             email: email
         }).then((obj)=>{
             alert('회원 가입 완료!\n이메일 인증을 해주세요.\n이메일 인증 후 로그인 가능합니다.')
+            navigate('/');
         }).catch((error)=>{
             alert(error.response.data);
         })
