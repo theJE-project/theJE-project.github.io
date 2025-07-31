@@ -23,7 +23,10 @@ function Login() {
             nav('/')
             revalidate();
         }).catch((error) => {
-            console.error(error.response.data);
+            console.error(!error.response?.data
+                ?error.message
+                :error.response.data
+            );
         })
     })
 
