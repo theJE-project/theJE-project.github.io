@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { TbArrowsUpDown } from 'react-icons/tb';
 import axios from 'axios'; // axios 추가
 import { springBoot } from '../../axios/springboot';
+import { useLoaderData, useRouteLoaderData } from 'react-router-dom';
 
 
 export { loader } from './loader'
@@ -11,7 +12,10 @@ export function Group() {
 
     const [selectGenre, setSelectGenre] = useState("전체"); // 장르 선택
     const [selectMood, setSelectMood] = useState([]); // 무드 선택
-    const [playlistData, setPlaylistData] = useState([]); // API 응답 데이터 저장
+    // const [playlistData, setPlaylistData] = useState([]); // API 응답 데이터 저장
+    const playlistData = useLoaderData(); // playList Loader
+    const { user } = useRouteLoaderData('defult');
+    console.log(user)
 
     // 무드 선택 함수
     const toggleMood = (mood) => {
@@ -46,24 +50,24 @@ export function Group() {
     }
 
     // Spring Boot API 호출 함수
-    const fetchPlaylistData = async () => {
-        try {
-            // Spring Boot 서버에 GET 요청 보내기
-            const response = await springBoot.get('group');
-            // 받은 데이터를 상태에 저장
-            setPlaylistData(response.data);
-            console.log(playlistData);
-        } catch (error) {
-            console.error('API 호출 오류:', error);
-        }
-    };
+    // const fetchPlaylistData = async () => {
+    //     try {
+    //         // Spring Boot 서버에 GET 요청 보내기
+    //         const response = await springBoot.get('group');
+    //         // 받은 데이터를 상태에 저장
+    //         setPlaylistData(response.data);
+    //         console.log(playlistData);
+    //     } catch (error) {
+    //         console.error('API 호출 오류:', error);
+    //     }
+    // };
 
-    useEffect(() => {
-        // 컴포넌트가 마운트될 때 API 호출
-        fetchPlaylistData();
-    }, []);
+    // useEffect(() => {
+    //     // 컴포넌트가 마운트될 때 API 호출
+    //     fetchPlaylistData();
+    // }, []);
 
-    console.log(playlistData);
+    // console.log(playlistData);
 
     return (
         <div className="max-w-7xl mx-auto my-5">
@@ -123,10 +127,10 @@ export function Group() {
                 {/* 플레이리스트 목록 */}
                 <div>
                     {playlistData.map((playlist, index) => (
-                    <div>
+                    <div key={index}>
                         <p>제목: {playlist?.title}</p>
                         <p>설명: {playlist?.content}</p>
-                        <p>태그: {playlist?.tagList?.join(', ')}</p>
+                        <p>태그: {playlist?.hash}</p>
                         <p>공개 여부: {playlist?.isVisible ? "공개" : "비공개"}</p>
                     </div>
 

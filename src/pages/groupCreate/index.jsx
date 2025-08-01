@@ -4,21 +4,24 @@ import { MdOutlineAddPhotoAlternate, MdOutlineFileUpload } from 'react-icons/md'
 import { RiMusicAiLine } from 'react-icons/ri'
 import { IoClose } from 'react-icons/io5'
 import { springBoot } from '../../axios/springboot'
+import { useImage } from '../../hooks'
 export { loader } from './loader'
 
-export function GroupOptions() {
-    const [imageFile, setImageFile] = useState(null); // 이미지
+export function GroupCreate() {
+    const { images, setImages, getImages, initImage } = useImage(); // 이미지
+    const [previewUrls, setPreviewUrls] = useState([]);
+
     const [title, setTitle] = useState(""); // 제목
     const [description, setDescription] = useState(""); // 설명
     const [visibility, setVisibility] = useState(true); // 공개 여부
     const [tagInput, setTagInput] = useState(""); // 태그(태그 입력창)
     const [tagList, setTagList] = useState([]); // 태그 배열
-    const { options } = useParams();
+
 
     // api 연결
     const fetchPlaylistData = async (data) => {
         try {
-            const response = await springBoot.post(`group/${options}`, data);
+            const response = await springBoot.post('group/create', data);
 
             // setPlaylistData(response.data);
             console.log(response.data);
@@ -43,11 +46,14 @@ export function GroupOptions() {
         }
 
         const data = {
-            users: "38879edf-ebd7-4800-b9a7-a97efadce2a1",
-            categories: 1,
+            users:"38879edf-ebd7-4800-b9a7-a97efadce2a1",
+            categories:2,
+            images: [
+                { url : images[0] },
+            ],
             title: title,
             content: description,
-            isVisible: visibility,
+            is_visible: visibility,
             hash: tagList.join(','),
         }
 
@@ -57,7 +63,7 @@ export function GroupOptions() {
         // formData.append('content', description);
         // formData.append('isVisible', visibility);
         // formData.append('hash', tagList.join(','));
-        
+
         // // FormData의 데이터 출력
         // formData.forEach((value, key) => {
         //     console.log(key + ": " + value);
@@ -86,6 +92,18 @@ export function GroupOptions() {
         setTagList(tagList.filter((tags) => (tags) !== tagDelete)); // 선택한 태그 삭제
     }
 
+    // 이미지 처리 핸들러
+    const handleImage = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // 미리보기 preview
+        const localUrl = URL.createObjectURL(file);
+        setPreviewUrls([localUrl]);
+
+        const paths = await setImages(e); // 새로 업로드된 경로만
+        initImage(paths); // imageList 초기화 (덮어쓰기)
+    }
 
     return (
 
@@ -105,8 +123,22 @@ export function GroupOptions() {
                     <div className="flex flex-wrap gap-4">
                         <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md w-64 h-64">
                             <label className="flex flex-col items-center gap-2 cursor-pointer text-gray-500">
-                                <MdOutlineAddPhotoAlternate size={40} /> 이미지 없음
-                                <input type="file" id="file-upload" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="hidden" />
+                                {previewUrls.length === 0 ? (
+                                    <>
+                                        <MdOutlineAddPhotoAlternate size={40} />
+                                        이미지 없음
+                                    </>
+                                ) : (
+                                    previewUrls.map((url, index) => (
+                                        <img
+                                            key={index}
+                                            src={url}
+                                            alt={`preview-${index}`}
+                                            className="object-cover w-full h-full"
+                                        />
+                                    ))
+                                )}
+
                             </label>
                         </div>
                         <div className="flex flex-col gap-4">
@@ -114,7 +146,9 @@ export function GroupOptions() {
                                 htmlFor="file-upload"
                                 className="w-fit cursor-pointer py-2 px-4 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-100 hover:border-gray-500 transition duration-300"
                             >
-                                <input type="file" id="file-upload" accept="image/*" className="hidden" />
+                                <input type="file" id="file-upload" accept="image/*"
+                                    onChange={handleImage}
+                                    className="hidden" />
                                 <div className="flex justify-center items-center gap-2">
                                     <MdOutlineFileUpload />
                                     <span>이미지 업로드</span>
