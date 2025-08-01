@@ -73,19 +73,23 @@ export function Home() {
     }
     /**/
 
+    const selectedCategory = categories.find(cat => cat.id === 1);
+    const categoryId = selectedCategory.id;
+
     // 폼 제출
     const handleSubmit = async (e) => {
         e.preventDefault();
         const data = {
+            users: user.id,
+            categories: categoryId,
             content: content,
             music: selectedMusic || null,
-            users: user.id,
-            // img: images || null,
+            images: images || null,
         };
         const result = await postCommunity(data);
         try {
             setContent('');
-            fetchFeed(); // 새 글 작성 후 피드 갱신
+            //fetchFeed(); // 새 글 작성 후 피드 갱신
             console.log("글 작성 성공:", result);
         } catch (error) {
             console.error("글 작성 실패", error);
@@ -102,9 +106,11 @@ export function Home() {
 
 
 
-    const loader = useLoaderData();
+    const { communities } = useLoaderData();
     // console.log(loader);
-    console.log(musics);
+    // console.log(musics);
+    // console.log(user.name);
+    console.log(categoryId);
     return (
         <div className="w-full max-w-[600px] mx-auto py-8">
 
@@ -115,7 +121,10 @@ export function Home() {
                     <div className="flex items-start gap-3">
                         {/* 프로필 둥근 이미지 (임시, 사용자 첫글자 원) */}
                         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#6CABDD] to-[#c1e0fa] flex items-center justify-center text-white font-bold text-lg">
-                            김
+                            {user?.img
+                                ? <img src={user.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
+                                : user?.name?.charAt(0)
+                            }
                         </div>
                         <div className="flex-1">
                             <textarea
@@ -241,17 +250,35 @@ export function Home() {
 
             < div className="flex flex-col gap-3" >
                 {
-                    loader.communities.map((c) => (
-                        <div key={c.id} className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
+                    communities.map((c, idx) => (
+                        <div key={idx} className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                             <div className="flex items-center gap-3">
-                                <img src={user.img || "https://placehold.co/40x40"} alt="" className="w-10 h-10 rounded-full object-cover" />
+                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#6CABDD] to-[#c1e0fa] flex items-center justify-center text-white font-bold text-lg">
+                                    {c.user?.img
+                                        ? <img src={c.user.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
+                                        : c.user?.name?.charAt(0)
+                                    }
+                                </div>
                                 <div>
-
                                     <span className="font-bold">{c.user.name}</span>
                                     <span className="ml-1 text-gray-500 text-sm">@{c.user.account}</span>
                                     <span className="ml-2 text-gray-400 text-xs">{c.created_at}</span>
                                 </div>
                             </div>
+                            {/* 사진 */}
+                            {c.images && c.images.length > 0 && (
+                                <div className="mt-3 flex gap-2">
+                                    {c.images.map((img, idx) => (
+                                        <img
+                                            key={idx}
+                                            src={getImages(img.url)} // DB images 테이블 url 컬럼이 path임
+                                            alt={`게시글 이미지${idx + 1}`}
+                                            className="w-full max-w-[160px] h-auto rounded-lg object-cover"
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                            {/* 글 내용 */}
                             <div className="text-base text-gray-900 whitespace-pre-line">{c.content}</div>
                             {/* 음악 카드 */}
                             {c.music && (

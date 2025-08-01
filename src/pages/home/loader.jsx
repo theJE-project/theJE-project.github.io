@@ -1,5 +1,4 @@
 import { springBoot } from "@axios";
-import { useState } from "react";
 
 
 const getCommunities = async () => {
@@ -30,7 +29,7 @@ const getCommunities = async () => {
 
 export const loader = async ({ params, request }) => {
     const communities = await getCommunities();
-    return {
+    return  {
         communities: communities,
     }
 }

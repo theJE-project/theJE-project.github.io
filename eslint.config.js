@@ -24,6 +24,8 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': 'off',
+      'no-useless-catch': 'off',
+      'react-refresh/only-export-components': 'off',
     },
   },
 ])
