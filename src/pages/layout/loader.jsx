@@ -1,6 +1,8 @@
 
 import { springBoot } from "@axios";
 
+// 여기에 알림 추가
+
 const getUser = async () => {
     try {
         const cached = sessionStorage.getItem('user');
