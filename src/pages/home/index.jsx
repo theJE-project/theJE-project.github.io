@@ -16,6 +16,8 @@ export function Home() {
     // 재생바
     const [previewUrl, setPreviewUrl] = useState(null);
 
+    const [feed, setFeed] = useState([]);
+
     // 나중에 주석 해제
     const { images, setImages, getImages, initImage } = useImage();
 
@@ -27,18 +29,11 @@ export function Home() {
             const result = response.data;
             return result;
         } catch (error) {
-            console.error("글 작성 실패", error);
+            console.error("글 작성api 호출 실패", error);
             return null;
         }
     }
 
-    // 글삭제 api 호출
-    // const deleteCommunity = async (id)=>{
-    //     try{
-    //         const response await springBoot.delete(`/communities/${id}`);
-
-    //     }
-    // }
 
     // 이미지 업로드
     //*
@@ -64,28 +59,52 @@ export function Home() {
         console.log("선택된 음악:", m);
     }
 
+
+    // 피드 새고? 하려는건데 안쓸수도
+    /*
+    const fetchFeed = async () => {
+        const res = await springBoot.get('/communities');
+        try{
+            setFeed(res.data);
+        }catch(error){
+            console.log("피드 불러오기 실패", error);
+        }
+        
+    }
+    /**/
+
     // 폼 제출
     const handleSubmit = async (e) => {
         e.preventDefault();
         const data = {
             content: content,
             music: selectedMusic || null,
+            users: user.id,
             // img: images || null,
         };
         const result = await postCommunity(data);
-        if (result) {
+        try {
             setContent('');
+            fetchFeed(); // 새 글 작성 후 피드 갱신
             console.log("글 작성 성공:", result);
-        } else {
-            console.error("글 작성 실패");
+        } catch (error) {
+            console.error("글 작성 실패", error);
+
         }
     }
+
+    /*
+    useEffect(()=>{
+        fetchFeed();
+    },[]);
+    /**/
+
 
 
 
     const loader = useLoaderData();
     // console.log(loader);
-    console.log(musics)
+    console.log(musics);
     return (
         <div className="w-full max-w-[600px] mx-auto py-8">
 
@@ -152,7 +171,7 @@ export function Home() {
                                     <button
                                         className="text-gray-400 hover:text-gray-700"
                                         onClick={() => {
-                                            setOpen(false); 
+                                            setOpen(false);
                                             getMusics('');
                                         }}
                                     >
@@ -168,10 +187,6 @@ export function Home() {
                                         onChange={handleMusicSearch}
                                         className="w-full border rounded-lg px-4 py-3 text-base outline-none placeholder:text-gray-400 bg-gray-50"
                                     />
-                                    {/* 검색아이콘 */}
-                                    {/* <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4-4m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg> */}
                                     {previewUrl && (
                                         <audio controls src={previewUrl} autoPlay className="w-full mt-2" />
                                     )}
@@ -183,10 +198,10 @@ export function Home() {
                                     {musics.length > 0 ? musics.map((m) => (
                                         <div
                                             key={m.id}
-                                            onClick={() =>{
+                                            onClick={() => {
                                                 handleMusicSelect(m);
                                                 getMusics(''); // 검색 초기화
-                                            }} 
+                                            }}
                                             className="flex items-center gap-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
 
                                         >
@@ -206,12 +221,6 @@ export function Home() {
                                     )) : (
                                         // 결과 없을 때
                                         <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-                                            {/* 음악 아이콘 */}
-                                            {/* <svg width={54} height={54} className="mb-4" fill="none" viewBox="0 0 24 24" stroke="#7faaf9">
-                                            <circle cx="12" cy="12" r="10" fill="#eef6ff" />
-                                            <path stroke="#7faaf9" strokeWidth="1.5" d="M15 9V6.5A1.5 1.5 0 0013.5 5h-3A1.5 1.5 0 009 6.5V16" />
-                                            <circle cx="12" cy="16.5" r="1" fill="#7faaf9" />
-                                        </svg> */}
                                             <FiMusic className="mb-4" size={54} color="#7faaf9" />
                                             <div className="font-bold text-base text-gray-700 mb-1">음악을 검색하세요</div>
                                             <div className="text-sm text-gray-400">공유하고 싶은 음악을 찾아보세요</div>
@@ -229,7 +238,7 @@ export function Home() {
             {/* 새 게시글 */}
             < div > 새 게시글</div >
             {/* 피드 목록 */}
-            
+
             < div className="flex flex-col gap-3" >
                 {
                     loader.communities.map((c) => (
@@ -237,10 +246,10 @@ export function Home() {
                             <div className="flex items-center gap-3">
                                 <img src={user.img || "https://placehold.co/40x40"} alt="" className="w-10 h-10 rounded-full object-cover" />
                                 <div>
-                                    
-                                    <span className="font-bold">{user.name}</span>
-                                    <span className="ml-1 text-gray-500 text-sm">@{user.account}</span>
-                                    <span className="ml-2 text-gray-400 text-xs">{c.createdAt}</span>
+
+                                    <span className="font-bold">{c.user.name}</span>
+                                    <span className="ml-1 text-gray-500 text-sm">@{c.user.account}</span>
+                                    <span className="ml-2 text-gray-400 text-xs">{c.created_at}</span>
                                 </div>
                             </div>
                             <div className="text-base text-gray-900 whitespace-pre-line">{c.content}</div>
