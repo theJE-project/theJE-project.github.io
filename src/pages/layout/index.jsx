@@ -1,6 +1,7 @@
 export { loader } from './loader'
 import React, { useCallback, useRef, useState } from 'react';
 import { Link, Outlet, useLoaderData, useNavigate, useSearchParams } from 'react-router-dom';
+import { springBoot } from '@axios';
 
 export function Layout() {
     const loader = useLoaderData();
@@ -30,6 +31,17 @@ export function Layout() {
         e.preventDefault();
         searchRef.current.value = ''
         navigate(o);
+    }, [])
+
+    const handleNotification = useCallback(async (e, o) => {
+        e.preventDefault();
+        const response = await springBoot.put(`/notifications`, {
+            id: o.id,
+            isRead: false, // 임시 false 
+        }).then((obj)=>{
+            setShowNotifications(false);
+            console.log(o)
+        });
     }, [])
 
     return (<>
@@ -83,11 +95,15 @@ export function Layout() {
                             {!findUser ? (
                                 <div className="relative">
                                     <button
-                                        onClick={() => setShowNotifications(!showNotifications)}
+                                        onClick={() =>{
+                                            if(notifications.length != 0){
+                                                setShowNotifications(!showNotifications)
+                                            }
+                                        }}
                                         className="p-2 text-gray-600 hover:text-blue-600 cursor-pointer relative"
                                     >
                                         <i className="ri-notification-line text-xl"></i>
-                                        { notifications.length !== 0 &&
+                                        {notifications.length !== 0 &&
                                             <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
                                                 {notifications.length}
                                             </span>
@@ -99,10 +115,11 @@ export function Layout() {
                                                 <h3 className="font-semibold text-gray-900">알림</h3>
                                             </div>
                                             <div className="max-h-96 overflow-y-auto">
-                                                { notifications.map((notification) => (
+                                                {notifications.map((notification) => (
                                                     <div
                                                         key={notification.id}
                                                         className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer`}
+                                                        onClick={(e) => handleNotification(e, notification)}
                                                     >
                                                         <div className="flex items-start space-x-3">
                                                             <div className={`w-2 h-2 rounded-full mt-2 ${!notification.isRead ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
@@ -130,7 +147,7 @@ export function Layout() {
                                     )}
                                 </div>
                             ) : <Link
-                                className="text-gray-700 hover:text-blue-600 cursor-pointer"
+                                className="text-gray-700 hover:text-blue-600 cursor-pointer whitespace-nowrap"
                                 onClick={(e) => { hendleNav(e, '/login') }}
                             >
                                 로그인

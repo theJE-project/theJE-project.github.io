@@ -27,7 +27,7 @@ const getNotifications = async () => {
         const id = localStorage.getItem('user-id');
         if (!id) {
             console.warn('비로그인 입니다.')
-            return {}
+            return []
         }
         const response = await springBoot.get(`/notifications/${id}`);
         return response.data
