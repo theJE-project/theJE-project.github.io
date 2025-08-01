@@ -8,22 +8,21 @@ export function Layout() {
     const searchRef = useRef();
     const [showNotifications, setShowNotifications] = useState(false);
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-    const [notifications] = useState([
-        { id: 1, message: '새 댓글이 달렸습니다.', time: '1분 전', read: false },
-        { id: 2, message: '좋아요를 받았습니다.', time: '10분 전', read: true },
-        { id: 3, message: '팔로우 요청이 왔습니다.', time: '1시간 전', read: false },
-    ]);
+    // const [notifications] = useState([
+    //     { id: 1, message: '새 댓글이 달렸습니다.', time: '1분 전', read: false },
+    //     { id: 2, message: '좋아요를 받았습니다.', time: '10분 전', read: true },
+    //     { id: 3, message: '팔로우 요청이 왔습니다.', time: '1시간 전', read: false },
+    // ]);
     const [setShowAllNotifications] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
     const findUser = Object.keys(loader.user).length === 0;
+    const [search, setSearch] = useState(false);
+    const notifications = loader.notifications.filter(notification => !notification.isRead);
 
     const handleSerachBlur = (e) => {
         const value = e.target.value;
-        if (value) {
-            searchParams.set('q', value);
-        } else {
-            searchParams.delete('q');
-        }
+        if (value) { searchParams.set('q', value); } else { searchParams.delete('q'); }
+        e.target.value = ''
         setSearchParams(searchParams);
     };
 
@@ -32,6 +31,7 @@ export function Layout() {
         searchRef.current.value = ''
         navigate(o);
     }, [])
+
     return (<>
         <div className="min-h-screen bg-white">
             {/* Header */}
@@ -45,11 +45,11 @@ export function Layout() {
                             >
                                 MusicShare
                             </Link>
-                            <nav className="hidden md:flex space-x-6">
+                            <nav className={`flex space-x-6 transition-all duration-300 ease overflow-hidden ${search ? 'max-w-0' : 'max-w-1000'}`}>
                                 {loader.categories.map((o, i) =>
                                     <Link
                                         key={i}
-                                        className="text-gray-700 hover:text-blue-600 cursor-pointer"
+                                        className="text-gray-700 hover:text-blue-600 cursor-pointer whitespace-nowrap overflow-hidden overflow-ellipsis"
                                         onClick={(e) => hendleNav(e, o.url)}
                                     >
                                         {o.name}
@@ -57,14 +57,20 @@ export function Layout() {
                                 )}
                             </nav>
                         </div>
-                        <div className="flex items-center space-x-4">
-                            <div className="relative">
+                        <div className="flex items-center space-x-4 w-full justify-end">
+                            <div className="ml-4 relative w-full flex justify-end">
                                 <input
                                     ref={searchRef}
                                     type="text"
-                                    placeholder="음악 검색"
-                                    className="w-64 px-4 py-2 pr-10 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                                    onBlur={handleSerachBlur}
+                                    placeholder="검색"
+                                    className={`w-${search ? 'full' : '24'} px-4 py-2 pr-10 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all duration-300 ease`}
+                                    onBlur={(e) => {
+                                        setSearch(false)
+                                        handleSerachBlur(e)
+                                    }}
+                                    onFocus={() => {
+                                        setSearch(true)
+                                    }}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                             e.target.blur();
@@ -81,9 +87,11 @@ export function Layout() {
                                         className="p-2 text-gray-600 hover:text-blue-600 cursor-pointer relative"
                                     >
                                         <i className="ri-notification-line text-xl"></i>
-                                        {/* <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                                        3
-                                    </span> */}
+                                        { notifications.length !== 0 &&
+                                            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                                                {notifications.length}
+                                            </span>
+                                        }
                                     </button>
                                     {showNotifications && (
                                         <div className="absolute right-0 top-12 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
@@ -91,16 +99,16 @@ export function Layout() {
                                                 <h3 className="font-semibold text-gray-900">알림</h3>
                                             </div>
                                             <div className="max-h-96 overflow-y-auto">
-                                                {notifications.map((notification) => (
+                                                { notifications.map((notification) => (
                                                     <div
                                                         key={notification.id}
-                                                        className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${!notification.read ? 'bg-blue-50' : ''}`}
+                                                        className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer`}
                                                     >
                                                         <div className="flex items-start space-x-3">
-                                                            <div className={`w-2 h-2 rounded-full mt-2 ${!notification.read ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                                                            <div className={`w-2 h-2 rounded-full mt-2 ${!notification.isRead ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
                                                             <div className="flex-1">
-                                                                <p className="text-sm text-gray-900">{notification.message}</p>
-                                                                <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                                                                <p className="text-sm text-gray-900">{notification.content}</p>
+                                                                <p className="text-xs text-gray-500 mt-1">{notification.createdAt}</p>
                                                             </div>
                                                         </div>
                                                     </div>
