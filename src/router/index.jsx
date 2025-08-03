@@ -9,6 +9,7 @@ import {
     Login,
     SignUp,
     Redirect,
+    ErrorBoundary,
 } from "@pages";
 
 export const router = createHashRouter([
@@ -17,11 +18,12 @@ export const router = createHashRouter([
         id: 'defult',
         loader: layoutLoader,
         element: <Layout />,
+        errorElement: <ErrorBoundary />,
         children: [
             {
                 path: '',
                 id: 'home',
-                loader: homeLoader,
+                loader:homeLoader,
                 element: <Home />,
             },
             {
