@@ -84,8 +84,11 @@ export function Home() {
             categories: categoryId,
             content: content,
             music: selectedMusic || null,
-            images: images || null,
+            images: [
+                {url: images[0]},
+            ],
         };
+        console.log("전송할 데이터:", data);
         const result = await postCommunity(data);
         try {
             setContent('');
