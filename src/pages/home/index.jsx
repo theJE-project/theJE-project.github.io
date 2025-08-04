@@ -19,7 +19,8 @@ export function Home() {
     // 재생바
     const [previewUrl, setPreviewUrl] = useState(null);
 
-    //const [feed, setFeed] = useState([]);
+    // 피드 새로고침
+    const [feed, setFeed] = useState([]);
 
     const { images, setImages, getImages, deleteImage } = useImage();
 
