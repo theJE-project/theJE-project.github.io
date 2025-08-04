@@ -1,20 +1,24 @@
 import { useLoaderData, useRouteLoaderData } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react';
-//import { useImage } from '../../hooks/useImage';
+import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
 import { useMusic } from '../../hooks/useMusics';
-import { FiImage, FiMusic, FiMessageCircle, FiHeart } from "react-icons/fi";
+import { FiImage, FiMusic, FiMessageCircle, FiHeart, FiPlay } from "react-icons/fi";
 
 export function Home() {
     const { user, categories } = useRouteLoaderData('defult');
     const [content, setContent] = useState('');
     const { musics, getMusics } = useMusic();
     const [selectedMusic, setSelectedMusic] = useState(null);
+    // 모달 열기
     const [open, setOpen] = useState(false);
+    // 재생바
+    const [previewUrl, setPreviewUrl] = useState(null);
 
-    // 나중에 주석 해제
-    //const { images, setImages, getImages, initImage } = useImage();
+    const [feed, setFeed] = useState([]);
+
+    // const { images, setImages, getImages, initImage } = useImage();
 
 
     // 글작성 api 호출
@@ -24,21 +28,14 @@ export function Home() {
             const result = response.data;
             return result;
         } catch (error) {
-            console.error("글 작성 실패", error);
+            console.error("글 작성api 호출 실패", error);
             return null;
         }
     }
 
-    // 글삭제 api 호출
-    // const deleteCommunity = async (id)=>{
-    //     try{
-    //         const response await springBoot.delete(`/communities/${id}`);
-
-    //     }
-    // }
 
     // 이미지 업로드
-    /*
+    //*
     const handleImageUpload = async (e) => {
         const files = e.target.files;
         // 파일이 없으면 리턴
@@ -61,29 +58,61 @@ export function Home() {
         console.log("선택된 음악:", m);
     }
 
+
+    // 피드 새고? 하려는건데 안쓸수도
+    /*
+    const fetchFeed = async () => {
+        const res = await springBoot.get('/communities');
+        try{
+            setFeed(res.data);
+        }catch(error){
+            console.log("피드 불러오기 실패", error);
+        }
+        
+    }
+    /**/
+
+    const selectedCategory = categories.find(cat => cat.id === 1);
+    const categoryId = selectedCategory.id;
+
     // 폼 제출
     const handleSubmit = async (e) => {
         e.preventDefault();
         const data = {
+            users: user.id,
+            categories: categoryId,
             content: content,
             music: selectedMusic || null,
-            // img: images || null,
+            images: [
+                {url: images[0]},
+            ],
         };
+        console.log("전송할 데이터:", data);
         const result = await postCommunity(data);
-        if (result) {
+        try {
             setContent('');
+            //fetchFeed(); // 새 글 작성 후 피드 갱신
             console.log("글 작성 성공:", result);
-        } else {
-            console.error("글 작성 실패");
+        } catch (error) {
+            console.error("글 작성 실패", error);
+
         }
     }
 
+    /*
+    useEffect(()=>{
+        fetchFeed();
+    },[]);
+    /**/
 
 
-    const loader = useLoaderData();
+
+
+    const { communities } = useLoaderData();
     // console.log(loader);
-
-    console.log(musics)
+    // console.log(musics);
+    // console.log(user.name);
+    console.log(categoryId);
     return (
         <div className="w-full max-w-[600px] mx-auto py-8">
 
@@ -94,7 +123,10 @@ export function Home() {
                     <div className="flex items-start gap-3">
                         {/* 프로필 둥근 이미지 (임시, 사용자 첫글자 원) */}
                         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#6CABDD] to-[#c1e0fa] flex items-center justify-center text-white font-bold text-lg">
-                            김
+                            {user?.img
+                                ? <img src={user.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
+                                : user?.name?.charAt(0)
+                            }
                         </div>
                         <div className="flex-1">
                             <textarea
@@ -106,11 +138,14 @@ export function Home() {
                             <div className="flex items-center gap-3 mt-3">
                                 <label className="text-gray-400 hover:text-gray-600 transition cursor-pointer">
                                     <FiImage className="inline text-lg" />
-                                    <input type="file" accept="image/*" multiple className='hidden' /* onChange={} */ />
+                                    <input type="file" accept="image/*" multiple className='hidden' onChange={handleImageUpload} />
                                 </label>
                                 <button
                                     type="button"
-                                    onClick={() => setOpen(true)}
+                                    onClick={() => {
+                                        setOpen(true);
+                                        setPreviewUrl(null);
+                                    }}
                                     className="text-gray-400 hover:text-gray-600 transition cursor-pointer"
                                 >
                                     <FiMusic className="inline text-lg" />
@@ -127,114 +162,148 @@ export function Home() {
                     </div>
                 </form>
                 {/* 음악 검색 모달 */}
-                {open && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setOpen(false)}>
+                {
+                    open && (
                         <div
-                            className="bg-white rounded-xl shadow-xl w-full max-w-xl mx-3 flex flex-col"
-                            onClick={e => e.stopPropagation()}
+                            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+                            onClick={() => {
+                                setOpen(false);
+                                setPreviewUrl(null);
+                                getMusics(''); // 검색 초기화
+                            }}
                         >
-                            {/* 헤더 */}
-                            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                                <h2 className="text-lg font-bold">음악 검색</h2>
-                                <button
-                                    className="text-gray-400 hover:text-gray-700"
-                                    onClick={() => setOpen(false)}
-                                >
-                                    <span className="text-2xl">&times;</span>
-                                </button>
-                            </div>
-
-                            {/* 검색 */}
-                            <div className="p-6 pt-3 flex items-center gap-2 border-b border-gray-100">
-                                <input
-                                    type="text"
-                                    placeholder="아티스트, 곡명, 앨범으로 검색하세요"
-                                    onChange={handleMusicSearch}
-                                    className="w-full border rounded-lg px-4 py-3 text-base outline-none placeholder:text-gray-400 bg-gray-50"
-                                />
-                                {/* 검색아이콘 */}
-                                {/* <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4-4m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg> */}
-                            </div>
-
-                            {/* 결과목록 */}
-                            <div className="p-6 pt-2 flex-1 min-h-[260px] max-h-[400px] overflow-y-auto">
-                                {musics.length > 0 ? musics.map((m) => (
-                                    <div
-                                        key={m.id}
-                                        onClick={() => handleMusicSelect(m)}
-                                        className="flex items-center gap-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                            <div
+                                className="bg-white rounded-xl shadow-xl w-full max-w-xl mx-3 flex flex-col"
+                                onClick={e => e.stopPropagation()}
+                            >
+                                {/* 헤더 */}
+                                <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                                    <h2 className="text-lg font-bold">음악 검색</h2>
+                                    <button
+                                        className="text-gray-400 hover:text-gray-700"
+                                        onClick={() => {
+                                            setOpen(false);
+                                            getMusics('');
+                                        }}
                                     >
-                                        <img src={m.album.cover_medium} alt={m.title} className="w-14 h-14 rounded-lg object-cover" />
-                                        <div className="flex-1">
-                                            <div className="font-bold leading-tight">{m.title}</div>
-                                            <div className="text-sm text-gray-500">{m.artist.name}</div>
-                                            {m.album.title && <div className="text-xs text-gray-400">{m.album.title}</div>}
+                                        <span className="text-2xl">&times;</span>
+                                    </button>
+                                </div>
+
+                                {/* 검색 */}
+                                <div className="p-6 pt-3 items-center gap-2 border-b border-gray-100">
+                                    <input
+                                        type="text"
+                                        placeholder="아티스트, 곡명, 앨범으로 검색하세요"
+                                        onChange={handleMusicSearch}
+                                        className="w-full border rounded-lg px-4 py-3 text-base outline-none placeholder:text-gray-400 bg-gray-50"
+                                    />
+                                    {previewUrl && (
+                                        <audio controls src={previewUrl} autoPlay className="w-full mt-2" />
+                                    )}
+                                </div>
+
+                                {/* 결과목록 */}
+                                <div className="p-6 pt-2 flex-1 min-h-[260px] max-h-[400px] overflow-y-auto">
+
+                                    {musics.length > 0 ? musics.map((m) => (
+                                        <div
+                                            key={m.id}
+                                            onClick={() => {
+                                                handleMusicSelect(m);
+                                                getMusics(''); // 검색 초기화
+                                            }}
+                                            className="flex items-center gap-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+
+                                        >
+                                            <img src={m.albumCover} alt={m.titleShort} className="w-14 h-14 rounded-lg object-cover" />
+                                            <div className="flex-1">
+                                                <div className="font-bold leading-tight">{m.titleShort}</div>
+                                                <div className="text-sm text-gray-500">{m.artistName}</div>
+                                                {m.albumTitle && <div className="text-xs text-gray-400">{m.albumTitle}</div>}
+                                            </div>
+                                            <button type="button" className='cursor-pointer' onClick={(e) => {
+                                                // 재생 누르면 모달 꺼짐 방지
+                                                e.stopPropagation();
+                                                setPreviewUrl(m.preview);
+                                            }}
+                                            ><FiPlay className="inline text-xl" color="#7faaf9" /></button>
                                         </div>
-                                        <button
-                                            type="button"
-                                            className="text-gray-400 hover:text-blue-500 text-xl"
-                                            tabIndex={-1}
-                                        >+</button>
-                                    </div>
-                                )) : (
-                                    // 결과 없을 때
-                                    <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-                                        {/* 음악 아이콘 */}
-                                        {/* <svg width={54} height={54} className="mb-4" fill="none" viewBox="0 0 24 24" stroke="#7faaf9">
-                                            <circle cx="12" cy="12" r="10" fill="#eef6ff" />
-                                            <path stroke="#7faaf9" strokeWidth="1.5" d="M15 9V6.5A1.5 1.5 0 0013.5 5h-3A1.5 1.5 0 009 6.5V16" />
-                                            <circle cx="12" cy="16.5" r="1" fill="#7faaf9" />
-                                        </svg> */}
-                                        <FiMusic className="mb-4" size={54} color="#7faaf9" />
-                                        <div className="font-bold text-base text-gray-700 mb-1">음악을 검색하세요</div>
-                                        <div className="text-sm text-gray-400">공유하고 싶은 음악을 찾아보세요</div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
+                                    )) : (
+                                        // 결과 없을 때
+                                        <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                                            <FiMusic className="mb-4" size={54} color="#7faaf9" />
+                                            <div className="font-bold text-base text-gray-700 mb-1">음악을 검색하세요</div>
+                                            <div className="text-sm text-gray-400">공유하고 싶은 음악을 찾아보세요</div>
+                                        </div>
+                                    )}
 
-            </div>
-
-            {/* 새 게시글 */}
-            <div>새 게시글</div>
-            {/* 피드 목록 */}
-            <div className="flex flex-col gap-3">
-                {loader.communities.map((c) => (
-                    <div key={c.id} className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
-                        <div className="flex items-center gap-3">
-                            <img src={c.user.img || "https://placehold.co/40x40"} alt="" className="w-10 h-10 rounded-full object-cover" />
-                            <div>
-                                <span className="font-bold">{c.user.name}</span>
-                                <span className="ml-1 text-gray-500 text-sm">@{c.user.account}</span>
-                                <span className="ml-2 text-gray-400 text-xs">{c.createdAt}</span>
-                            </div>
-                        </div>
-                        <div className="text-base text-gray-900 whitespace-pre-line">{c.content}</div>
-                        {/* 음악 카드 */}
-                        {c.music && (
-                            <div className="flex items-center gap-3 p-3 rounded-lg bg-[#f5faff] border border-[#d4e7fa]">
-                                <img src={c.music.cover} alt={c.music.title} className="w-16 h-16 rounded-lg object-cover" />
-                                <div>
-                                    <div className="font-semibold">{c.music.title}</div>
-                                    <div className="text-xs text-gray-600">{c.music.artist}</div>
-                                    {/* <a href={c.music.url} target="_blank" rel="noreferrer" className="text-[#418FDE] underline text-xs">{c.music.url}</a> */}
                                 </div>
                             </div>
-                        )}
-                        {/* 댓글/좋아요 아이콘들 */}
-                        <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
-                            <div className="flex items-center gap-1"><FiMessageCircle className="inline" /> {c.comments}</div>
-                            <div className="flex items-center gap-1"><FiHeart className="inline" /> {c.likes}</div>
-                            {/* 기타 아이콘 더 필요시 추가 */}
                         </div>
-                    </div>
-                ))}
-            </div>
-        </div>
+                    )
+                }
+
+            </div >
+
+            {/* 새 게시글 */}
+            < div > 새 게시글</div >
+            {/* 피드 목록 */}
+
+            < div className="flex flex-col gap-3" >
+                {
+                    communities.map((c, idx) => (
+                        <div key={idx} className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
+                            <div className="flex items-center gap-3">
+                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#6CABDD] to-[#c1e0fa] flex items-center justify-center text-white font-bold text-lg">
+                                    {c.user?.img
+                                        ? <img src={c.user.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
+                                        : c.user?.name?.charAt(0)
+                                    }
+                                </div>
+                                <div>
+                                    <span className="font-bold">{c.user.name}</span>
+                                    <span className="ml-1 text-gray-500 text-sm">@{c.user.account}</span>
+                                    <span className="ml-2 text-gray-400 text-xs">{c.created_at}</span>
+                                </div>
+                            </div>
+                            {/* 사진 */}
+                            {c.images && c.images.length > 0 && (
+                                <div className="mt-3 flex gap-2">
+                                    {c.images.map((img, idx) => (
+                                        <img
+                                            key={idx}
+                                            src={getImages(img.url)} // DB images 테이블 url 컬럼이 path임
+                                            alt={`게시글 이미지${idx + 1}`}
+                                            className="w-full max-w-[160px] h-auto rounded-lg object-cover"
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                            {/* 글 내용 */}
+                            <div className="text-base text-gray-900 whitespace-pre-line">{c.content}</div>
+                            {/* 음악 카드 */}
+                            {c.music && (
+                                <div className="flex items-center gap-3 p-3 rounded-lg bg-[#f5faff] border border-[#d4e7fa]">
+                                    <img src={c.music.cover} alt={c.music.title} className="w-16 h-16 rounded-lg object-cover" />
+                                    <div>
+                                        <div className="font-semibold">{c.music.title}</div>
+                                        <div className="text-xs text-gray-600">{c.music.artist}</div>
+                                        {/* <a href={c.music.url} target="_blank" rel="noreferrer" className="text-[#418FDE] underline text-xs">{c.music.url}</a> */}
+                                    </div>
+                                </div>
+                            )}
+                            {/* 댓글/좋아요 아이콘들 */}
+                            <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
+                                <div className="flex items-center gap-1"><FiMessageCircle className="inline" /> {c.comments}</div>
+                                <div className="flex items-center gap-1"><FiHeart className="inline" /> {c.likes}</div>
+                                {/* 기타 아이콘 더 필요시 추가 */}
+                            </div>
+                        </div>
+                    ))
+                }
+            </div >
+        </div >
     )
 
 }
