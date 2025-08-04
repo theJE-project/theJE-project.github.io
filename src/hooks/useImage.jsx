@@ -50,7 +50,7 @@ export const useImage = () => {
         return newImagePaths;
     };
 
-    const delectImage = async (image) => {
+    const deleteImage = async (image) => {
         if (!image || !image.url) return;
 
         const { error } = await supabase.storage
@@ -74,6 +74,7 @@ export const useImage = () => {
         /** supabase 스토리지에 webp로 업로드 */
         setImages: setWebp,
         /** 스토리지 경로로 가져오기 */
-        getImages
+        getImages,
+        deleteImage,
     };
 };
