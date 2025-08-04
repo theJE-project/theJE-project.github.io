@@ -5,6 +5,9 @@ export { loader } from './loader'
 import { springBoot } from '@axios';
 import { useMusic } from '../../hooks/useMusics';
 import { FiImage, FiMusic, FiMessageCircle, FiHeart, FiPlay } from "react-icons/fi";
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/ko';
 
 export function Home() {
     const { user, categories } = useRouteLoaderData('defult');
@@ -20,6 +23,9 @@ export function Home() {
 
     // 나중에 주석 해제
     const { images, setImages, getImages, initImage } = useImage();
+
+    dayjs.extend(relativeTime);
+    dayjs.locale('ko');
 
 
     // 글작성 api 호출
@@ -85,7 +91,7 @@ export function Home() {
             content: content,
             music: selectedMusic || null,
             images: [
-                {url: images[0]},
+                { url: images[0] },
             ],
         };
         console.log("전송할 데이터:", data);
@@ -123,7 +129,7 @@ export function Home() {
                 <form onSubmit={handleSubmit}>
                     <div className="flex items-start gap-3">
                         {/* 프로필 둥근 이미지 (임시, 사용자 첫글자 원) */}
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#6CABDD] to-[#c1e0fa] flex items-center justify-center text-white font-bold text-lg">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#6CABDD] flex items-center justify-center text-white font-bold text-lg">
                             {user?.img
                                 ? <img src={user.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
                                 : user?.name?.charAt(0)
@@ -256,7 +262,7 @@ export function Home() {
                     communities.map((c, idx) => (
                         <div key={idx} className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                             <div className="flex items-center gap-3">
-                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#6CABDD] to-[#c1e0fa] flex items-center justify-center text-white font-bold text-lg">
+                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#6CABDD] flex items-center justify-center text-white font-bold text-lg">
                                     {c.user?.img
                                         ? <img src={c.user.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
                                         : c.user?.name?.charAt(0)
@@ -265,22 +271,11 @@ export function Home() {
                                 <div>
                                     <span className="font-bold">{c.user.name}</span>
                                     <span className="ml-1 text-gray-500 text-sm">@{c.user.account}</span>
-                                    <span className="ml-2 text-gray-400 text-xs">{c.created_at}</span>
+                                    <span className="ml-2 text-gray-400 text-xs">{dayjs(c.created_at).fromNow()}</span>
                                 </div>
                             </div>
                             {/* 사진 */}
-                            {c.images && c.images.length > 0 && (
-                                <div className="mt-3 flex gap-2">
-                                    {c.images.map((img, idx) => (
-                                        <img
-                                            key={idx}
-                                            src={getImages(img.url)} // DB images 테이블 url 컬럼이 path임
-                                            alt={`게시글 이미지${idx + 1}`}
-                                            className="w-full max-w-[160px] h-auto rounded-lg object-cover"
-                                        />
-                                    ))}
-                                </div>
-                            )}
+
                             {/* 글 내용 */}
                             <div className="text-base text-gray-900 whitespace-pre-line">{c.content}</div>
                             {/* 음악 카드 */}
@@ -292,6 +287,18 @@ export function Home() {
                                         <div className="text-xs text-gray-600">{c.music.artist}</div>
                                         {/* <a href={c.music.url} target="_blank" rel="noreferrer" className="text-[#418FDE] underline text-xs">{c.music.url}</a> */}
                                     </div>
+                                </div>
+                            )}
+                            {c.images && c.images.length > 0 && (
+                                <div className="mt-3 flex gap-2">
+                                    {c.images.map((img, idx) => (
+                                        <img
+                                            key={idx}
+                                            src={getImages(img.url)} // DB images 테이블 url 컬럼이 path임
+                                            alt={`게시글 이미지${idx + 1}`}
+                                            className="w-full max-w-[160px] h-auto rounded-lg object-cover"
+                                        />
+                                    ))}
                                 </div>
                             )}
                             {/* 댓글/좋아요 아이콘들 */}
