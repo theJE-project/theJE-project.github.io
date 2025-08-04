@@ -19,9 +19,9 @@ export function Home() {
     // 재생바
     const [previewUrl, setPreviewUrl] = useState(null);
 
-    const [feed, setFeed] = useState([]);
+    //const [feed, setFeed] = useState([]);
 
-    // const { images, setImages, getImages, initImage } = useImage();
+    const { images, setImages, getImages, initImage } = useImage();
 
     dayjs.extend(relativeTime);
     dayjs.locale('ko');
@@ -60,7 +60,7 @@ export function Home() {
     // 음악 선택
     const handleMusicSelect = (m) => {
         setSelectedMusic(m);
-        setOpen(false); // 모달 닫기
+        setOpen(false); // 모달 닫기x
         console.log("선택된 음악:", m);
     }
 
@@ -84,14 +84,13 @@ export function Home() {
     // 폼 제출
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log(images)
         const data = {
             users: user.id,
-            categories: categoryId,
+            categories: 1,
             content: content,
+            images: images || null,
             music: selectedMusic || null,
-            images: [
-                { url: images[0] },
-            ],
         };
         console.log("전송할 데이터:", data);
         const result = await postCommunity(data);
@@ -128,7 +127,7 @@ export function Home() {
                 <form onSubmit={handleSubmit}>
                     <div className="flex items-start gap-3">
                         {/* 프로필 둥근 이미지 (임시, 사용자 첫글자 원) */}
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#6CABDD] flex items-center justify-center text-white font-bold text-lg">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
                             {user?.img
                                 ? <img src={user.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
                                 : user?.name?.charAt(0)
@@ -161,7 +160,7 @@ export function Home() {
                         </div>
                         <button
                             type="submit"
-                            className="ml-2 px-5 py-2 bg-[#418FDE] text-white font-bold rounded-full shadow hover:bg-[#367cb3] transition"
+                            className="ml-2 px-5 py-2 bg-[#418FDE] text-white font-bold rounded-full shadow hover:bg-[#367cb3] transition cursor-pointer"
                         >
                             공유하기
                         </button>
@@ -253,7 +252,7 @@ export function Home() {
             </div >
 
             {/* 새 게시글 */}
-            < div > 새 게시글</div >
+            <button type='button' className='cursor-pointer'>새 게시글 새고</button>
             {/* 피드 목록 */}
 
             < div className="flex flex-col gap-3" >
@@ -261,15 +260,15 @@ export function Home() {
                     communities.map((c, idx) => (
                         <div key={idx} className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                             <div className="flex items-center gap-3">
-                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#6CABDD] flex items-center justify-center text-white font-bold text-lg">
-                                    {c.user?.img
-                                        ? <img src={c.user.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
-                                        : c.user?.name?.charAt(0)
+                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
+                                    {c.users?.img
+                                        ? <img src={c.users.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
+                                        : c.users?.name?.charAt(0)
                                     }
                                 </div>
                                 <div>
-                                    <span className="font-bold">{c.user.name}</span>
-                                    <span className="ml-1 text-gray-500 text-sm">@{c.user.account}</span>
+                                    <span className="font-bold">{c.users?.name}</span>
+                                    <span className="ml-1 text-gray-500 text-sm">@{c.users?.account}</span>
                                     <span className="ml-2 text-gray-400 text-xs">{dayjs(c.created_at).fromNow()}</span>
                                 </div>
                             </div>
@@ -293,7 +292,7 @@ export function Home() {
                                     {c.images.map((img, idx) => (
                                         <img
                                             key={idx}
-                                            src={getImages(img.url)} // DB images 테이블 url 컬럼이 path임
+                                            src={getImages(img)} // DB images 테이블 url 컬럼이 path임
                                             alt={`게시글 이미지${idx + 1}`}
                                             className="w-full max-w-[160px] h-auto rounded-lg object-cover"
                                         />
