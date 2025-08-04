@@ -18,8 +18,7 @@ export function Home() {
 
     const [feed, setFeed] = useState([]);
 
-    // 나중에 주석 해제
-    const { images, setImages, getImages, initImage } = useImage();
+    // const { images, setImages, getImages, initImage } = useImage();
 
 
     // 글작성 api 호출

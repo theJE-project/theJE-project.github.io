@@ -43,7 +43,8 @@ export const useImage = () => {
                         { contentType: 'image/webp', upsert: true }
                     );
                 if (error) throw error;
-                newImagePaths.push(data.path);
+                
+                newImagePaths.push({ url: data.path });
             } catch (error) { throw error; }
         }
         setImageList((prev) => [...prev, ...newImagePaths]);
@@ -51,7 +52,7 @@ export const useImage = () => {
     };
 
     const getImages = (path) => {
-        return `https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${path}`;
+        return `https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${path.url}`;
     };
 
     return {
@@ -60,9 +61,6 @@ export const useImage = () => {
         /** supabase 스토리지에 webp로 업로드 */
         setImages: setWebp,
         /** 스토리지 경로로 가져오기 */
-        getImages,
-        initImage:(init=[])=>{
-            setImageList(init)
-        }
+        getImages
     };
 };
