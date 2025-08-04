@@ -21,7 +21,7 @@ export function Home() {
 
     //const [feed, setFeed] = useState([]);
 
-    const { images, setImages, getImages, initImage } = useImage();
+    const { images, setImages, getImages, deleteImage } = useImage();
 
     dayjs.extend(relativeTime);
     dayjs.locale('ko');
@@ -140,6 +140,26 @@ export function Home() {
                                 placeholder="좋아하는 음악을 공유해보세요!"
                                 className="w-full resize-none border-none focus:ring-0 text-base placeholder-gray-400 outline-none min-h-[44px] bg-transparent"
                             />
+                            {/* 새 이미지 미리보기 */}
+                            <div className="img-preview-list flex flex-wrap gap-2 mt-3">
+                                {images.length > 0 && images.map((img, idx) => (
+                                    <div className="relative w-[100px] h-[100px]" key={idx}>
+                                        <button
+                                            type="button"
+                                            className="absolute top-[3px] right-[3px] bg-black/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs cursor-pointer"
+                                            onClick={() => {deleteImage(img)}}
+                                        >
+                                            &times;
+                                        </button>
+                                        <img
+                                            src={getImages(img)}
+                                            alt={`업로드 이미지${idx + 1}`}
+                                            className="w-full h-full object-cover rounded-lg"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
                             <div className="flex items-center gap-3 mt-3">
                                 <label className="text-gray-400 hover:text-gray-600 transition cursor-pointer">
                                     <FiImage className="inline text-lg" />
@@ -272,7 +292,7 @@ export function Home() {
                                     <span className="ml-2 text-gray-400 text-xs">{dayjs(c.created_at).fromNow()}</span>
                                 </div>
                             </div>
-                            {/* 사진 */}
+
 
                             {/* 글 내용 */}
                             <div className="text-base text-gray-900 whitespace-pre-line">{c.content}</div>
@@ -287,6 +307,8 @@ export function Home() {
                                     </div>
                                 </div>
                             )}
+
+                            {/* 사진 */}
                             {c.images && c.images.length > 0 && (
                                 <div className="mt-3 flex gap-2">
                                     {c.images.map((img, idx) => (
