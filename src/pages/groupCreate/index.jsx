@@ -1,30 +1,76 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { isValidElement, useEffect, useState } from 'react'
+import { data, useParams } from 'react-router-dom'
 import { MdOutlineAddPhotoAlternate, MdOutlineFileUpload } from 'react-icons/md'
 import { RiMusicAiLine } from 'react-icons/ri'
 import { IoClose } from 'react-icons/io5'
+import { springBoot } from '../../axios/springboot'
+import { useImage } from '../../hooks'
 export { loader } from './loader'
 
-export function GroupOptions() {
-    const [imageFile, setImageFile] = useState(null); // 이미지
+export function GroupCreate() {
+    const { images, setImages, getImages, initImage } = useImage(); // 이미지
+    const [previewUrls, setPreviewUrls] = useState([]);
+
     const [title, setTitle] = useState(""); // 제목
     const [description, setDescription] = useState(""); // 설명
     const [visibility, setVisibility] = useState(true); // 공개 여부
     const [tagInput, setTagInput] = useState(""); // 태그(태그 입력창)
     const [tagList, setTagList] = useState([]); // 태그 배열
 
-    // 테스트
-    const navigate = useNavigate();
+
+    // api 연결
+    const fetchPlaylistData = async (data) => {
+        try {
+            const response = await springBoot.post('group/create', data);
+
+            // setPlaylistData(response.data);
+            console.log(response.data);
+
+        } catch (error) {
+            console.error('API 호출 오류:', error);
+        }
+    }
+
+    // useEffect (()=> {
+    //     fetchPlaylistData();
+    // }, []);
+
+    // 폼제출
     const handleSubmit = (e) => {
+
         e.preventDefault();
 
         if (!title) {
             alert("플레이리스트 제목을 입력해주세요");
             return;
         }
-        const data = { title, description, tagList, visibility };
 
-        navigate('/group', { state: data });
+        const data = {
+            users:"38879edf-ebd7-4800-b9a7-a97efadce2a1",
+            categories:2,
+            images: [
+                { url : images[0] },
+            ],
+            title: title,
+            content: description,
+            is_visible: visibility,
+            hash: tagList.join(','),
+        }
+
+        // formData.append('users', "38879edf-ebd7-4800-b9a7-a97efadce2a1");
+        // formData.append('categories', 1);
+        // formData.append('title', title);
+        // formData.append('content', description);
+        // formData.append('isVisible', visibility);
+        // formData.append('hash', tagList.join(','));
+
+        // // FormData의 데이터 출력
+        // formData.forEach((value, key) => {
+        //     console.log(key + ": " + value);
+        // });
+
+        console.log(data);
+        fetchPlaylistData(data);
     };
 
     // 태그 enter 처리
@@ -40,12 +86,24 @@ export function GroupOptions() {
             setTagInput(""); // 입력창 초기화
         }
     }
-    
+
     // 태그 삭제
     const deleteTags = (tagDelete) => {
-        setTagList(tagList.filter((tags)=> (tags) !== tagDelete)); // 선택한 태그 삭제
+        setTagList(tagList.filter((tags) => (tags) !== tagDelete)); // 선택한 태그 삭제
     }
 
+    // 이미지 처리 핸들러
+    const handleImage = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // 미리보기 preview
+        const localUrl = URL.createObjectURL(file);
+        setPreviewUrls([localUrl]);
+
+        const paths = await setImages(e); // 새로 업로드된 경로만
+        initImage(paths); // imageList 초기화 (덮어쓰기)
+    }
 
     return (
 
@@ -65,8 +123,22 @@ export function GroupOptions() {
                     <div className="flex flex-wrap gap-4">
                         <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md w-64 h-64">
                             <label className="flex flex-col items-center gap-2 cursor-pointer text-gray-500">
-                                <MdOutlineAddPhotoAlternate size={40} /> 이미지 없음
-                                <input type="file" id="file-upload" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="hidden" />
+                                {previewUrls.length === 0 ? (
+                                    <>
+                                        <MdOutlineAddPhotoAlternate size={40} />
+                                        이미지 없음
+                                    </>
+                                ) : (
+                                    previewUrls.map((url, index) => (
+                                        <img
+                                            key={index}
+                                            src={url}
+                                            alt={`preview-${index}`}
+                                            className="object-cover w-full h-full"
+                                        />
+                                    ))
+                                )}
+
                             </label>
                         </div>
                         <div className="flex flex-col gap-4">
@@ -74,7 +146,9 @@ export function GroupOptions() {
                                 htmlFor="file-upload"
                                 className="w-fit cursor-pointer py-2 px-4 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-100 hover:border-gray-500 transition duration-300"
                             >
-                                <input type="file" id="file-upload" accept="image/*" className="hidden" />
+                                <input type="file" id="file-upload" accept="image/*"
+                                    onChange={handleImage}
+                                    className="hidden" />
                                 <div className="flex justify-center items-center gap-2">
                                     <MdOutlineFileUpload />
                                     <span>이미지 업로드</span>
@@ -100,9 +174,10 @@ export function GroupOptions() {
                     <label className='block font-medium mb-1'>설명</label>
                     <textarea
                         onChange={(e) => setDescription(e.target.value)}
-                        className="w-full px-4 py-2 rounded-md resize-none h-32 border border-gray-300"
+                        maxLength={300}
+                        className="w-full px-4 py-2 rounded-md resize-none h-28 border border-gray-300"
                         placeholder="플레이리스트에 대한 설명을 입력하세요" />
-                    <div className="text-sm text-right text-gray-400">0/500</div>
+                    <div className="text-sm text-right text-gray-400">{description.length}/300</div>
                 </div>
 
                 {/* 태그  */}
@@ -138,20 +213,20 @@ export function GroupOptions() {
                     </div>
                     {/* 태그 입력 목록(배열) */}
                     {tagList.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-2">
-                                {tagList.map((tags, idx) => (
-                                    <span key={idx} className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm">
-                                        #{tags}
-                                        <button
+                        <div className="flex flex-wrap gap-2 mt-2">
+                            {tagList.map((tags, idx) => (
+                                <span key={idx} className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm">
+                                    #{tags}
+                                    <button
                                         onClick={() => deleteTags(tags)} // 클릭 시 해당 태그 삭제
                                         className="ml-2"
                                     >
                                         <IoClose />
                                     </button>
-                                    </span>
-                                ))}
-                            </div>
-                        )}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* 음악검색 컴포넌트 자리~ */}

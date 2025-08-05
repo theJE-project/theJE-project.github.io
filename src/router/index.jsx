@@ -3,7 +3,8 @@ import {
     Layout, layoutLoader,
     Home, homeLoader,
     Group, groupLoader,
-    GroupOptions, groupOptionsLoader,
+    GroupCreate, groupCreateLoader,
+    GroupDetail, groupDetailLoader,
     My, myloader,
     Login,
     SignUp,
@@ -17,7 +18,7 @@ export const router = createHashRouter([
         id: 'defult',
         loader: layoutLoader,
         element: <Layout />,
-        errorElement: <ErrorBoundary />,
+        // errorElement: <ErrorBoundary />,
         children: [
             {
                 path: '',
@@ -32,10 +33,16 @@ export const router = createHashRouter([
                 element: <Group />,
             },
             {
-                path: 'group/:options',
-                id: 'groupOptions',
-                loader: groupOptionsLoader,
-                element: <GroupOptions />,
+                path: 'group/create',
+                id: 'groupCreate',
+                loader: groupCreateLoader,
+                element: <GroupCreate />,
+            },
+            {
+                path: 'group/:id',
+                id:'groupDetail',
+                loader: groupDetailLoader,
+                element:<GroupDetail />
             },
             {
                 path: 'my',
