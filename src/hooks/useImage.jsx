@@ -6,18 +6,17 @@ import { v4 as uuidv4 } from 'uuid';
 const url = "https://nvugjssjjxtbbjnwimek.supabase.co";
 const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52dWdqc3Nqanh0YmJqbndpbWVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMzQwMzYsImV4cCI6MjA2ODkxMDAzNn0.YmxytSxfK2XHDmSMT2T9IsTU6O9i-Ekn86k2be9ePCk"
 export const supabase = createClient(url, key, {
-  auth: {
-    flowType: 'pkce',
-    autoRefreshToken: true, 
-    persistSession: true,
-    detectSessionInUrl: true,
-    storage: window.localStorage
-  }
+    auth: {
+        flowType: 'pkce',
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+        storage: window.localStorage
+    }
 })
 
 export const useImage = () => {
     const [imageList, setImageList] = useState([]);
-
     const setWebp = async (e) => {
         const files = Array.from(e.target.files);
         if (!files.length) return;
@@ -43,15 +42,30 @@ export const useImage = () => {
                         { contentType: 'image/webp', upsert: true }
                     );
                 if (error) throw error;
-                newImagePaths.push(data.path);
+
+                newImagePaths.push({ url: data.path });
             } catch (error) { throw error; }
         }
         setImageList((prev) => [...prev, ...newImagePaths]);
         return newImagePaths;
     };
 
+    const deleteImage = async (image) => {
+        if (!image || !image.url) return;
+
+        const { error } = await supabase.storage
+            .from('media')
+            .remove([image.url]); 
+
+        if (error) {
+            console.error('Failed to delete image:', image.url, error);
+            return;
+        }
+        setImageList(prevList => prevList.filter(img => img.url !== image.url));
+    };
+
     const getImages = (path) => {
-        return `https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${path}`;
+        return `https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${path.url}`;
     };
 
     return {
@@ -61,8 +75,6 @@ export const useImage = () => {
         setImages: setWebp,
         /** 스토리지 경로로 가져오기 */
         getImages,
-        initImage:(init=[])=>{
-            setImageList(init)
-        }
+        deleteImage,
     };
 };

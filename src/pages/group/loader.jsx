@@ -1,6 +1,14 @@
+import { springBoot } from "@axios";
 
 export const loader = async ({ params, request }) => {
-    // 파람과 리퀘스트를 쓸수 있다.
-    // 이곳이 리턴 되지 않으면 컴포넌틀는 랜더링 되지 않는다.
-    return null
+    try {
+        // Spring Boot 서버에 GET 요청 보내기
+        const response = await springBoot.get('group');
+        // 받은 데이터를 상태에 저장
+        console.log(response.data);
+        return response.data;
+    } catch (error) {
+        console.error('API 호출 오류:', error);
+        return []
+    }
 }

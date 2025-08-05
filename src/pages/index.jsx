@@ -9,9 +9,14 @@ export {
 } from './group'
 
 export {
-    GroupOptions,
-    loader as groupOptionsLoader,
-} from './groupOptions'
+    GroupCreate,
+    loader as groupCreateLoader,
+} from './groupCreate'
+
+export {
+    GroupDetail,
+    loader as groupDetailLoader,
+} from './groupDetail'
 
 export {
     Home,
