@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { TbArrowsUpDown } from 'react-icons/tb';
 import axios from 'axios'; // axios 추가
 import { springBoot } from '../../axios/springboot';
-import { useLoaderData, useRouteLoaderData } from 'react-router-dom';
+import { Link, useLoaderData, useRouteLoaderData } from 'react-router-dom';
+import { useImage } from '../../hooks';
 
 
 export { loader } from './loader'
@@ -14,7 +15,10 @@ export function Group() {
     const [selectMood, setSelectMood] = useState([]); // 무드 선택
     // const [playlistData, setPlaylistData] = useState([]); // API 응답 데이터 저장
     const playlistData = useLoaderData(); // playList Loader
-    const { user } = useRouteLoaderData('defult');
+    const { user } = useRouteLoaderData('default'); // 로그인 사용자
+    const { getImages } = useImage();
+
+
     console.log(user)
 
     // 무드 선택 함수
@@ -70,7 +74,7 @@ export function Group() {
     // console.log(playlistData);
 
     return (
-        <div className="max-w-7xl mx-auto my-5">
+        <div className="max-w-5xl mx-auto my-5">
 
             {/* 장르 */}
             <div className="mb-4">
@@ -101,8 +105,10 @@ export function Group() {
             <div className="my-10">
                 {/* 상단 */}
                 <div className='flex justify-between'>
-                    <h2 className="text-3xl font-semibold py-2">추천 플레이리스트</h2>
+                    <h2 className="text-2xl font-semibold py-2">추천 플레이리스트</h2>
                     <div className='relative'>
+                        {/* <a href='/group/create'>생성 테스트</a> */}
+                        <Link to={'/group/create'}>생성테스트</Link>
                         <button onClick={() => setIsDropDownOpen(!isDropDownOpen)}
                             className="flex items-center gap-1 text-blue-500 px-3 py-1 rounded-md cursor-pointer">{selectMenu}<TbArrowsUpDown /></button>
 
@@ -123,17 +129,24 @@ export function Group() {
                         )}
                     </div>
                 </div>
-
+                {console.log(playlistData)}
                 {/* 플레이리스트 목록 */}
-                <div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center">
                     {playlistData.map((playlist, index) => (
-                    <div key={index}>
-                        <p>제목: {playlist?.title}</p>
-                        <p>설명: {playlist?.content}</p>
-                        <p>태그: {playlist?.hash}</p>
-                        <p>공개 여부: {playlist?.isVisible ? "공개" : "비공개"}</p>
-                    </div>
-
+                        <div key={index} className="p-2 rounded-lg w-full max-w-[16rem] max-h-100 overflow-hidden">
+                            <img
+                                src={`${getImages(playlist.images[0])}`}
+                                alt="playlist-thumbnail"
+                                className="object-cover h-60 w-60 rounded-md"
+                            />
+                            <h3 className="py-2 text-lg font-semibold">{playlist.title}</h3>
+                            <p className="line-clamp-2 max-w-full overflow-hidden">
+                                {playlist.hash?.split(',').map((tag, index) => (
+                                    <span key={index} className="inline-block my-1 px-1 mr-1 break-words text-blue-500 bg-gray-200 rounded-md "> #{tag}</span>
+                                ))}
+                            </p>
+                            {/* 필요한 데이터 추가적으로 표시 */}
+                        </div>
                     ))}
                 </div>
             </div>
