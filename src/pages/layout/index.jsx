@@ -6,14 +6,10 @@ import { springBoot } from '@axios';
 export function Layout() {
     const loader = useLoaderData();
     const navigate = useNavigate();
-    const searchRef = useRef();
+    const searchRef = useRef([]);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-    // const [notifications] = useState([
-    //     { id: 1, message: '새 댓글이 달렸습니다.', time: '1분 전', read: false },
-    //     { id: 2, message: '좋아요를 받았습니다.', time: '10분 전', read: true },
-    //     { id: 3, message: '팔로우 요청이 왔습니다.', time: '1시간 전', read: false },
-    // ]);
+    const [showHombeger, setShowHombeger] = useState(false);
     const [setShowAllNotifications] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
     const findUser = Object.keys(loader.user).length === 0;
@@ -23,13 +19,19 @@ export function Layout() {
     const handleSerachBlur = (e) => {
         const value = e.target.value;
         if (value) { searchParams.set('q', value); } else { searchParams.delete('q'); }
-        e.target.value = ''
+        searchRef.current.forEach(ref => {
+            if (ref) ref.value = '';
+        });
         setSearchParams(searchParams);
+        setShowHombeger(false);
     };
 
     const hendleNav = useCallback((e, o) => {
         e.preventDefault();
-        searchRef.current.value = ''
+        searchRef.current.forEach(ref => {
+            if (ref) ref.value = '';
+        });
+        setShowHombeger(false);
         navigate(o);
     }, [])
 
@@ -38,7 +40,7 @@ export function Layout() {
         const response = await springBoot.put(`/notifications`, {
             id: o.id,
             isRead: false, // 임시 false 
-        }).then((obj)=>{
+        }).then((obj) => {
             setShowNotifications(false);
             console.log(o)
         });
@@ -50,14 +52,61 @@ export function Layout() {
             <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
                 <div className="max-w-6xl mx-auto px-4 py-3">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-8">
+                        <div className="flex items-center">
+                            <button
+                                onClick={() => { setShowHombeger(!showHombeger) }}
+                                className="flex md:hidden mr-3 text-gray-600 cursor-pointer relative"
+                            >
+                                <i className="ri-menu-line text-xl" />
+                            </button>
+                            {showHombeger && (
+                                <div className="block md:hidden absolute left-2 top-15 w-[calc(100%-1rem)] bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                                    <div className="p-4 pb-0 border-b border-gray-200 flex flex-col">
+                                        <div className=" relative w-full flex justify-end">
+                                            <input
+                                                ref={(el) => (searchRef.current[0] = el)}
+                                                type="text"
+                                                placeholder="검색"
+                                                className={`px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all duration-300 ease w-full`}
+                                                onBlur={(e) => {
+                                                    setSearch(false)
+                                                    handleSerachBlur(e)
+                                                }}
+                                                onFocus={() => {
+                                                    setSearch(true)
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.target.blur();
+                                                    }
+                                                }}
+                                            />
+                                            <i className="ri-search-line absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 flex items-center justify-center"></i>
+                                        </div>
+                                        <nav className={`ml-5 p-3 space-x-6 flex justify-center`}>
+                                            {loader.categories.map((o, i) =>
+                                                <Link
+                                                    key={i}
+                                                    className="text-gray-700 hover:text-blue-600 cursor-pointer whitespace-nowrap overflow-hidden overflow-ellipsis"
+                                                    onClick={(e) => hendleNav(e, o.url)}
+                                                >
+                                                    {o.name}
+                                                </Link>
+                                            )}
+                                        </nav>
+
+                                    </div>
+
+
+                                </div>
+                            )}
                             <Link
                                 className="text-2xl font-pacifico text-blue-600"
                                 onClick={(e) => hendleNav(e, '/')}
                             >
                                 MusicShare
                             </Link>
-                            <nav className={`flex space-x-6 transition-all duration-300 ease overflow-hidden ${search ? 'max-w-0' : 'max-w-1000'}`}>
+                            <nav className={`ml-5 hidden md:flex space-x-6 overflow-hidden ${search ? 'max-w-0' : 'max-w-1000'}`}>
                                 {loader.categories.map((o, i) =>
                                     <Link
                                         key={i}
@@ -69,13 +118,13 @@ export function Layout() {
                                 )}
                             </nav>
                         </div>
-                        <div className="flex items-center space-x-4 w-full justify-end">
-                            <div className="ml-4 relative w-full flex justify-end">
+                        <div className="flex items-center space-x-4 w-full justify-end ">
+                            <div className="hidden md:flex ml-4 relative w-full flex justify-end">
                                 <input
-                                    ref={searchRef}
+                                    ref={(el) => (searchRef.current[1] = el)}
                                     type="text"
                                     placeholder="검색"
-                                    className={`w-${search ? 'full' : '24'} px-4 py-2 pr-10 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all duration-300 ease`}
+                                    className={` px-4 py-2 pr-10 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all duration-300 ease ${search ? 'w-full' : 'w-24'}`}
                                     onBlur={(e) => {
                                         setSearch(false)
                                         handleSerachBlur(e)
@@ -95,8 +144,8 @@ export function Layout() {
                             {!findUser ? (
                                 <div className="relative">
                                     <button
-                                        onClick={() =>{
-                                            if(notifications.length != 0){
+                                        onClick={() => {
+                                            if (notifications.length != 0) {
                                                 setShowNotifications(!showNotifications)
                                             }
                                         }}
