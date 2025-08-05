@@ -5,8 +5,13 @@ const getCommunities = async () => {
     // 나중에 교체할거
     //* 
     try {
-        const response = await springBoot.get('/communities');
+        const response = await springBoot.get('/communities',{
+            params: {
+                category: 1,
+            }
+        });
         const result = response.data;
+        console.log("피드 불러오기 성공:", result);
         return result;
     } catch (error) {
         console.error("피드 불러오기 실패:", error);
