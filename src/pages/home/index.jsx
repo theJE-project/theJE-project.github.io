@@ -40,6 +40,18 @@ export function Home() {
         }
     }
 
+    // 글삭제 api 호출
+    const deleteCommunity = async (id) =>{
+        try{
+            const response = await springBoot.put(`/communities/${id}`);
+            const result = response.data;
+            return result;
+        }catch(error){
+            console.log("글 삭제 api 호출 실패", error);
+            return null;
+        }
+    }
+
 
     // 이미지 업로드
     //*
@@ -79,8 +91,6 @@ export function Home() {
     }
     /**/
 
-    const selectedCategory = categories.find(cat => cat.id === 1);
-    const categoryId = selectedCategory.id;
 
     // 폼 제출
     const handleSubmit = async (e) => {
@@ -118,7 +128,6 @@ export function Home() {
     // console.log(loader);
     // console.log(musics);
     // console.log(user.name);
-    console.log(categoryId);
     return (
         <div className="w-full max-w-[600px] mx-auto py-8">
 
@@ -297,6 +306,7 @@ export function Home() {
 
                             {/* 글 내용 */}
                             <div className="text-base text-gray-900 whitespace-pre-line">{c.content}</div>
+                            <button type='button' className='cursor-pointer' onClick={()=>deleteCommunity(c.id)}>삭제</button>
                             {/* 음악 카드 */}
                             {c.music && (
                                 <div className="flex items-center gap-3 p-3 rounded-lg bg-[#f5faff] border border-[#d4e7fa]">
