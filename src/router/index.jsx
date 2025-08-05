@@ -17,7 +17,7 @@ export const router = createHashRouter([
         id: 'defult',
         loader: layoutLoader,
         element: <Layout />,
-        errorElement: <ErrorBoundary />,
+        // errorElement: <ErrorBoundary />,
         children: [
             {
                 path: '',

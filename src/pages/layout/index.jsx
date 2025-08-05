@@ -9,16 +9,17 @@ export function Layout() {
     const searchRef = useRef();
     const [showNotifications, setShowNotifications] = useState(false);
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-    // const [notifications] = useState([
-    //     { id: 1, message: '새 댓글이 달렸습니다.', time: '1분 전', read: false },
-    //     { id: 2, message: '좋아요를 받았습니다.', time: '10분 전', read: true },
-    //     { id: 3, message: '팔로우 요청이 왔습니다.', time: '1시간 전', read: false },
-    // ]);
     const [setShowAllNotifications] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
     const findUser = Object.keys(loader.user).length === 0;
     const [search, setSearch] = useState(false);
     const notifications = loader.notifications.filter(notification => !notification.isRead);
+
+    //  추가: 프로필 이미지 서버 URL을 자동으로 붙여주는 함수
+    const getImgUrl = (img) => {
+        if (!img) return '';
+        return img.startsWith('http') ? img : `http://localhost:8888${img}`;
+    };
 
     const handleSerachBlur = (e) => {
         const value = e.target.value;
@@ -38,7 +39,7 @@ export function Layout() {
         const response = await springBoot.put(`/notifications`, {
             id: o.id,
             isRead: false, // 임시 false 
-        }).then((obj)=>{
+        }).then((obj) => {
             setShowNotifications(false);
             console.log(o)
         });
@@ -95,8 +96,8 @@ export function Layout() {
                             {!findUser ? (
                                 <div className="relative">
                                     <button
-                                        onClick={() =>{
-                                            if(notifications.length != 0){
+                                        onClick={() => {
+                                            if (notifications.length != 0) {
                                                 setShowNotifications(!showNotifications)
                                             }
                                         }}
@@ -142,7 +143,6 @@ export function Layout() {
                                                     모든 알림 보기
                                                 </button>
                                             </div>
-
                                         </div>
                                     )}
                                 </div>
@@ -159,15 +159,42 @@ export function Layout() {
                                         onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                                         className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold cursor-pointer"
                                     >
-                                        {loader?.user?.img !== null ? <img /> : loader?.user?.name?.charAt(0)}
+                                        {/*  변경: 서버 주소 붙여주는 함수 사용! */}
+                                        {loader?.user?.img && loader.user.img.trim() !== ""
+                                            ? (
+                                                <img
+                                                    src={getImgUrl(loader.user.img)} 
+                                                    alt={loader.user.name || "프로필"}
+                                                    className="w-8 h-8 rounded-full object-cover"
+                                                />
+                                            )
+                                            : (
+                                                (loader?.user?.name && loader.user.name.length > 0)
+                                                    ? loader.user.name.charAt(0)
+                                                    : "?"
+                                            )
+                                        }
                                     </button>
-
                                     {showProfileDropdown && (
                                         <div className="absolute right-0 top-12 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                                             {/* 상단 사용자 정보 */}
                                             <div className="p-4 border-b border-gray-100 flex items-center space-x-3">
                                                 <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                                                    {loader?.user?.img !== null ? <img /> : loader?.user?.name?.charAt(0)}
+                                                    {/*  변경: 서버 주소 붙여주는 함수 사용! */}
+                                                    {loader?.user?.img && loader.user.img.trim() !== ""
+                                                        ? (
+                                                            <img
+                                                                src={getImgUrl(loader.user.img)} 
+                                                                alt={loader.user.name || "프로필"}
+                                                                className="w-10 h-10 rounded-full object-cover"
+                                                            />
+                                                        )
+                                                        : (
+                                                            (loader?.user?.name && loader.user.name.length > 0)
+                                                                ? loader.user.name.charAt(0)
+                                                                : "?"
+                                                        )
+                                                    }
                                                 </div>
                                                 <div className="flex-1">
                                                     <p className="font-semibold text-gray-900">{loader.user.name}</p>
@@ -183,8 +210,6 @@ export function Layout() {
                                                     프로필
                                                 </Link>
                                             </div>
-
-                                            {/* 로그아웃 */}
                                             <div className="border-t border-gray-100 py-2">
                                                 <button
                                                     className="w-full flex items-center px-4 py-2 hover:bg-gray-50 text-gray-700"
