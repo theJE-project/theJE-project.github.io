@@ -41,6 +41,25 @@ const getCommunities1 = async () => {
     /**/
 }
 
+// 팔로잉 유저 글
+const getFollowingCommunities = async () => {
+    try{
+        const response = await springBoot.get('/communities/followee', {
+            params: {
+                category: 1,
+                user: user,
+            }
+        });
+        const result = response.data;
+        console.log("팔로잉 유저 글 불러오기 성공:", result);
+        return result;
+    }catch(error){
+        console.error("팔로잉 유저 글 불러오기 실패:", error);
+        return [];
+    }
+}
+
+
 // const getFollowing = async (target) => {
 //     try {
 //         const response = await springBoot.get("/followers/is-following", {
@@ -79,8 +98,10 @@ const getCommunities1 = async () => {
 export const loader = async ({ params, request }) => {
     const communities = await getCommunities();
     const communities1 = await getCommunities1();
+    const followingCommunities = await getFollowingCommunities();
     return {
         communities: communities,
         communities1: communities1,
+        followingCommunities: followingCommunities,
     }
 }

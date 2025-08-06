@@ -10,6 +10,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
 
 export function Home() {
+    const { communities1, followingCommunities } = useLoaderData();
     const { user, categories } = useRouteLoaderData('default');
     const [content, setContent] = useState('');
     const { musics, getMusics } = useMusic();
@@ -19,13 +20,22 @@ export function Home() {
     // 재생바
     const [previewUrl, setPreviewUrl] = useState(null);
 
-    // 피드 새로고침
-    const [feed, setFeed] = useState([]);
-
     const { images, setImages, getImages, deleteImage } = useImage();
+
+    const [tab, setTab] = useState('all'); // all or following
+    const [feed, setFeed] = useState(tab === 'all' ? communities1 : followingCommunities);
 
     dayjs.extend(relativeTime);
     dayjs.locale('ko');
+
+    useEffect(() => {
+        setFeed(tab === 'all' ? communities1 : followingCommunities);
+    }, [tab, communities1, followingCommunities]);
+
+    const handleRefresh = async () => {
+        const updated = tab === 'all' ? await communities1() : await followingCommunities();
+        setFeed(updated);
+    }
 
 
     // 글작성 api 호출
@@ -86,15 +96,6 @@ export function Home() {
     }
 
 
-    // const followOrUnfollow = async (target) => {
-    //     try{
-    //         const result = await follow(target);
-    //         console.log(result);
-    //     }catch(error){
-    //         console.log("팔로우/언팔로우 실패", error);
-    //     }
-    // }
-
     const followOrUnfollow = async (target, isFollowing) => {
         try {
             let result;
@@ -148,6 +149,8 @@ export function Home() {
     /**/
 
 
+
+
     // 폼 제출
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -180,17 +183,41 @@ export function Home() {
 
 
 
-    const { communities1 } = useLoaderData();
+
     // console.log(loader);
     // console.log(musics);
     // console.log(user.name);
     return (
-        <div className="w-full max-w-[600px] mx-auto py-8">
+        <div className="w-full max-w-[600px] mx-auto">
+
+            <div className="flex h-12">
+                <button
+                    className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
+            ${tab === 'all'
+                            ? 'text-black border-b-2 border-blue-500 bg-gray-50'
+                            : 'text-gray-400'}
+            transition-colors duration-150`}
+                    onClick={() => setTab('all')}
+                >
+                    전체
+                </button>
+                <button
+                    className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
+            ${tab === 'following'
+                            ? 'text-black border-b-2 border-blue-500 bg-gray-50'
+                            : 'text-gray-400'}
+            transition-colors duration-150`}
+                    onClick={() => setTab('following')}
+                >
+                    팔로잉
+                </button>
+            </div>
+
 
             {/* 글쓰기 */}
             {user?.id && (
                 <>
-                    <h3 className="font-bold text-lg mb-3">피드</h3>
+                    {/* <h3 className="font-bold text-lg mb-3">피드</h3> */}
                     <div className="bg-white p-5 rounded-lg mb-6 border-1 border-gray-200">
 
                         <form onSubmit={handleSubmit}>
@@ -366,15 +393,16 @@ export function Home() {
             }
 
             {/* 새 게시글 */}
-            <button type='button' className='cursor-pointer'>새 게시글 새고</button>
+            <button type='button' className='cursor-pointer' onClick={handleRefresh}>새 게시글 새고</button>
             {previewUrl && (
                 <audio controls src={previewUrl} autoPlay className="hidden" />
             )}
-            {/* 피드 목록 */}
 
+
+            {/* 피드 목록 */}
             < div className="flex flex-col gap-3" >
                 {
-                    communities1.map((c) => (
+                    (feed ?? []).map((c) => (
                         <div key={c.id} className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                             <div className="flex items-center gap-3">
                                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
@@ -389,7 +417,7 @@ export function Home() {
                                     <span className="ml-2 text-gray-400 text-xs">{dayjs(c.created_at).fromNow()}</span>
                                 </div>
                                 {/* <button type='button' className='cursor-pointer' onClick={() => deleteCommunity(c.id)}>삭제</button> */}
-                                {user.id && (
+                                {tab === 'all' && user.id && (
                                     <div className="ml-auto">
                                         {c.users?.id === user?.id ? (
                                             <button
@@ -400,7 +428,7 @@ export function Home() {
                                             </button>
                                         ) : (
                                             <button
-                                                className="text-gray-500 font-bold hover:text-blue-500"
+                                                className="text-gray-500 font-bold hover:text-blue-500 cursor-pointer"
                                                 onClick={() => followOrUnfollow(c.users?.id, c.users?._following)}
                                             >
                                                 {c.users?._following ? '팔로우 취소' : '팔로우'}
