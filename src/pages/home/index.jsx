@@ -82,9 +82,23 @@ export function Home() {
     }
 
 
-    const followOrUnfollow = async (target) => {
+    // const followOrUnfollow = async (target) => {
+    //     try{
+    //         const result = await follow(target);
+    //         console.log(result);
+    //     }catch(error){
+    //         console.log("팔로우/언팔로우 실패", error);
+    //     }
+    // }
+
+    const followOrUnfollow = async (target, isFollowing) => {
         try{
-            const result = await follow(target);
+            let result;
+            if(isFollowing){
+                result = await unfollow(target);
+            }else{
+                result = await follow(target);
+            }
             console.log(result);
         }catch(error){
             console.log("팔로우/언팔로우 실패", error);
@@ -162,7 +176,7 @@ export function Home() {
 
 
 
-    const { communities } = useLoaderData();
+    const { communities1 } = useLoaderData();
     // console.log(loader);
     // console.log(musics);
     // console.log(user.name);
@@ -333,7 +347,7 @@ export function Home() {
 
             < div className="flex flex-col gap-3" >
                 {
-                    communities.map((c, idx) => (
+                    communities1.map((c, idx) => (
                         <div key={idx} className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                             <div className="flex items-center gap-3">
                                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
@@ -360,9 +374,9 @@ export function Home() {
                                         ) : (
                                             <button
                                                 className="text-gray-500 font-bold hover:text-blue-500"
-                                            onClick={() => followOrUnfollow(c.users?.id)}
+                                            onClick={() => followOrUnfollow(c.users?.id, c.users?._following)}
                                             >
-                                                {c.users?.isFollowed ? '팔로우 취소' : '팔로우'}
+                                                {c.users?._following ? '팔로우 취소' : '팔로우'}
                                             </button>
                                         )}
                                     </div>
