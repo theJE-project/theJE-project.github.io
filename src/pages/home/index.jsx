@@ -63,7 +63,7 @@ export function Home() {
             })
             const result = response.data;
             return result;
-        }catch(error){
+        } catch (error) {
             console.log("팔로우 api 호출 실패", error);
             return null;
         }
@@ -71,19 +71,19 @@ export function Home() {
 
     // 팔로우 취소 api 호출
     const unfollow = async (target) => {
-    try{
-        const response = await springBoot.delete(`/followers/delete`, {
-            params: {
-                follower: user.id,
-                followee: target,
-            }
-        });
-        return response.data;
-    }catch(error){
-        console.log("팔로우 취소 api 호출 실패", error);
-        return null;
+        try {
+            const response = await springBoot.delete(`/followers/delete`, {
+                params: {
+                    follower: user.id,
+                    followee: target,
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.log("팔로우 취소 api 호출 실패", error);
+            return null;
+        }
     }
-}
 
 
     // const followOrUnfollow = async (target) => {
@@ -96,15 +96,15 @@ export function Home() {
     // }
 
     const followOrUnfollow = async (target, isFollowing) => {
-        try{
+        try {
             let result;
-            if(isFollowing){
+            if (isFollowing) {
                 result = await unfollow(target);
-            }else{
+            } else {
                 result = await follow(target);
             }
             console.log(result);
-        }catch(error){
+        } catch (error) {
             console.log("팔로우/언팔로우 실패", error);
         }
     }
@@ -118,7 +118,7 @@ export function Home() {
         setImages(e);
     }
     /**/
-//
+    //
     // 음악 검색
     const handleMusicSearch = (e) => {
         e.preventDefault();
@@ -209,10 +209,30 @@ export function Home() {
                                         placeholder="좋아하는 음악을 공유해보세요!"
                                         className="w-full resize-none border-none focus:ring-0 text-base placeholder-gray-400 outline-none min-h-[44px] bg-transparent"
                                     />
+                                    {/* 노래 미리보기 */}
+                                    {selectedMusic && (
+                                        <div
+                                            className="flex items-center gap-3 p-3 rounded-lg bg-[#f5faff] hover:bg-[#e1effc] transition-colors border border-[#d4e7fa]"
+                                        >
+                                            <img src={selectedMusic.albumCover} alt={selectedMusic.titleShort} className="w-16 h-16 rounded-lg object-cover" />
+                                            <div>
+                                                <div className="font-semibold">{selectedMusic.titleShort}</div>
+                                                <div className="text-xs text-gray-600">{selectedMusic.artistName}</div>
+                                            </div>
+                                            {/* <button type="button" className='cursor-pointer ml-auto' onClick={(e) => {
+                                                // 재생 누르면 모달 꺼짐 방지
+                                                e.stopPropagation();
+                                                setPreviewUrl(selectedMusic.preview);
+                                            }}
+                                            ><FiPlay className="inline text-xl" color="#7faaf9" /></button> */}
+                                        </div>
+
+                                    )
+                                    }
                                     {/* 새 이미지 미리보기 */}
                                     <div className="img-preview-list flex flex-wrap gap-2 mt-3">
-                                        {images.length > 0 && images.map((img, idx) => (
-                                            <div className="relative w-[100px] h-[100px]" key={idx}>
+                                        {images.length > 0 && images.map((img) => (
+                                            <div className="relative w-[100px] h-[100px]" key={img.id}>
                                                 <button
                                                     type="button"
                                                     className="absolute top-[3px] right-[3px] bg-black/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs cursor-pointer"
@@ -222,7 +242,7 @@ export function Home() {
                                                 </button>
                                                 <img
                                                     src={getImages(img)}
-                                                    alt={`업로드 이미지${idx + 1}`}
+                                                    alt={`업로드 이미지${img.id + 1}`}
                                                     className="w-full h-full object-cover rounded-lg"
                                                 />
                                             </div>
@@ -347,12 +367,15 @@ export function Home() {
 
             {/* 새 게시글 */}
             <button type='button' className='cursor-pointer'>새 게시글 새고</button>
+            {previewUrl && (
+                <audio controls src={previewUrl} autoPlay className="hidden" />
+            )}
             {/* 피드 목록 */}
 
             < div className="flex flex-col gap-3" >
                 {
-                    communities1.map((c, idx) => (
-                        <div key={idx} className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
+                    communities1.map((c) => (
+                        <div key={c.id} className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                             <div className="flex items-center gap-3">
                                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
                                     {c.users?.img
@@ -378,7 +401,7 @@ export function Home() {
                                         ) : (
                                             <button
                                                 className="text-gray-500 font-bold hover:text-blue-500"
-                                            onClick={() => followOrUnfollow(c.users?.id, c.users?._following)}
+                                                onClick={() => followOrUnfollow(c.users?.id, c.users?._following)}
                                             >
                                                 {c.users?._following ? '팔로우 취소' : '팔로우'}
                                             </button>
@@ -393,25 +416,36 @@ export function Home() {
                             <div className="text-base text-gray-900 whitespace-pre-line">{c.content}</div>
 
                             {/* 음악 카드 */}
-                            {c.musics && (
-                                <div className="flex items-center gap-3 p-3 rounded-lg bg-[#f5faff] border border-[#d4e7fa]">
-                                    <img src={c.musics.cover} alt={c.musics.title} className="w-16 h-16 rounded-lg object-cover" />
-                                    <div>
-                                        <div className="font-semibold">{c.musics.title}</div>
-                                        <div className="text-xs text-gray-600">{c.musics.artist}</div>
-                                        {/* <a href={c.music.url} target="_blank" rel="noreferrer" className="text-[#418FDE] underline text-xs">{c.music.url}</a> */}
+                            {c.musics && c.musics.length > 0 && (
+                                c.musics.map((m, i) => (
+                                    <div
+                                        key={i}
+                                        className="flex items-center gap-3 p-3 rounded-lg bg-[#f5faff] hover:bg-[#e1effc] transition-colors border border-[#d4e7fa]"
+                                    >
+                                        <img src={m.albumCover} alt={m.titleShort} className="w-16 h-16 rounded-lg object-cover" />
+                                        <div>
+                                            <div className="font-semibold">{m.titleShort}</div>
+                                            <div className="text-xs text-gray-600">{m.artistName}</div>
+                                        </div>
+                                        <button type="button" className='cursor-pointer ml-auto' onClick={(e) => {
+                                            // 재생 누르면 모달 꺼짐 방지
+                                            e.stopPropagation();
+                                            setPreviewUrl(m.preview);
+                                        }}
+                                        ><FiPlay className="inline text-xl" color="#7faaf9" /></button>
                                     </div>
-                                </div>
+
+                                ))
                             )}
 
                             {/* 사진 */}
                             {c.images && c.images.length > 0 && (
                                 <div className="mt-3 flex gap-2">
-                                    {c.images.map((img, idx) => (
+                                    {c.images.map((img) => (
                                         <img
-                                            key={idx}
+                                            key={img.id}
                                             src={getImages(img)} // DB images 테이블 url 컬럼이 path임
-                                            alt={`게시글 이미지${idx + 1}`}
+                                            alt={`게시글 이미지${img.id + 1}`}
                                             className="w-full max-w-[160px] h-auto rounded-lg object-cover"
                                         />
                                     ))}
