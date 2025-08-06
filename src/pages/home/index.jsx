@@ -70,16 +70,20 @@ export function Home() {
     }
 
     // 팔로우 취소 api 호출
-    const unfollow = async (target) =>{
-        try{
-            const response = await springBoot.delete(`/followers/${target}`);
-            const result = response.data;
-            return result;
-        }catch(error){
-            console.log("팔로우 취소 api 호출 실패", error);
-            return null;
-        }
+    const unfollow = async (target) => {
+    try{
+        const response = await springBoot.delete(`/followers/delete`, {
+            params: {
+                follower: user.id,
+                followee: target,
+            }
+        });
+        return response.data;
+    }catch(error){
+        console.log("팔로우 취소 api 호출 실패", error);
+        return null;
     }
+}
 
 
     // const followOrUnfollow = async (target) => {
