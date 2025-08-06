@@ -15,7 +15,7 @@ import {
 export const router = createHashRouter([
     {
         path: '/',
-        id: 'defult',
+        id: 'default',
         loader: layoutLoader,
         element: <Layout />,
         // errorElement: <ErrorBoundary />,
