@@ -10,7 +10,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
 
 export function Home() {
-    const { user, categories } = useRouteLoaderData('defult');
+    const { user, categories } = useRouteLoaderData('default');
     const [content, setContent] = useState('');
     const { musics, getMusics } = useMusic();
     const [selectedMusic, setSelectedMusic] = useState(null);
@@ -157,7 +157,7 @@ export function Home() {
             categories: 1,
             content: content,
             images: images || null,
-            music: selectedMusic || null,
+            musics: selectedMusic ? [selectedMusic] : null,
         };
         console.log("전송할 데이터:", data);
         const result = await postCommunity(data);
@@ -393,12 +393,12 @@ export function Home() {
                             <div className="text-base text-gray-900 whitespace-pre-line">{c.content}</div>
 
                             {/* 음악 카드 */}
-                            {c.music && (
+                            {c.musics && (
                                 <div className="flex items-center gap-3 p-3 rounded-lg bg-[#f5faff] border border-[#d4e7fa]">
-                                    <img src={c.music.cover} alt={c.music.title} className="w-16 h-16 rounded-lg object-cover" />
+                                    <img src={c.musics.cover} alt={c.musics.title} className="w-16 h-16 rounded-lg object-cover" />
                                     <div>
-                                        <div className="font-semibold">{c.music.title}</div>
-                                        <div className="text-xs text-gray-600">{c.music.artist}</div>
+                                        <div className="font-semibold">{c.musics.title}</div>
+                                        <div className="text-xs text-gray-600">{c.musics.artist}</div>
                                         {/* <a href={c.music.url} target="_blank" rel="noreferrer" className="text-[#418FDE] underline text-xs">{c.music.url}</a> */}
                                     </div>
                                 </div>
