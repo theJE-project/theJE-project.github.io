@@ -65,7 +65,7 @@ export const useImage = () => {
     };
 
     const getImages = (path) => {
-        return `https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${path.url}`;
+        return `https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${path?.url}`;
     };
 
     return {
