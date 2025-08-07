@@ -431,7 +431,10 @@ export function Home() {
                                         ) : (
                                             <button
                                                 className="text-gray-500 font-bold hover:text-blue-500 cursor-pointer"
-                                                onClick={() => followOrUnfollow(c.users?.id, c.users?._following)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    followOrUnfollow(c.users?.id, c.users?._following); 
+                                                }}
                                             >
                                                 {c.users?._following ? '팔로우 취소' : '팔로우'}
                                             </button>
