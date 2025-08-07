@@ -196,12 +196,12 @@ export function Home() {
             {/* 전체/팔로잉 탭 */}
             {user?.id && (
                 <>
-                            <div className="flex h-12 sticky top-17 bg-white/80">
+                            <div className="flex h-12 sticky top-17 bg-white/90">
                                 <button
                                     className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
             ${tab === 'all'
                                             ? 'text-black border-b-4 border-blue-500 bg-gray-50'
-                                            : 'text-gray-400'}
+                                            : 'text-gray-500'}
             transition-colors duration-150`}
                                     onClick={() => setTab('all')}
                                 >
@@ -211,7 +211,7 @@ export function Home() {
                                     className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
             ${tab === 'following'
                                             ? 'text-black border-b-5 border-blue-500 bg-gray-50'
-                                            : 'text-gray-400'}
+                                            : 'text-gray-500'}
             transition-colors duration-150`}
                                     onClick={() => setTab('following')}
                                 >
@@ -428,14 +428,20 @@ export function Home() {
                                         {c.users?.id === user?.id ? (
                                             <button
                                                 className="text-gray-500 hover:text-red-500 font-bold cursor-pointer"
-                                                onClick={() => deleteCommunity(c.id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    deleteCommunity(c.id)}
+                                                }
                                             >
                                                 삭제
                                             </button>
                                         ) : (
                                             <button
                                                 className="text-gray-500 font-bold hover:text-blue-500 cursor-pointer"
-                                                onClick={() => followOrUnfollow(c.users?.id, c.users?._following)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    followOrUnfollow(c.users?.id, c.users?._following)}
+                                                }
                                             >
                                                 {c.users?._following ? '팔로우 취소' : '팔로우'}
                                             </button>
@@ -494,7 +500,6 @@ export function Home() {
                             <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
                                 <div className="flex items-center gap-1"><FiMessageCircle className="inline" /> {c.comments}</div>
                                 <div className="flex items-center gap-1"><FiHeart className="inline" /> {c.likes}</div>
-                                {/* 기타 아이콘 더 필요시 추가 */}
                             </div>
                         </div>
                     ))
