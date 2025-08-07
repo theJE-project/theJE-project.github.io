@@ -1,4 +1,4 @@
-import { useLoaderData, useRouteLoaderData } from 'react-router-dom'
+import { useLoaderData, useRouteLoaderData, useNavigate } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
@@ -12,6 +12,7 @@ import 'dayjs/locale/ko';
 export function Home() {
     const { communities1, followingCommunities } = useLoaderData();
     const { user, categories } = useRouteLoaderData('default');
+    const navigate = useNavigate();
     const [content, setContent] = useState('');
     const { musics, getMusics } = useMusic();
     const [selectedMusic, setSelectedMusic] = useState(null);
@@ -33,7 +34,7 @@ export function Home() {
     }, [tab, communities1, followingCommunities]);
 
     const handleRefresh = async () => {
-        const updated = tab === 'all' ? await communities1() : await followingCommunities();
+        const updated = tab === 'all' ? await communities1 : await followingCommunities;
         setFeed(updated);
     }
 
@@ -148,6 +149,9 @@ export function Home() {
     }
     /**/
 
+    // 상세페이지 이동
+    // const handleDetail = () =>navigate(`${id}`);
+
 
 
 
@@ -189,37 +193,35 @@ export function Home() {
     // console.log(user.name);
     return (
         <div className="w-full max-w-[600px] mx-auto">
-
-            <div className="flex h-12">
-                <button
-                    className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
-            ${tab === 'all'
-                            ? 'text-black border-b-2 border-blue-500 bg-gray-50'
-                            : 'text-gray-400'}
-            transition-colors duration-150`}
-                    onClick={() => setTab('all')}
-                >
-                    전체
-                </button>
-                <button
-                    className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
-            ${tab === 'following'
-                            ? 'text-black border-b-2 border-blue-500 bg-gray-50'
-                            : 'text-gray-400'}
-            transition-colors duration-150`}
-                    onClick={() => setTab('following')}
-                >
-                    팔로잉
-                </button>
-            </div>
-
-
-            {/* 글쓰기 */}
+            {/* 전체/팔로잉 탭 */}
             {user?.id && (
                 <>
+                            <div className="flex h-12 sticky top-17 bg-white">
+                                <button
+                                    className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
+            ${tab === 'all'
+                                            ? 'text-black border-b-5 border-blue-500 bg-gray-50'
+                                            : 'text-gray-400'}
+            transition-colors duration-150`}
+                                    onClick={() => setTab('all')}
+                                >
+                                    전체
+                                </button>
+                                <button
+                                    className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
+            ${tab === 'following'
+                                            ? 'text-black border-b-5 border-blue-500 bg-gray-50'
+                                            : 'text-gray-400'}
+            transition-colors duration-150`}
+                                    onClick={() => setTab('following')}
+                                >
+                                    팔로잉
+                                </button>
+                            </div>
                     {/* <h3 className="font-bold text-lg mb-3">피드</h3> */}
-                    <div className="bg-white p-5 rounded-lg mb-6 border-1 border-gray-200">
 
+                    {/* 글쓰기 */}
+                    <div className="bg-white p-5 rounded-lg mb-6 border-1 border-gray-200">
                         <form onSubmit={handleSubmit}>
                             <div className="flex items-start gap-3">
                                 {/* 프로필 둥근 이미지 (임시, 사용자 첫글자 원) */}
@@ -399,11 +401,11 @@ export function Home() {
             )}
 
 
-            {/* 피드 목록 */}
+            {/* 피드 */}
             < div className="flex flex-col gap-3" >
                 {
                     (feed ?? []).map((c) => (
-                        <div key={c.id} className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
+                        <div key={c.id} className="bg-white hover:bg-gray-50 p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200 cursor-pointer">
                             <div className="flex items-center gap-3">
                                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
                                     {c.users?.img
@@ -448,7 +450,8 @@ export function Home() {
                                 c.musics.map((m, i) => (
                                     <div
                                         key={i}
-                                        className="flex items-center gap-3 p-3 rounded-lg bg-[#f5faff] hover:bg-[#e1effc] transition-colors border border-[#d4e7fa]"
+                                        className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 
+                                        transition-colors border border-gray-200"
                                     >
                                         <img src={m.albumCover} alt={m.titleShort} className="w-16 h-16 rounded-lg object-cover" />
                                         <div>
