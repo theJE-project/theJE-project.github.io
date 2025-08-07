@@ -11,6 +11,8 @@ import {
     SignUp,
     Redirect,
     ErrorBoundary,
+    Notifications,
+    Search, 
 } from "@pages";
 
 export const router = createHashRouter([
@@ -72,6 +74,16 @@ export const router = createHashRouter([
                 path: 'login/redirect',
                 id: 'redirect',
                 element: <Redirect />
+            },
+                        {
+                path: 'notifications',
+                id: 'notifications',
+                element: <Notifications />
+            },
+            {
+                path: '/search',
+                id: 'search',
+                element: <Search />
             }
         ]
     }
