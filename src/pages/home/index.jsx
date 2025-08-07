@@ -38,7 +38,6 @@ export function Home() {
         setFeed(updated);
     }
 
-
     // 글작성 api 호출
     const postCommunity = async (data) => {
         try {
@@ -67,6 +66,7 @@ export function Home() {
 
     // 팔로우 api 호출
     const follow = async (target) => {
+        console.log(target)
         try {
             const response = await springBoot.post('/followers', {
                 follower: user.id,
@@ -150,7 +150,7 @@ export function Home() {
     /**/
 
     // 상세페이지 이동
-    const handleDetail = (id) =>navigate(`/${id}`);
+    const handleDetail = (id) => navigate(`/${id}`);
 
 
 
@@ -196,28 +196,28 @@ export function Home() {
             {/* 전체/팔로잉 탭 */}
             {user?.id && (
                 <>
-                            <div className="flex h-12 sticky top-17 bg-white">
-                                <button
-                                    className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
+                    <div className="flex h-12 sticky top-17 bg-white">
+                        <button
+                            className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
             ${tab === 'all'
-                                            ? 'text-black border-b-5 border-blue-500 bg-gray-50'
-                                            : 'text-gray-400'}
+                                    ? 'text-black border-b-5 border-blue-500 bg-gray-50'
+                                    : 'text-gray-400'}
             transition-colors duration-150`}
-                                    onClick={() => setTab('all')}
-                                >
-                                    전체
-                                </button>
-                                <button
-                                    className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
+                            onClick={() => setTab('all')}
+                        >
+                            전체
+                        </button>
+                        <button
+                            className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
             ${tab === 'following'
-                                            ? 'text-black border-b-5 border-blue-500 bg-gray-50'
-                                            : 'text-gray-400'}
+                                    ? 'text-black border-b-5 border-blue-500 bg-gray-50'
+                                    : 'text-gray-400'}
             transition-colors duration-150`}
-                                    onClick={() => setTab('following')}
-                                >
-                                    팔로잉
-                                </button>
-                            </div>
+                            onClick={() => setTab('following')}
+                        >
+                            팔로잉
+                        </button>
+                    </div>
                     {/* <h3 className="font-bold text-lg mb-3">피드</h3> */}
 
                     {/* 글쓰기 */}
@@ -405,7 +405,11 @@ export function Home() {
             < div className="flex flex-col gap-3" >
                 {
                     (feed ?? []).map((c) => (
-                        <div key={c.id} onClick={()=>handleDetail(c.id)} className="bg-white hover:bg-gray-50 p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200 cursor-pointer">
+                        <div key={c.id} onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDetail(c.id)
+                        }} className="bg-white hover:bg-gray-50 p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200 cursor-pointer">
                             <div className="flex items-center gap-3">
                                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
                                     {c.users?.img
@@ -424,14 +428,22 @@ export function Home() {
                                         {c.users?.id === user?.id ? (
                                             <button
                                                 className="text-gray-500 hover:text-red-500 font-bold cursor-pointer"
-                                                onClick={() => deleteCommunity(c.id)}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    deleteCommunity(c.id)
+                                                }}
                                             >
                                                 삭제
                                             </button>
                                         ) : (
                                             <button
                                                 className="text-gray-500 font-bold hover:text-blue-500 cursor-pointer"
-                                                onClick={() => followOrUnfollow(c.users?.id, c.users?._following)}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    followOrUnfollow(c.users?.id, c.users?._following)
+                                                }}
                                             >
                                                 {c.users?._following ? '팔로우 취소' : '팔로우'}
                                             </button>
@@ -460,6 +472,7 @@ export function Home() {
                                         </div>
                                         <button type="button" className='cursor-pointer ml-auto group' onClick={(e) => {
                                             // 재생 누르면 모달 꺼짐 방지
+                                            e.preventDefault();
                                             e.stopPropagation();
                                             setPreviewUrl(m.preview);
                                         }}
