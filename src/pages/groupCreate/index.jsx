@@ -1,18 +1,21 @@
-import { isValidElement, useEffect, useState } from 'react'
-import { data, useParams, useRouteLoaderData } from 'react-router-dom'
+import { isValidElement, useEffect, useRef, useState } from 'react'
+import { data, useNavigate, useParams, useRouteLoaderData } from 'react-router-dom'
 import { MdOutlineAddPhotoAlternate, MdOutlineFileUpload, MdOutlineLibraryMusic } from 'react-icons/md'
 import { RiMusicAiLine } from 'react-icons/ri'
 import { IoClose } from 'react-icons/io5'
 import { springBoot } from '../../axios/springboot'
 import { useImage } from '../../hooks'
 import { useMusic } from '../../hooks/useMusics'
+import { FaPlayCircle, FaRegPauseCircle } from 'react-icons/fa'
 export { loader } from './loader'
 
 export function GroupCreate() {
+    const navigate = useNavigate();
     const { user } = useRouteLoaderData('default'); // 로그인 사용자
 
-    const { images, setImages, getImages, initImage } = useImage(); // 이미지
+    const { images, setImages, getImages } = useImage(); // 이미지 훅
     const [previewUrls, setPreviewUrls] = useState([]);
+    const [fallbackImages, setFallbackImages] = useState([]); // 앨범커버 이미지
 
     const { musics, getMusics } = useMusic(); // music 훅 (음악 가져오기)
     const [music, setMusics] = useState(); // 결과 저장?
@@ -40,11 +43,16 @@ export function GroupCreate() {
     }
 
     // 폼제출
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
 
         if (!title) {
             alert("플레이리스트 제목을 입력해주세요");
+            return;
+        }
+
+        if (musicList.length === 0) {
+            alert("음악을 추가해주세요");
             return;
         }
 
@@ -60,7 +68,13 @@ export function GroupCreate() {
         }
 
         console.log(data);
-        fetchPlaylistData(data);
+
+        try {
+            await fetchPlaylistData(data);
+            navigate('/group');
+        } catch (error) {
+            
+        }
     };
 
     // 태그 enter 처리
@@ -91,8 +105,7 @@ export function GroupCreate() {
         const localUrl = URL.createObjectURL(file);
         setPreviewUrls([localUrl]);
 
-        const paths = await setImages(e); // 새로 업로드된 경로만
-        initImage(paths); // imageList 초기화 (덮어쓰기)
+        await setImages(e);
     }
 
     // 음악 검색 handler
@@ -105,7 +118,7 @@ export function GroupCreate() {
     // 음악 추가 함수
     const addMusic = (music) => {
         // 중복 체크
-        if (musicList.find(m => m.id === music.id)) return;
+        if (musicList.find(m => m.url === music.url)) return;
         setMusicList(prev => [...prev, music]); // 리스트에 추가
 
         // 검색창 초기화
@@ -115,7 +128,7 @@ export function GroupCreate() {
 
     // 음악 삭제 함수
     const deleteMusic = (music) => {
-        setMusicList(prev => prev.filter(m => m.id !== music.id));
+        setMusicList(prev => prev.filter(m => m.url !== music.url));
     };
 
     return (
@@ -244,7 +257,7 @@ export function GroupCreate() {
 
                 {/* 음악검색 컴포넌트 자리~ */}
                 <div className="mb-4">
-                    <label className="font-medium">음악 추가</label>
+                    <label className="block font-medium mb-1">음악 추가</label>
                     <div>
                         <input type='text'
                             placeholder='음악을 검색하세요'
@@ -255,47 +268,74 @@ export function GroupCreate() {
 
                         {/* 음악 결과 목록 */}
                         <div className="my-2 max-h-70 overflow-y-auto bg-gray-100 rounded">
-                            {/* {musics.length === 0 && musicSearch.trim() === "" && <div className='my-10 flex flex-col items-center justify-center gap-2'> <MdOutlineLibraryMusic size={40} className='text-gray-500'/> <p className='text-lg text-gray-500'>좋아하는 음악을 추가해보세요</p></div>} */}
                             {musics.length === 0 && musicSearch.trim() !== "" && <p>검색 결과가 없습니다.</p>}
                             {musics.map((music) => (
-                                <div key={music.id} className="flex my-2 justify-between items-center p-1 border border-gray-300 rounded-md bg-white">
-                                    <div className='flex'>
+                                <div key={music.url} className="flex my-2 p-1 border border-gray-300 rounded-md bg-white">
+                                    <div className='m-2 w-20 h-20'>
                                         <img src={music.albumCover}
-                                            className='h-20' />
-                                        <p>{music.titleShort}</p>
-                                        <p>{music.albumTitle}</p>
+                                            className='w-full h-full object-cover rounded-xl' />
+                                    </div>
+
+                                    <div className='flex flex-col justify-center'>
+                                        <div className='flex my-1'>
+                                            <p className='text-base font-semibold'>{music.titleShort}</p>
+                                            <p>{music.duration}</p>
+                                        </div>
+                                        <p className=''>{music.artistName}</p>
+                                        {/* 음악 재생 버튼 */}
+                                        {music.preview && (
+                                            <audio controls className='p-0' >
+                                                <source src={music.preview} type='audio/mpeg' />
+                                                브라우저가 오디오를 지원 X
+                                            </audio>
+                                        )}
                                     </div>
 
                                     <button onClick={() => addMusic(music)}
-                                        disabled={musicList.find(m => m.id === music.id) !== undefined}
+                                        disabled={musicList.find(m => m.url === music.url) !== undefined}
                                         className="text-sm text-blue-600 disabled:text-gray-400">
-                                        {musicList.find(m => m.id === music.id) ? '추가됨' : '추가'}
+                                        {musicList.find(m => m.url === music.url) ? '추가됨' : '추가'}
                                     </button>
                                 </div>
+
                             ))}
                         </div>
                     </div>
 
                 </div>
 
-                {/* 음악 추가 리스트 */}
+                {/* 음악 목록 */}
                 <div className='mb-4'>
-                    <label htmlFor="">추가한 결과</label>
-                    <div className=''>
-                        {musicList.length === 0 && <div className='my-10 flex flex-col items-center justify-center gap-2 '> <MdOutlineLibraryMusic size={40} className='text-gray-500' /> <p className='text-lg text-gray-500'>좋아하는 음악을 추가해보세요</p></div>}
-                        {/* 태그 입력 목록(배열) */}
+                    <div className='flex justify-between'>
+                        <label className="block font-medium mb-1">음악 목록</label>
+                        <p className='text-gray-700'>{musicList.length} 곡</p>
+                    </div>
+                    
+                    <div className='border border-gray-300 rounded-xl max-h-96 overflow-y-auto'>
+                        {musicList.length === 0 && <div className='h-40 flex flex-col items-center justify-center gap-2 text-gray-500 '> <MdOutlineLibraryMusic size={30} className='' /> <p className='text-lg '>좋아하는 음악을 추가해보세요</p></div>}
+                        {/* 음악 입력 목록(배열) */}
                         {musicList.length > 0 && (
                             <div className="grid">
                                 {musicList.map((music) => (
-                                    <div key={music.id} className="flex bg-blue-100">
-                                        <div className='m-2 h-20  '>
+                                    <div key={music.url} className="flex">
+                                        <div className='m-2 h-20 w-20'>
                                             <img src={music.albumCover}
                                                 className='w-full h-full rounded-xl' />
                                         </div>
-                                        <div>
-                                            <p>{music.titleShort}</p>
-                                            <p>{music.albumTitle}</p>
-                                            <p>{music.artistName}</p>
+
+                                        <div className='flex flex-col'>
+                                            <div className='flex'>
+                                                <p className='text-lg font-semibold'>{music.titleShort}</p>
+                                                <p>{music.duration}</p>
+                                            </div>
+                                            <p className=''>{music.artistName}</p>
+                                            {/* 음악 재생 버튼 */}
+                                            {/* {music.preview && (
+                                                <audio controls >
+                                                    <source src={music.preview} type='audio/mpeg' />
+                                                    브라우저가 오디오를 지원 X
+                                                </audio>
+                                            )} */}
                                         </div>
                                         <button
                                             onClick={() => deleteMusic(music)} // 클릭 시 해당 태그 삭제
