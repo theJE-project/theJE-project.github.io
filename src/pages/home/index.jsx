@@ -97,12 +97,14 @@ export function Home() {
     }
 
 
-    const followOrUnfollow = async (target, isFollowing) => {
+    const followOrUnfollow = async (target, isFollowing, userName) => {
         try {
             let result;
             if (isFollowing) {
+                if(!confirm(`${userName} 님을 팔로우 취소 하시겠습니까?`)) return;
                 result = await unfollow(target);
             } else {
+                if(!confirm(`${userName} 님을 팔로우 하시겠습니까?`)) return;
                 result = await follow(target);
             }
             console.log(result);
@@ -440,7 +442,7 @@ export function Home() {
                                                 className="text-gray-500 font-bold hover:text-blue-500 cursor-pointer"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    followOrUnfollow(c.users?.id, c.users?._following)}
+                                                    followOrUnfollow(c.users?.id, c.users?._following, c.users?.name);}
                                                 }
                                             >
                                                 {c.users?._following ? '팔로우 취소' : '팔로우'}
