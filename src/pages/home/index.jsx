@@ -150,7 +150,7 @@ export function Home() {
     /**/
 
     // 상세페이지 이동
-    // const handleDetail = () =>navigate(`${id}`);
+    const handleDetail = (id) =>navigate(`/${id}`);
 
 
 
@@ -405,7 +405,7 @@ export function Home() {
             < div className="flex flex-col gap-3" >
                 {
                     (feed ?? []).map((c) => (
-                        <div key={c.id} className="bg-white hover:bg-gray-50 p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200 cursor-pointer">
+                        <div key={c.id} onClick={()=>handleDetail(c.id)} className="bg-white hover:bg-gray-50 p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200 cursor-pointer">
                             <div className="flex items-center gap-3">
                                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
                                     {c.users?.img

@@ -24,6 +24,11 @@ export {
 } from './home'
 
 export {
+    HomeDetail,
+    loader as homeDetailLoader,    
+} from './homeDetail'
+
+export {
     My,
     loader as myloader,
 } from './my'

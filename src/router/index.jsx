@@ -2,6 +2,7 @@ import { createHashRouter } from "react-router-dom";
 import {
     Layout, layoutLoader,
     Home, homeLoader,
+    HomeDetail, homeDetailLoader,
     Group, groupLoader,
     GroupCreate, groupCreateLoader,
     GroupDetail, groupDetailLoader,
@@ -25,6 +26,12 @@ export const router = createHashRouter([
                 id: 'home',
                 loader:homeLoader,
                 element: <Home />,
+            },
+            {
+                path: '/:id',
+                id: 'homeDetail',
+                loader:homeDetailLoader,
+                element: <HomeDetail />,
             },
             {
                 path: 'group',
