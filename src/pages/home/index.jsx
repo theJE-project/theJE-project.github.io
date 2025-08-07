@@ -4,7 +4,7 @@ import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
 import { useMusic } from '../../hooks/useMusics';
-import { FiImage, FiMusic, FiMessageCircle, FiHeart, FiPlay } from "react-icons/fi";
+import { FiImage, FiMusic, FiMessageCircle, FiHeart, FiPlay, FiPause } from "react-icons/fi";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
@@ -196,11 +196,11 @@ export function Home() {
             {/* 전체/팔로잉 탭 */}
             {user?.id && (
                 <>
-                            <div className="flex h-12 sticky top-17 bg-white">
+                            <div className="flex h-12 sticky top-17 bg-white/80">
                                 <button
                                     className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
             ${tab === 'all'
-                                            ? 'text-black border-b-5 border-blue-500 bg-gray-50'
+                                            ? 'text-black border-b-4 border-blue-500 bg-gray-50'
                                             : 'text-gray-400'}
             transition-colors duration-150`}
                                     onClick={() => setTab('all')}
@@ -347,9 +347,9 @@ export function Home() {
                                     onChange={handleMusicSearch}
                                     className="w-full border rounded-lg px-4 py-3 text-base outline-none placeholder:text-gray-400 bg-gray-50"
                                 />
-                                {previewUrl && (
-                                    <audio controls src={previewUrl} autoPlay className="w-full mt-2" />
-                                )}
+                                {/* {previewUrl && (
+                                    <audio controls src={previewUrl} autoPlay className="w-full mt-2 hidden" />
+                                )} */}
                             </div>
 
                             {/* 결과목록 */}
@@ -374,9 +374,13 @@ export function Home() {
                                         <button type="button" className='cursor-pointer group' onClick={(e) => {
                                             // 재생 누르면 모달 꺼짐 방지
                                             e.stopPropagation();
-                                            setPreviewUrl(m.preview);
+                                            {previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview);}
                                         }}
-                                        ><FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" /></button>
+                                        >{previewUrl === m.preview ? 
+                                        <FiPause className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" /> 
+                                        : 
+                                        <FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />}
+                                            </button>
                                     </div>
                                 )) : (
                                     // 결과 없을 때
@@ -461,9 +465,13 @@ export function Home() {
                                         <button type="button" className='cursor-pointer ml-auto group' onClick={(e) => {
                                             // 재생 누르면 모달 꺼짐 방지
                                             e.stopPropagation();
-                                            setPreviewUrl(m.preview);
+                                            {previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview);}
                                         }}
-                                        ><FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" /></button>
+                                        >{previewUrl === m.preview ? 
+                                        <FiPause className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" /> 
+                                        : 
+                                        <FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />}
+                                            </button>
                                     </div>
 
                                 ))
