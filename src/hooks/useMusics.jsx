@@ -23,6 +23,7 @@ export const useMusic = () => {
             const musicsWithUrl = res.data.map(music => ({
                 ...music,
                 url: String(music.id),
+                id: null,
             }));
 
             setSearchMusic(musicsWithUrl);
