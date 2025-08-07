@@ -371,12 +371,12 @@ export function Home() {
                                             <div className="text-sm text-gray-500">{m.artistName}</div>
                                             {m.albumTitle && <div className="text-xs text-gray-400">{m.albumTitle}</div>}
                                         </div>
-                                        <button type="button" className='cursor-pointer' onClick={(e) => {
+                                        <button type="button" className='cursor-pointer group' onClick={(e) => {
                                             // 재생 누르면 모달 꺼짐 방지
                                             e.stopPropagation();
                                             setPreviewUrl(m.preview);
                                         }}
-                                        ><FiPlay className="inline text-xl" color="#7faaf9" /></button>
+                                        ><FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" /></button>
                                     </div>
                                 )) : (
                                     // 결과 없을 때
@@ -458,12 +458,12 @@ export function Home() {
                                             <div className="font-semibold">{m.titleShort}</div>
                                             <div className="text-xs text-gray-600">{m.artistName}</div>
                                         </div>
-                                        <button type="button" className='cursor-pointer ml-auto' onClick={(e) => {
+                                        <button type="button" className='cursor-pointer ml-auto group' onClick={(e) => {
                                             // 재생 누르면 모달 꺼짐 방지
                                             e.stopPropagation();
                                             setPreviewUrl(m.preview);
                                         }}
-                                        ><FiPlay className="inline text-xl" color="#7faaf9" /></button>
+                                        ><FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" /></button>
                                     </div>
 
                                 ))

@@ -87,10 +87,10 @@ export function HomeDetail() {
 
 
     return (
-        <div className="w-full max-w-[800px] mx-auto">
+        <div className="w-full max-w-[600px] mx-auto">
             {/* 피드 */}
             < div className="flex flex-col gap-3" >
-                <div className="bg-white hover:bg-gray-50 p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200 cursor-pointer">
+                <div className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                     <div className="flex items-center gap-3">
                         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
                             {community.users?.img
@@ -115,7 +115,7 @@ export function HomeDetail() {
                                     </button>
                                 ) : (
                                     <button
-                                        className="text-gray-500 font-bold hover:text-blue-500 cursor-pointer"
+                                        className="text-blue-500 font-bold hover:text-blue-500 cursor-pointer border border-blue-500 rounded-2xl px-3 py-1"
                                         onClick={() => followOrUnfollow(community.users?.id, community.users?._following)}
                                     >
                                         {community.users?._following ? '팔로우 취소' : '팔로우'}
@@ -131,6 +131,9 @@ export function HomeDetail() {
                     <div className="text-base text-gray-900 whitespace-pre-line">{community.content}</div>
 
                     {/* 음악 카드 */}
+                    {previewUrl && (
+                        <audio controls src={previewUrl} autoPlay className="hidden" />
+                    )}
                     {community.musics && community.musics.length > 0 && (
                         community.musics.map((m, i) => (
                             <div
@@ -143,12 +146,12 @@ export function HomeDetail() {
                                     <div className="font-semibold">{m.titleShort}</div>
                                     <div className="text-xs text-gray-600">{m.artistName}</div>
                                 </div>
-                                <button type="button" className='cursor-pointer ml-auto' onClick={(e) => {
+                                <button type="button" className='cursor-pointer ml-auto group' onClick={(e) => {
                                     // 재생 누르면 모달 꺼짐 방지
                                     e.stopPropagation();
                                     setPreviewUrl(m.preview);
                                 }}
-                                ><FiPlay className="inline text-xl" color="#7faaf9" /></button>
+                                ><FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" /></button>
                             </div>
 
                         ))
