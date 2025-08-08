@@ -12,7 +12,9 @@ const getUser = async () => {
             console.warn('비로그인 입니다.')
             return {}
         }
-        const response = await springBoot.get(`/users/${id}`);
+        const response = await springBoot.get(`/users/my`, {
+            params: { userId: id }
+        });
         const userData = response.data;
         sessionStorage.setItem('user', JSON.stringify(userData));
         return userData

@@ -46,3 +46,11 @@ export {
 export {
     Loading
 } from './loading'
+
+export {
+    Notifications
+} from './notifications'
+
+export {
+    Search
+} from './search'

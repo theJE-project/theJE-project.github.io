@@ -38,7 +38,6 @@ export function Home() {
         setFeed(updated);
     }
 
-
     // 글작성 api 호출
     const postCommunity = async (data) => {
         try {
@@ -67,6 +66,7 @@ export function Home() {
 
     // 팔로우 api 호출
     const follow = async (target) => {
+        console.log(target)
         try {
             const response = await springBoot.post('/followers', {
                 follower: user.id,
@@ -411,7 +411,11 @@ export function Home() {
             < div className="flex flex-col gap-3" >
                 {
                     (feed ?? []).map((c) => (
-                        <div key={c.id} onClick={() => handleDetail(c.id)} className="bg-white hover:bg-gray-50 p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200 cursor-pointer">
+                        <div key={c.id} onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDetail(c.id)
+                        }} className="bg-white hover:bg-gray-50 p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200 cursor-pointer">
                             <div className="flex items-center gap-3">
                                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
                                     {c.users?.img
@@ -431,21 +435,21 @@ export function Home() {
                                             <button
                                                 className="text-gray-500 hover:text-red-500 font-bold cursor-pointer"
                                                 onClick={(e) => {
+                                                    e.preventDefault();
                                                     e.stopPropagation();
                                                     deleteCommunity(c.id)
-                                                }
-                                                }
+                                                }}
                                             >
                                                 삭제
                                             </button>
                                         ) : (
                                             <button
-                                                className="cursor-pointer text-sm"
+                                                className="text-gray-500 font-bold hover:text-blue-500 cursor-pointer"
                                                 onClick={(e) => {
+                                                    e.preventDefault();
                                                     e.stopPropagation();
-                                                    followOrUnfollow(c.users?.id, c.users?._following, c.users?.name);
-                                                }
-                                                }
+                                                    followOrUnfollow(c.users?.id, c.users?._following)
+                                                }}
                                             >
                                                 {c.users?._following ?
                                                     <div className='text-gray-500 border border-gray-500 rounded-2xl px-3 py-1'>언팔로우 </div>
@@ -477,6 +481,7 @@ export function Home() {
                                         </div>
                                         <button type="button" className='cursor-pointer ml-auto group' onClick={(e) => {
                                             // 재생 누르면 모달 꺼짐 방지
+                                            e.preventDefault();
                                             e.stopPropagation();
                                             { previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview); }
                                         }}
