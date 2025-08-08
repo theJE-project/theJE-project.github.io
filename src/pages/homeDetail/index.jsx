@@ -71,12 +71,14 @@ export function HomeDetail() {
     }
 
 
-    const followOrUnfollow = async (target, isFollowing) => {
+    const followOrUnfollow = async (target, isFollowing, userName) => {
         try {
             let result;
             if (isFollowing) {
+                if(!confirm(`${userName} 님을 팔로우 취소 하시겠습니까?`)) return;
                 result = await unfollow(target);
             } else {
+                if(!confirm(`${userName} 님을 팔로우 하시겠습니까?`)) return;
                 result = await follow(target);
             }
             console.log(result);
@@ -115,10 +117,14 @@ export function HomeDetail() {
                                     </button>
                                 ) : (
                                     <button
-                                        className="text-blue-500 font-bold hover:text-blue-500 cursor-pointer border border-blue-500 rounded-2xl px-3 py-1"
-                                        onClick={() => followOrUnfollow(community.users?.id, community.users?._following)}
+                                        className="cursor-pointer"
+                                        onClick={() => 
+                                            followOrUnfollow(community.users?.id, community.users?._following, community.users?.name)}
                                     >
-                                        {community.users?._following ? '팔로우 취소' : '팔로우'}
+                                        {community.users?._following ? 
+                                        <div className='text-white bg-blue-500 rounded-2xl px-3 py-1'>팔로우 취소</div> 
+                                        : 
+                                        <div className='text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white transition-colors rounded-2xl px-3 py-1'>팔로우</div>}
                                     </button>
                                 )}
                             </div>
