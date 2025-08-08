@@ -5,6 +5,7 @@ export { loader } from './loader'
 import { springBoot } from '@axios';
 import { useMusic } from '../../hooks/useMusics';
 import { FiImage, FiMusic, FiMessageCircle, FiHeart, FiPlay, FiPause, FiBarChart2 } from "react-icons/fi";
+import TextareaAutosize from 'react-textarea-autosize';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
@@ -225,7 +226,6 @@ export function Home() {
                         </button>
                     </div>
                     {/* <h3 className="font-bold text-lg mb-3">피드</h3> */}
-
                     {/* 글쓰기 */}
                     <div className="bg-white p-5 rounded-b-lg mb-6 border-1 border-gray-200">
                         <form onSubmit={handleSubmit}>
@@ -238,11 +238,12 @@ export function Home() {
                                     }
                                 </div>
                                 <div className="flex-1">
-                                    <textarea
+                                    <TextareaAutosize
                                         value={content}
                                         onChange={(e) => setContent(e.target.value)}
                                         placeholder="좋아하는 음악을 공유해보세요!"
-                                        className="w-full resize-none border-none focus:ring-0 text-base placeholder-gray-400 outline-none min-h-[44px] bg-transparent"
+                                        minRows={1}
+                                        className="w-full resize-none border-none focus:ring-0 text-base placeholder-gray-400 outline-none bg-transparent"
                                     />
                                     {/* 노래 미리보기 */}
                                     {selectedMusic && (
@@ -453,14 +454,19 @@ export function Home() {
                                                 </button>
                                             ) : (
                                                 <button
-                                                    className="text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white transition-colors rounded-2xl px-3 py-1 font-semibold cursor-pointer"
+                                                    className={`border rounded-2xl px-3 py-1 font-semibold cursor-pointer transition-colors ${c?.users?._following
+                                                            ? 'text-gray-500 border-gray-500 hover:bg-gray-500 hover:text-white'
+                                                            : 'text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white'
+                                                        }`}
                                                     onClick={(e) => {
-                                                        e.preventDefault(); e.stopPropagation();
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
                                                         followOrUnfollow(c?.users?.id, c?.users?._following, c?.users?.name);
                                                     }}
                                                 >
-                                                    {c?.users?._following ? '언팔로우' : '팔로우'}
+                                                    {c?.users?._following ? '팔로잉' : '팔로우'}
                                                 </button>
+
                                             )}
                                         </div>
                                     )}

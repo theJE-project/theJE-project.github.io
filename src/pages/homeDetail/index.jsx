@@ -1,9 +1,8 @@
 import { useLoaderData, useRouteLoaderData, useRevalidator, useNavigate } from 'react-router-dom'
-import { useEffect, useState, useRef } from 'react';
+import { useState } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
-import { useMusic } from '../../hooks/useMusics';
 import { FiMessageCircle, FiHeart, FiPlay, FiArrowLeft } from "react-icons/fi";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -11,18 +10,13 @@ import 'dayjs/locale/ko';
 
 export function HomeDetail() {
     const { community } = useLoaderData();
-    const { user, categories } = useRouteLoaderData('default');
+    const { user } = useRouteLoaderData('default');
     const navigate = useNavigate();
     const revalidator = useRevalidator();
-    const [content, setContent] = useState('');
-    const { musics, getMusics } = useMusic();
-    const [selectedMusic, setSelectedMusic] = useState(null);
-    // 모달 열기
-    const [open, setOpen] = useState(false);
     // 재생바
     const [previewUrl, setPreviewUrl] = useState(null);
 
-    const { images, setImages, getImages, deleteImage } = useImage();
+    const { getImages } = useImage();
 
     dayjs.extend(relativeTime);
     dayjs.locale('ko');
@@ -190,7 +184,7 @@ export function HomeDetail() {
                                 ))}
                             </div>
                         )}
-                        <span className="text-gray-400 text-xs">{dayjs(community.created_at).fromNow()} · {community.count} 조회수</span>
+                        <span className="text-gray-400 text-xs">{dayjs(community.created_at).fromNow()} · 조회수 {community.count}</span>
                         {/* 댓글/좋아요 아이콘들 */}
                         <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
                             <div className="flex items-center gap-1"><FiMessageCircle className="inline" /> {community.comments}</div>
