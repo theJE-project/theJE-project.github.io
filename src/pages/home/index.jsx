@@ -1,16 +1,18 @@
-import { useLoaderData, useRouteLoaderData } from 'react-router-dom'
+import { useLoaderData, useRouteLoaderData, useNavigate } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
 import { useMusic } from '../../hooks/useMusics';
-import { FiImage, FiMusic, FiMessageCircle, FiHeart, FiPlay } from "react-icons/fi";
+import { FiImage, FiMusic, FiMessageCircle, FiHeart, FiPlay, FiPause } from "react-icons/fi";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
 
 export function Home() {
-    const { user, categories } = useRouteLoaderData('defult');
+    const { communities1, followingCommunities } = useLoaderData();
+    const { user, categories } = useRouteLoaderData('default');
+    const navigate = useNavigate();
     const [content, setContent] = useState('');
     const { musics, getMusics } = useMusic();
     const [selectedMusic, setSelectedMusic] = useState(null);
@@ -19,14 +21,22 @@ export function Home() {
     // 재생바
     const [previewUrl, setPreviewUrl] = useState(null);
 
-    // 피드 새로고침
-    const [feed, setFeed] = useState([]);
-
     const { images, setImages, getImages, deleteImage } = useImage();
+
+    const [tab, setTab] = useState('all'); // all or following
+    const [feed, setFeed] = useState(tab === 'all' ? communities1 : followingCommunities);
 
     dayjs.extend(relativeTime);
     dayjs.locale('ko');
 
+    useEffect(() => {
+        setFeed(tab === 'all' ? communities1 : followingCommunities);
+    }, [tab, communities1, followingCommunities]);
+
+    const handleRefresh = async () => {
+        const updated = tab === 'all' ? await communities1 : await followingCommunities;
+        setFeed(updated);
+    }
 
     // 글작성 api 호출
     const postCommunity = async (data) => {
@@ -56,6 +66,7 @@ export function Home() {
 
     // 팔로우 api 호출
     const follow = async (target) => {
+        console.log(target)
         try {
             const response = await springBoot.post('/followers', {
                 follower: user.id,
@@ -63,7 +74,7 @@ export function Home() {
             })
             const result = response.data;
             return result;
-        }catch(error){
+        } catch (error) {
             console.log("팔로우 api 호출 실패", error);
             return null;
         }
@@ -71,40 +82,33 @@ export function Home() {
 
     // 팔로우 취소 api 호출
     const unfollow = async (target) => {
-    try{
-        const response = await springBoot.delete(`/followers/delete`, {
-            params: {
-                follower: user.id,
-                followee: target,
-            }
-        });
-        return response.data;
-    }catch(error){
-        console.log("팔로우 취소 api 호출 실패", error);
-        return null;
+        try {
+            const response = await springBoot.delete(`/followers/delete`, {
+                params: {
+                    follower: user.id,
+                    followee: target,
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.log("팔로우 취소 api 호출 실패", error);
+            return null;
+        }
     }
-}
 
 
-    // const followOrUnfollow = async (target) => {
-    //     try{
-    //         const result = await follow(target);
-    //         console.log(result);
-    //     }catch(error){
-    //         console.log("팔로우/언팔로우 실패", error);
-    //     }
-    // }
-
-    const followOrUnfollow = async (target, isFollowing) => {
-        try{
+    const followOrUnfollow = async (target, isFollowing, userName) => {
+        try {
             let result;
-            if(isFollowing){
+            if (isFollowing) {
+                if (!confirm(`${userName} 님을 팔로우 취소 하시겠습니까?`)) return;
                 result = await unfollow(target);
-            }else{
+            } else {
+                if (!confirm(`${userName} 님을 팔로우 하시겠습니까?`)) return;
                 result = await follow(target);
             }
             console.log(result);
-        }catch(error){
+        } catch (error) {
             console.log("팔로우/언팔로우 실패", error);
         }
     }
@@ -118,7 +122,7 @@ export function Home() {
         setImages(e);
     }
     /**/
-//
+    //
     // 음악 검색
     const handleMusicSearch = (e) => {
         e.preventDefault();
@@ -147,6 +151,11 @@ export function Home() {
     }
     /**/
 
+    // 상세페이지 이동
+    const handleDetail = (id) => navigate(`/${id}`);
+
+
+
 
     // 폼 제출
     const handleSubmit = async (e) => {
@@ -157,7 +166,7 @@ export function Home() {
             categories: 1,
             content: content,
             images: images || null,
-            music: selectedMusic || null,
+            musics: selectedMusic ? [selectedMusic] : null,
         };
         console.log("전송할 데이터:", data);
         const result = await postCommunity(data);
@@ -180,19 +189,41 @@ export function Home() {
 
 
 
-    const { communities1 } = useLoaderData();
+
     // console.log(loader);
     // console.log(musics);
     // console.log(user.name);
     return (
-        <div className="w-full max-w-[600px] mx-auto py-8">
-
-            {/* 글쓰기 */}
+        <div className="w-full max-w-[600px] mx-auto">
+            {/* 전체/팔로잉 탭 */}
             {user?.id && (
                 <>
-                    <h3 className="font-bold text-lg mb-3">피드</h3>
-                    <div className="bg-white p-5 rounded-lg mb-6 border-1 border-gray-200">
+                    <div className="flex h-12 sticky top-17 bg-white/90">
+                        <button
+                            className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
+            ${tab === 'all'
+                                    ? 'text-black border-b-4 border-blue-500 bg-gray-50'
+                                    : 'text-gray-500'}
+            transition-colors duration-150`}
+                            onClick={() => setTab('all')}
+                        >
+                            전체
+                        </button>
+                        <button
+                            className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
+            ${tab === 'following'
+                                    ? 'text-black border-b-5 border-blue-500 bg-gray-50'
+                                    : 'text-gray-500'}
+            transition-colors duration-150`}
+                            onClick={() => setTab('following')}
+                        >
+                            팔로잉
+                        </button>
+                    </div>
+                    {/* <h3 className="font-bold text-lg mb-3">피드</h3> */}
 
+                    {/* 글쓰기 */}
+                    <div className="bg-white p-5 rounded-b-lg mb-6 border-1 border-gray-200">
                         <form onSubmit={handleSubmit}>
                             <div className="flex items-start gap-3">
                                 {/* 프로필 둥근 이미지 (임시, 사용자 첫글자 원) */}
@@ -209,10 +240,30 @@ export function Home() {
                                         placeholder="좋아하는 음악을 공유해보세요!"
                                         className="w-full resize-none border-none focus:ring-0 text-base placeholder-gray-400 outline-none min-h-[44px] bg-transparent"
                                     />
+                                    {/* 노래 미리보기 */}
+                                    {selectedMusic && (
+                                        <div
+                                            className="flex items-center gap-3 p-3 rounded-lg bg-[#f5faff] hover:bg-[#e1effc] transition-colors border border-[#d4e7fa]"
+                                        >
+                                            <img src={selectedMusic.albumCover} alt={selectedMusic.titleShort} className="w-16 h-16 rounded-lg object-cover" />
+                                            <div>
+                                                <div className="font-semibold">{selectedMusic.titleShort}</div>
+                                                <div className="text-xs text-gray-600">{selectedMusic.artistName}</div>
+                                            </div>
+                                            {/* <button type="button" className='cursor-pointer ml-auto' onClick={(e) => {
+                                                // 재생 누르면 모달 꺼짐 방지
+                                                e.stopPropagation();
+                                                setPreviewUrl(selectedMusic.preview);
+                                            }}
+                                            ><FiPlay className="inline text-xl" color="#7faaf9" /></button> */}
+                                        </div>
+
+                                    )}
+
                                     {/* 새 이미지 미리보기 */}
                                     <div className="img-preview-list flex flex-wrap gap-2 mt-3">
-                                        {images.length > 0 && images.map((img, idx) => (
-                                            <div className="relative w-[100px] h-[100px]" key={idx}>
+                                        {images.length > 0 && images.map((img) => (
+                                            <div className="relative w-[100px] h-[100px]" key={img.id}>
                                                 <button
                                                     type="button"
                                                     className="absolute top-[3px] right-[3px] bg-black/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs cursor-pointer"
@@ -222,7 +273,7 @@ export function Home() {
                                                 </button>
                                                 <img
                                                     src={getImages(img)}
-                                                    alt={`업로드 이미지${idx + 1}`}
+                                                    alt={`업로드 이미지${img.id + 1}`}
                                                     className="w-full h-full object-cover rounded-lg"
                                                 />
                                             </div>
@@ -298,9 +349,9 @@ export function Home() {
                                     onChange={handleMusicSearch}
                                     className="w-full border rounded-lg px-4 py-3 text-base outline-none placeholder:text-gray-400 bg-gray-50"
                                 />
-                                {previewUrl && (
-                                    <audio controls src={previewUrl} autoPlay className="w-full mt-2" />
-                                )}
+                                {/* {previewUrl && (
+                                    <audio controls src={previewUrl} autoPlay className="w-full mt-2 hidden" />
+                                )} */}
                             </div>
 
                             {/* 결과목록 */}
@@ -322,12 +373,16 @@ export function Home() {
                                             <div className="text-sm text-gray-500">{m.artistName}</div>
                                             {m.albumTitle && <div className="text-xs text-gray-400">{m.albumTitle}</div>}
                                         </div>
-                                        <button type="button" className='cursor-pointer' onClick={(e) => {
+                                        <button type="button" className='cursor-pointer group' onClick={(e) => {
                                             // 재생 누르면 모달 꺼짐 방지
                                             e.stopPropagation();
-                                            setPreviewUrl(m.preview);
+                                            { previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview); }
                                         }}
-                                        ><FiPlay className="inline text-xl" color="#7faaf9" /></button>
+                                        >{previewUrl === m.preview ?
+                                            <FiPause className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />
+                                            :
+                                            <FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />}
+                                        </button>
                                     </div>
                                 )) : (
                                     // 결과 없을 때
@@ -346,13 +401,21 @@ export function Home() {
             }
 
             {/* 새 게시글 */}
-            <button type='button' className='cursor-pointer'>새 게시글 새고</button>
-            {/* 피드 목록 */}
+            <button type='button' className='cursor-pointer' onClick={handleRefresh}>새 게시글 새고</button>
+            {previewUrl && (
+                <audio controls src={previewUrl} autoPlay className="hidden" />
+            )}
 
+
+            {/* 피드 */}
             < div className="flex flex-col gap-3" >
                 {
-                    communities1.map((c, idx) => (
-                        <div key={idx} className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
+                    (feed ?? []).map((c) => (
+                        <div key={c.id} onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDetail(c.id)
+                        }} className="bg-white hover:bg-gray-50 p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200 cursor-pointer">
                             <div className="flex items-center gap-3">
                                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
                                     {c.users?.img
@@ -366,21 +429,32 @@ export function Home() {
                                     <span className="ml-2 text-gray-400 text-xs">{dayjs(c.created_at).fromNow()}</span>
                                 </div>
                                 {/* <button type='button' className='cursor-pointer' onClick={() => deleteCommunity(c.id)}>삭제</button> */}
-                                {user.id && (
+                                {tab === 'all' && user.id && (
                                     <div className="ml-auto">
                                         {c.users?.id === user?.id ? (
                                             <button
                                                 className="text-gray-500 hover:text-red-500 font-bold cursor-pointer"
-                                                onClick={() => deleteCommunity(c.id)}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    deleteCommunity(c.id)
+                                                }}
                                             >
                                                 삭제
                                             </button>
                                         ) : (
                                             <button
-                                                className="text-gray-500 font-bold hover:text-blue-500"
-                                            onClick={() => followOrUnfollow(c.users?.id, c.users?._following)}
+                                                className="text-gray-500 font-bold hover:text-blue-500 cursor-pointer"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    followOrUnfollow(c.users?.id, c.users?._following)
+                                                }}
                                             >
-                                                {c.users?._following ? '팔로우 취소' : '팔로우'}
+                                                {c.users?._following ?
+                                                    <div className='text-gray-500 border border-gray-500 rounded-2xl px-3 py-1'>언팔로우 </div>
+                                                    :
+                                                    <div className='text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white transition-colors rounded-2xl px-3 py-1'>팔로우</div>}
                                             </button>
                                         )}
                                     </div>
@@ -393,25 +467,42 @@ export function Home() {
                             <div className="text-base text-gray-900 whitespace-pre-line">{c.content}</div>
 
                             {/* 음악 카드 */}
-                            {c.music && (
-                                <div className="flex items-center gap-3 p-3 rounded-lg bg-[#f5faff] border border-[#d4e7fa]">
-                                    <img src={c.music.cover} alt={c.music.title} className="w-16 h-16 rounded-lg object-cover" />
-                                    <div>
-                                        <div className="font-semibold">{c.music.title}</div>
-                                        <div className="text-xs text-gray-600">{c.music.artist}</div>
-                                        {/* <a href={c.music.url} target="_blank" rel="noreferrer" className="text-[#418FDE] underline text-xs">{c.music.url}</a> */}
+                            {c.musics && c.musics.length > 0 && (
+                                c.musics.map((m, i) => (
+                                    <div
+                                        key={i}
+                                        className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 
+                                        transition-colors border border-gray-200"
+                                    >
+                                        <img src={m.albumCover} alt={m.titleShort} className="w-16 h-16 rounded-lg object-cover" />
+                                        <div>
+                                            <div className="font-semibold">{m.titleShort}</div>
+                                            <div className="text-xs text-gray-600">{m.artistName}</div>
+                                        </div>
+                                        <button type="button" className='cursor-pointer ml-auto group' onClick={(e) => {
+                                            // 재생 누르면 모달 꺼짐 방지
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            { previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview); }
+                                        }}
+                                        >{previewUrl === m.preview ?
+                                            <FiPause className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />
+                                            :
+                                            <FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />}
+                                        </button>
                                     </div>
-                                </div>
+
+                                ))
                             )}
 
                             {/* 사진 */}
                             {c.images && c.images.length > 0 && (
                                 <div className="mt-3 flex gap-2">
-                                    {c.images.map((img, idx) => (
+                                    {c.images.map((img) => (
                                         <img
-                                            key={idx}
+                                            key={img.id}
                                             src={getImages(img)} // DB images 테이블 url 컬럼이 path임
-                                            alt={`게시글 이미지${idx + 1}`}
+                                            alt={`게시글 이미지${img.id + 1}`}
                                             className="w-full max-w-[160px] h-auto rounded-lg object-cover"
                                         />
                                     ))}
@@ -421,7 +512,6 @@ export function Home() {
                             <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
                                 <div className="flex items-center gap-1"><FiMessageCircle className="inline" /> {c.comments}</div>
                                 <div className="flex items-center gap-1"><FiHeart className="inline" /> {c.likes}</div>
-                                {/* 기타 아이콘 더 필요시 추가 */}
                             </div>
                         </div>
                     ))

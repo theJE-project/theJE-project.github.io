@@ -24,6 +24,11 @@ export {
 } from './home'
 
 export {
+    HomeDetail,
+    loader as homeDetailLoader,    
+} from './homeDetail'
+
+export {
     My,
     loader as myloader,
 } from './my'
@@ -41,3 +46,11 @@ export {
 export {
     Loading
 } from './loading'
+
+export {
+    Notifications
+} from './notifications'
+
+export {
+    Search
+} from './search'

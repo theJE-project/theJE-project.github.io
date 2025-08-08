@@ -2,6 +2,7 @@ import { createHashRouter } from "react-router-dom";
 import {
     Layout, layoutLoader,
     Home, homeLoader,
+    HomeDetail, homeDetailLoader,
     Group, groupLoader,
     GroupCreate, groupCreateLoader,
     GroupDetail, groupDetailLoader,
@@ -10,6 +11,8 @@ import {
     SignUp,
     Redirect,
     ErrorBoundary,
+    Notifications,
+    Search, 
 } from "@pages";
 
 export const router = createHashRouter([
@@ -25,6 +28,12 @@ export const router = createHashRouter([
                 id: 'home',
                 loader:homeLoader,
                 element: <Home />,
+            },
+            {
+                path: '/:id',
+                id: 'homeDetail',
+                loader:homeDetailLoader,
+                element: <HomeDetail />,
             },
             {
                 path: 'group',
@@ -65,6 +74,16 @@ export const router = createHashRouter([
                 path: 'login/redirect',
                 id: 'redirect',
                 element: <Redirect />
+            },
+                        {
+                path: 'notifications',
+                id: 'notifications',
+                element: <Notifications />
+            },
+            {
+                path: '/search',
+                id: 'search',
+                element: <Search />
             }
         ]
     }
