@@ -4,7 +4,7 @@ import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
 import { useMusic } from '../../hooks/useMusics';
-import { FiImage, FiMusic, FiMessageCircle, FiHeart, FiPlay, FiPause, FiBarChart2 } from "react-icons/fi";
+import { FiImage, FiMusic, FiMessageCircle, FiHeart, FiPlay, FiPause, FiBarChart2, FiUserPlus, FiAlertTriangle } from "react-icons/fi";
 import TextareaAutosize from 'react-textarea-autosize';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -191,10 +191,6 @@ export function Home() {
     }
 
 
-
-
-
-
     // console.log(loader);
     // console.log(musics);
     // console.log(user.name);
@@ -203,7 +199,7 @@ export function Home() {
             {/* 전체/팔로잉 탭 */}
             {user?.id && (
                 <>
-                    <div className="flex h-12 sticky top-17 bg-white/90">
+                    <div className="flex h-12 sticky top-17 bg-white/90" onClick={() => handleRefresh()}>
                         <button
                             className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
             ${tab === 'all'
@@ -226,8 +222,9 @@ export function Home() {
                         </button>
                     </div>
                     {/* <h3 className="font-bold text-lg mb-3">피드</h3> */}
+
                     {/* 글쓰기 */}
-                    <div className="bg-white p-5 rounded-b-lg mb-6 border-1 border-gray-200">
+                    <div className="bg-white p-5 rounded-b-lg mb-10 border-1 border-gray-200">
                         <form onSubmit={handleSubmit}>
                             <div className="flex items-start gap-3">
                                 {/* 프로필 둥근 이미지 (임시, 사용자 첫글자 원) */}
@@ -304,8 +301,9 @@ export function Home() {
                                     </div>
                                 </div>
                                 <button
+                                    disabled={!content && !images.length && !selectedMusic}
                                     type="submit"
-                                    className="ml-2 px-5 py-2 bg-[#418FDE] text-white font-bold rounded-full shadow hover:bg-[#367cb3] transition cursor-pointer"
+                                    className="ml-2 px-5 py-2 bg-blue-500 text-white font-bold rounded-full hover:bg-blue-400 disabled:bg-gray-300 transition cursor-pointer"
                                 >
                                     공유하기
                                 </button>
@@ -406,11 +404,13 @@ export function Home() {
             }
 
             {/* 새 게시글 */}
-            <button type='button' className='cursor-pointer' onClick={handleRefresh} disabled={revalidator.state === 'loading'}>{revalidator.state === 'loading' ? '...' : '새 게시글'}</button>
+            {/* <div type='button' className='cursor-pointer mx-auto flex items-center' onClick={handleRefresh} 
+            disabled={revalidator.state === 'loading'}>
+                {revalidator.state === 'loading' ? '...' : ''}
+            </div> */}
             {previewUrl && (
                 <audio controls src={previewUrl} autoPlay className="hidden" />
             )}
-
             {/* 피드 */}
             <div className="flex flex-col gap-3">
                 {(feed ?? []).map((c) => (
@@ -438,7 +438,7 @@ export function Home() {
                                 <div className="flex items-center gap-2">
                                     <span className="font-bold truncate">{c?.users?.name}</span>
                                     <span className="text-gray-500 text-sm">@{c?.users?.account}</span>
-                                    <span className="text-gray-400 text-xs">· {dayjs(c.created_at).fromNow()}</span>
+                                    <span className="text-gray-400 text-xs"> {dayjs(c.created_at).fromNow()}</span>
 
                                     {tab === 'all' && user?.id && (
                                         <div className="ml-auto">
@@ -455,8 +455,8 @@ export function Home() {
                                             ) : (
                                                 <button
                                                     className={`border rounded-2xl px-3 py-1 font-semibold cursor-pointer transition-colors ${c?.users?._following
-                                                            ? 'text-gray-500 border-gray-500 hover:bg-gray-500 hover:text-white'
-                                                            : 'text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white'
+                                                        ? 'text-gray-500 border-gray-500 hover:bg-gray-500 hover:text-white'
+                                                        : 'text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white'
                                                         }`}
                                                     onClick={(e) => {
                                                         e.preventDefault();
