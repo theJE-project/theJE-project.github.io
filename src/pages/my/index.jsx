@@ -3,11 +3,12 @@ import { springBoot } from '../../axios/springboot';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 export { loader } from './loader';
 
-// ⭐ 이미지 주소 앞에 백엔드 서버 주소를 붙여주는 함수
+// 이미지 주소 앞에 백엔드 서버 주소를 붙여주는 함수
 const getImgUrl = (img) => {
     if (!img) return null; // 이미지가 없으면 null 반환
     return img.startsWith('http') ? img : `http://localhost:8888${img}`;
 };
+
 
 export function My() {
     const userId = localStorage.getItem('user-id');
@@ -43,7 +44,7 @@ export function My() {
                 setProfile(res.data);
                 setEditForm({
                     name: res.data.name || '',
-                    content: res.data.content || '',  
+                    content: res.data.content || '',
                     img: res.data.img || '',
                 });
                 console.log('profile', res.data);
@@ -60,8 +61,8 @@ export function My() {
                     size: 10,
                 }
             })
-            .then(res => setPosts(res.data || []))
-            .catch(() => setPosts([]));
+                .then(res => setPosts(res.data || []))
+                .catch(() => setPosts([]));
         }
 
         if (activeTab === "playlists") {
@@ -73,8 +74,8 @@ export function My() {
                     size: 10,
                 }
             })
-            .then(res => setPlaylists(res.data || []))
-            .catch(() => setPlaylists([]));
+                .then(res => setPlaylists(res.data || []))
+                .catch(() => setPlaylists([]));
         }
 
         if (activeTab === "liked") {
@@ -107,7 +108,7 @@ export function My() {
             await springBoot.put('users', {
                 id: userId,
                 name: editForm.name,
-                content: editForm.content,   
+                content: editForm.content,
                 img: editForm.img,
             });
             sessionStorage.removeItem('user');
@@ -147,7 +148,13 @@ export function My() {
     };
 
     // 카드 렌더링 공통 함수
-    const renderCard = (item) => (
+const renderCard = (item) => {
+    console.log("🧩 카드 아이템:", item);
+
+    // 이미지가 있으면 첫 번째 이미지를 가져와 URL 생성
+    const imageUrl = item.images?.[0]?.url ? getImgUrl(item.images[0].url) : null;
+
+    return (
         <div key={item.id} className="border-b border-gray-100 pb-6 last:border-b-0">
             <div className="flex items-center mb-2">
                 <div className="relative w-12 h-12 mr-3">
@@ -167,14 +174,40 @@ export function My() {
                 <span className="ml-2 text-gray-500">@{profile.account}</span>
                 <span className="ml-4 text-gray-400 text-sm">{item.createdAt || item.created_at}</span>
             </div>
-            <div className="mb-2 font-bold text-xl">{item.title || item.name || item.content || '제목 없음'}</div>
-            <div className="mb-3 text-gray-700">{item.content || item.artist || ''}</div>
+
+            {/* 플레이리스트 제목 (카테고리 2번) */}
+            {item?.category === 2 && (
+                <div className="mb-2 text-gray-800 truncate whitespace-nowrap overflow-hidden text-sm">
+                    {item.title || '제목 없음'}
+                </div>
+            )}
+
+            {/* 본문 텍스트 */}
+            <div className="mb-3 text-gray-700">
+                {item.content || item.artist || ''}
+            </div>
+
+            {/* 게시글 이미지 */}
+            {imageUrl && (
+                <div className="mt-2">
+                    <img
+                        src={imageUrl}
+                        alt="게시글 이미지"
+                        className="max-w-full rounded-lg border"
+                    />
+                </div>
+            )}
+
+            {/* 댓글 수 / 좋아요 수 */}
             <div className="flex space-x-6 text-gray-500 mt-2">
                 <span className="flex items-center"><span role="img" aria-label="댓글">💬</span>&nbsp;{item.commentsCount || 0}</span>
                 <span className="flex items-center"><span role="img" aria-label="좋아요">❤️</span>&nbsp;{item.likesCount || 0}</span>
             </div>
         </div>
     );
+};
+
+
 
     return (
         <div className="max-w-3xl mx-auto py-10">
