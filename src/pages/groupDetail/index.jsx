@@ -1,32 +1,40 @@
 import { useEffect, useState } from 'react';
-import { useParams, useRouteLoaderData } from 'react-router-dom';
+import { useNavigate, useParams, useRouteLoaderData } from 'react-router-dom';
 import { springBoot } from '../../axios/springboot';
 import { useImage } from '../../hooks';
 import { FaListUl, FaUserCircle } from 'react-icons/fa';
+import { GiConsoleController } from 'react-icons/gi';
+import { HiDotsVertical } from 'react-icons/hi';
 
 
 export { loader } from './loader'
 
 export function GroupDetail() {
+    const navigate = useNavigate();
     const { id } = useParams(); // 게시글 id 값 받음
     const { getImages } = useImage(); // 이미지 가져오기
-
     const { user } = useRouteLoaderData('default'); // 로그인 사용자
-    const [playlistData, setPlaylistData] = useState(null);
-    const [isFollowing, setIsFollowing] = useState(false);
+
+    const [playlistData, setPlaylistData] = useState(null); // 플레이리스트데이터
+    const [isFollowing, setIsFollowing] = useState(false); // 팔로우
+    const [isMenuOpen, setIsMenuOpen] = useState();
 
 
     useEffect(() => {
         async function fetchData() {
             try {
-                const response = await springBoot.get(`communities/community/${id}`);
-                setPlaylistData(response.data);
+                const response = await springBoot.get(`communities/community/${id}`, {
+                    params: {
+                        user: user.id,
+                    }
+                });
 
-                if (response.data.users.isFollowing !== undefined) {
-                    setIsFollowing(response.data.users.isFollowing);
+                if (response.data.users._following !== undefined) {
+                    setIsFollowing(response.data.users._following);
                 }
 
                 console.log(response.data);
+                setPlaylistData(response.data);
             } catch (error) {
                 console.error('API 호출 오류:', error);
             }
@@ -35,10 +43,63 @@ export function GroupDetail() {
         fetchData();
     }, [id])
 
+    // 팔로우 
+    const handleFollowToggle = async () => {
+        if(!user.id){
+            alert("로그인 후 이용해주세요")
+        }
+
+
+        try {
+            if (!playlistData?.users?.id) return;
+
+            // 언팔로우
+            if (isFollowing) {
+                const confirmUnfollow = window.confirm("언팔로우 하시겠습니까?");
+                if (!confirmUnfollow) return;
+                
+                await springBoot.delete('followers/delete', {
+                    params: {
+                        follower: user.id, // 로그인 사용자
+                        followee: playlistData.users.id // 상대방
+                    }
+                });
+                setIsFollowing(false);
+
+            } else { // 팔로잉
+                await springBoot.post('/followers', {
+                    follower: user.id,
+                    followee: playlistData.users.id
+
+                });
+                setIsFollowing(true);
+            }
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    const toggleMenu = () => {
+        setIsMenuOpen(prev => !prev);;
+    };
+
+    const handleDelete = async () => {
+        const result = confirm("플레이리스트를 삭제하시겠습니까?");
+
+        if (result) {
+            await springBoot.delete(`/communities/${id}`);
+            alert("삭제가 완료되었습니다.")
+            navigate('/group');
+        } else {
+            return;
+        }
+    }
+
     return (
-        <div className="flex flex-col items-center p-6 min-h-screen">
+        <div className="flex flex-col items-center min-h-screen">
             {playlistData ? (
-                <div className="w-full max-w-4xl">
+                <div className="p-6 w-full max-w-4xl">
                     {/* 대표이미지 */}
                     <div className="w-full mb-6 flex justify-center">
                         <img
@@ -47,13 +108,41 @@ export function GroupDetail() {
                                 : playlistData.musics[0]?.albumCover
                                 }`}
                             alt="image error"
-                            className=" object-cover h-80 w-80 rounded-md"
+                            className="h-48 w-48 object-cover sm:h-80 sm:w-80 rounded-md"
                         />
                     </div>
 
                     {/* 제목 */}
-                    <h1 className="text-3xl font-bold mb-2">{playlistData.title}</h1>
-                    <span className="text-xs">{playlistData.created_at}</span>
+                    <div className='flex justify-between'>
+                        <div className=''>
+                            <h1 className="text-3xl font-bold mb-2">{playlistData.title}</h1>
+                            <span className="text-sm text-gray-500"> {(() => {
+                                const date = new Date(playlistData.created_at);
+                                return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+                            })()}</span>
+
+                        </div>
+                        {/* 드롭메뉴 */}
+                        {user && playlistData.users.id === user.id && (
+                            <div className="relative">
+                                <button onClick={toggleMenu} className="text-gray-600">
+                                    <HiDotsVertical size={18} />
+                                </button>
+
+                                {isMenuOpen && (
+                                    <div className="absolute right-0 mt-2 bg-white shadow-gray-300 rounded shadow z-10 w-18">
+                                        <button
+                                            onClick={handleDelete}
+                                            className="block w-full text-center px-3 py-2 text-sm hover:bg-red-100 hover:text-red-500 "
+                                        >
+                                            삭제
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                    </div>
 
                     {/* 작성자 정보 */}
                     <div className="flex items-center justify-between my-2">
@@ -61,7 +150,8 @@ export function GroupDetail() {
                             <div>
                                 {playlistData.users.img ? (
                                     <img
-                                        src={playlistData.users.img}
+                                        src={getImages(playlistData.users.img)}
+                                        alt='작성자 프로필'
                                         className='rounded-full object-cover' />
                                 ) : (
                                     <FaUserCircle className='text-gray-400' />
@@ -69,12 +159,14 @@ export function GroupDetail() {
                             </div>
                             <span className='font-medium'> {playlistData.users.name}</span>
 
+                            {/* 팔로우 버튼 */}
                             {user && playlistData.users.id !== user.id && (
                                 <button
-                                    className={`text-xs px-3 py-0.5 rounded border ${isFollowing ? 'border-gray-400 text-gray-300' : 'border-blue-500 text-blue-500'
+                                    onClick={handleFollowToggle}
+                                    className={`text-xs px-3 py-0.5 rounded-2xl border ${isFollowing ? 'border-gray-400 text-black bg-gray-200' : 'bg-blue-400 text-white'
                                         }`}
                                 >
-                                    {isFollowing ? '팔로잉' : '언팔로우'}
+                                    {isFollowing ? '팔로잉' : '팔로우'}
                                 </button>
                             )}
                         </div>
@@ -93,7 +185,7 @@ export function GroupDetail() {
                     </div>
 
                     {/* 음악 리스트 */}
-                    <div className="my-2 p-4 bg-lime-100/50 rounded-xl border border-gray-300">
+                    <div className="my-2 p-4 bg-blue-200/30 rounded-xl border border-gray-300">
                         <div className='flex justify-between font-medium '>
                             <span className='flex items-center gap-2'><FaListUl />음악 목록</span>
                             <span>{playlistData.musics.length} 곡</span>
@@ -101,20 +193,19 @@ export function GroupDetail() {
                         {playlistData.musics.map((track, index) => (
                             <div
                                 key={index}
-                                className="flex px-4 py-3 rounded-lg"
+                                className="flex flex-wrap px-4 py-3 rounded-lg"
                             >
-                                <div className='h-full w-20'>
+                                <div className='h-full'>
                                     <img src={track.albumCover}
-                                        className='rounded-xl' />
+                                        className='h-20 w-20 rounded-xl' />
                                 </div>
 
-                                <div className='flex justify-between items-center w-full'>
-                                    <div className='ml-4 flex flex-col gap-'>
-                                        <p className="font-semibold">{track.titleShort}</p>
-                                        <p className="text-sm text-gray-400">{track.artistName}</p>
-                                    </div>
-                                    <div>
-                                        {/* 음악 재생 버튼 */}
+
+                                <div className='ml-4 flex flex-col justify-center gap-1 '>
+                                    <p className="font-semibold">{track.titleShort}</p>
+                                    <p className="text-sm text-gray-400">{track.artistName}</p>
+                                </div>
+                                {/* <div>
                                         {track.preview && (
                                             <audio controls className='p-0 ' >
                                                 <source src={track.preview} type='audio/mpeg' />
@@ -122,7 +213,16 @@ export function GroupDetail() {
                                             </audio>
                                         )}
 
-                                    </div>
+                                    </div> */}
+
+                                <div className='ml-auto'>
+                                    {/* 음악 재생 버튼 */}
+                                    {track.preview && (
+                                        <audio controls className='p-0 ' >
+                                            <source src={track.preview} type='audio/mpeg' />
+                                            브라우저가 오디오를 지원 X
+                                        </audio>
+                                    )}
                                 </div>
 
                             </div>

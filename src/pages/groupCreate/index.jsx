@@ -70,6 +70,7 @@ export function GroupCreate() {
 
         try {
             await fetchPlaylistData(data);
+            alert("플레이리스트 생성이 완료되었습니다.")
             navigate('/group');
         } catch (error) {
             
