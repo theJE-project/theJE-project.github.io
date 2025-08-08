@@ -1,4 +1,4 @@
-import { useLoaderData, useRouteLoaderData, useNavigate } from 'react-router-dom'
+import { useLoaderData, useRouteLoaderData, useNavigate, useRevalidator } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
@@ -12,7 +12,10 @@ import 'dayjs/locale/ko';
 export function Home() {
     const { communities1, followingCommunities } = useLoaderData();
     const { user, categories } = useRouteLoaderData('default');
+
     const navigate = useNavigate();
+    const revalidator = useRevalidator();
+
     const [content, setContent] = useState('');
     const { musics, getMusics } = useMusic();
     const [selectedMusic, setSelectedMusic] = useState(null);
@@ -33,10 +36,11 @@ export function Home() {
         setFeed(tab === 'all' ? communities1 : followingCommunities);
     }, [tab, communities1, followingCommunities]);
 
-    const handleRefresh = async () => {
-        const updated = tab === 'all' ? await communities1 : await followingCommunities;
-        setFeed(updated);
+    // 피드 새로고침
+    const handleRefresh = () => {
+        revalidator.revalidate();
     }
+
 
     // 글작성 api 호출
     const postCommunity = async (data) => {
@@ -55,6 +59,7 @@ export function Home() {
         if (!confirm('게시글을 삭제할까요?')) return;
         try {
             const response = await springBoot.put(`/communities/${id}`);
+            revalidator.revalidate();
             const result = response.data;
             return result;
         } catch (error) {
@@ -107,6 +112,7 @@ export function Home() {
                 if (!confirm(`${userName} 님을 팔로우 하시겠습니까?`)) return;
                 result = await follow(target);
             }
+            revalidator.revalidate();
             console.log(result);
         } catch (error) {
             console.log("팔로우/언팔로우 실패", error);
@@ -137,20 +143,6 @@ export function Home() {
         console.log("선택된 음악:", m);
     }
 
-
-    // 피드 새고? 하려는건데 안쓸수도
-    /*
-    const fetchFeed = async () => {
-        const res = await springBoot.get('/communities');
-        try{
-            setFeed(res.data);
-        }catch(error){
-            console.log("피드 불러오기 실패", error);
-        }
-        
-    }
-    /**/
-
     // 상세페이지 이동
     const handleDetail = (id) => navigate(`/${id}`);
 
@@ -172,7 +164,9 @@ export function Home() {
         const result = await postCommunity(data);
         try {
             setContent('');
-            //fetchFeed(); // 새 글 작성 후 피드 갱신
+            images.length=0;
+            setSelectedMusic(null);
+            revalidator.revalidate();
             console.log("글 작성 성공:", result);
         } catch (error) {
             console.error("글 작성 실패", error);
@@ -180,11 +174,6 @@ export function Home() {
         }
     }
 
-    /*
-    useEffect(()=>{
-        fetchFeed();
-    },[]);
-    /**/
 
 
 
@@ -401,7 +390,7 @@ export function Home() {
             }
 
             {/* 새 게시글 */}
-            <button type='button' className='cursor-pointer' onClick={handleRefresh}>새 게시글 새고</button>
+            <button type='button' className='cursor-pointer' onClick={handleRefresh} disabled={revalidator.state === 'loading'}>{revalidator.state === 'loading' ? '...' : '새 게시글'}</button>
             {previewUrl && (
                 <audio controls src={previewUrl} autoPlay className="hidden" />
             )}
@@ -418,20 +407,20 @@ export function Home() {
                         }} className="bg-white hover:bg-gray-50 p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200 cursor-pointer">
                             <div className="flex items-center gap-3">
                                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
-                                    {c.users?.img
-                                        ? <img src={c.users.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
+                                    {c?.users?.img
+                                        ? <img src={c.users?.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
                                         : c.users?.name?.charAt(0)
                                     }
                                 </div>
                                 <div>
-                                    <span className="font-bold">{c.users?.name}</span>
-                                    <span className="ml-1 text-gray-500 text-sm">@{c.users?.account}</span>
+                                    <span className="font-bold">{c?.users?.name}</span>
+                                    <span className="ml-1 text-gray-500 text-sm">@{c?.users?.account}</span>
                                     <span className="ml-2 text-gray-400 text-xs">{dayjs(c.created_at).fromNow()}</span>
                                 </div>
                                 {/* <button type='button' className='cursor-pointer' onClick={() => deleteCommunity(c.id)}>삭제</button> */}
                                 {tab === 'all' && user.id && (
                                     <div className="ml-auto">
-                                        {c.users?.id === user?.id ? (
+                                        {c?.users?.id === user?.id ? (
                                             <button
                                                 className="text-gray-500 hover:text-red-500 font-bold cursor-pointer"
                                                 onClick={(e) => {
@@ -448,10 +437,10 @@ export function Home() {
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
-                                                    followOrUnfollow(c.users?.id, c.users?._following)
+                                                    followOrUnfollow(c?.users?.id, c?.users?._following, c?.users?.name)
                                                 }}
                                             >
-                                                {c.users?._following ?
+                                                {c?.users?._following ?
                                                     <div className='text-gray-500 border border-gray-500 rounded-2xl px-3 py-1'>언팔로우 </div>
                                                     :
                                                     <div className='text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white transition-colors rounded-2xl px-3 py-1'>팔로우</div>}
@@ -468,9 +457,9 @@ export function Home() {
 
                             {/* 음악 카드 */}
                             {c.musics && c.musics.length > 0 && (
-                                c.musics.map((m, i) => (
+                                c.musics.map((m) => (
                                     <div
-                                        key={i}
+                                        key={m.id}
                                         className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 
                                         transition-colors border border-gray-200"
                                     >

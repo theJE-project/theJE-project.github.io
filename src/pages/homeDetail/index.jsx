@@ -1,4 +1,4 @@
-import { useLoaderData, useRouteLoaderData } from 'react-router-dom'
+import { useLoaderData, useRouteLoaderData, useRevalidator, useNavigate } from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
@@ -12,6 +12,8 @@ import 'dayjs/locale/ko';
 export function HomeDetail() {
     const { community } = useLoaderData();
     const { user, categories } = useRouteLoaderData('default');
+    const navigate = useNavigate();
+    const revalidator = useRevalidator();
     const [content, setContent] = useState('');
     const { musics, getMusics } = useMusic();
     const [selectedMusic, setSelectedMusic] = useState(null);
@@ -31,6 +33,8 @@ export function HomeDetail() {
         if (!confirm('게시글을 삭제할까요?')) return;
         try {
             const response = await springBoot.put(`/communities/${id}`);
+            revalidator.revalidate();
+            navigate('/');
             const result = response.data;
             return result;
         } catch (error) {
@@ -75,12 +79,13 @@ export function HomeDetail() {
         try {
             let result;
             if (isFollowing) {
-                if(!confirm(`${userName} 님을 팔로우 취소 하시겠습니까?`)) return;
+                if (!confirm(`${userName} 님을 팔로우 취소 하시겠습니까?`)) return;
                 result = await unfollow(target);
             } else {
-                if(!confirm(`${userName} 님을 팔로우 하시겠습니까?`)) return;
+                if (!confirm(`${userName} 님을 팔로우 하시겠습니까?`)) return;
                 result = await follow(target);
             }
+            revalidator.revalidate();
             console.log(result);
         } catch (error) {
             console.log("팔로우/언팔로우 실패", error);
@@ -91,99 +96,102 @@ export function HomeDetail() {
     return (
         <div className="w-full max-w-[600px] mx-auto">
             {/* 피드 */}
-            < div className="flex flex-col gap-3" >
-                <div className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
-                    <div className="flex items-center gap-3">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
-                            {community.users?.img
-                                ? <img src={community.users.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
-                                : community.users?.name?.charAt(0)
-                            }
-                        </div>
-                        <div>
-                            <span className="font-bold">{community.users?.name}</span>
-                            <span className="ml-1 text-gray-500 text-sm">@{community.users?.account}</span>
-                            <span className="ml-2 text-gray-400 text-xs">{dayjs(community.created_at).fromNow()}</span>
-                        </div>
-                        {/* <button type='button' className='cursor-pointer' onClick={() => deleteCommunity(c.id)}>삭제</button> */}
-                        {user.id && (
-                            <div className="ml-auto">
-                                {community.users?.id === user?.id ? (
-                                    <button
-                                        className="text-gray-500 hover:text-red-500 font-bold cursor-pointer"
-                                        onClick={() => deleteCommunity(community.id)}
-                                    >
-                                        삭제
-                                    </button>
-                                ) : (
-                                    <button
-                                        className="cursor-pointer"
-                                        onClick={() => 
-                                            followOrUnfollow(community.users?.id, community.users?._following, community.users?.name)}
-                                    >
-                                        {community.users?._following ? 
-                                        <div className='text-white bg-blue-500 rounded-2xl px-3 py-1'>팔로우 취소</div> 
-                                        : 
-                                        <div className='text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white transition-colors rounded-2xl px-3 py-1'>팔로우</div>}
-                                    </button>
-                                )}
+            { !community.id && <button className='cursor-pointer' onClick={()=>navigate('/')}>삭제된 글입니다.홈으로</button>}
+            { community.id && community.users &&
+                < div className="flex flex-col gap-3" >
+                    <div className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
+                        <div className="flex items-center gap-3">
+                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
+                                {community?.users?.img
+                                    ? <img src={community.users?.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
+                                    : community.users?.name?.charAt(0)
+                                }
                             </div>
+                            <div>
+                                <span className="font-bold">{community?.users?.name}</span>
+                                <span className="ml-1 text-gray-500 text-sm">@{community?.users?.account}</span>
+                                <span className="ml-2 text-gray-400 text-xs">{dayjs(community.created_at).fromNow()}</span>
+                            </div>
+                            {/* <button type='button' className='cursor-pointer' onClick={() => deleteCommunity(c.id)}>삭제</button> */}
+                            {user.id && (
+                                <div className="ml-auto">
+                                    {community?.users?.id === user?.id ? (
+                                        <button
+                                            className="text-gray-500 hover:text-red-500 font-bold cursor-pointer"
+                                            onClick={() => deleteCommunity(community.id)}
+                                        >
+                                            삭제
+                                        </button>
+                                    ) : (
+                                        <button
+                                            className="cursor-pointer"
+                                            onClick={() =>
+                                                followOrUnfollow(community?.users?.id, community?.users?._following, community?.users?.name)}
+                                        >
+                                            {community?.users?._following ?
+                                                <div className='text-white bg-blue-500 rounded-2xl px-3 py-1'>팔로우 취소</div>
+                                                :
+                                                <div className='text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white transition-colors rounded-2xl px-3 py-1'>팔로우</div>}
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
+                        </div>
+
+
+                        {/* 글 내용 */}
+                        <div className="text-base text-gray-900 whitespace-pre-line">{community?.content}</div>
+
+                        {/* 음악 카드 */}
+                        {previewUrl && (
+                            <audio controls src={previewUrl} autoPlay className="hidden" />
+                        )}
+                        {community?.musics && community?.musics.length > 0 && (
+                            community?.musics.map((m) => (
+                                <div
+                                    key={m.id}
+                                    className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 
+                                                    transition-colors border border-gray-200"
+                                >
+                                    <img src={m.albumCover} alt={m.titleShort} className="w-16 h-16 rounded-lg object-cover" />
+                                    <div>
+                                        <div className="font-semibold">{m.titleShort}</div>
+                                        <div className="text-xs text-gray-600">{m.artistName}</div>
+                                    </div>
+                                    <button type="button" className='cursor-pointer ml-auto group' onClick={(e) => {
+                                        // 재생 누르면 모달 꺼짐 방지
+                                        e.stopPropagation();
+                                        setPreviewUrl(m.preview);
+                                    }}
+                                    ><FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" /></button>
+                                </div>
+
+                            ))
                         )}
 
-                    </div>
-
-
-                    {/* 글 내용 */}
-                    <div className="text-base text-gray-900 whitespace-pre-line">{community.content}</div>
-
-                    {/* 음악 카드 */}
-                    {previewUrl && (
-                        <audio controls src={previewUrl} autoPlay className="hidden" />
-                    )}
-                    {community.musics && community.musics.length > 0 && (
-                        community.musics.map((m, i) => (
-                            <div
-                                key={i}
-                                className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 
-                                                    transition-colors border border-gray-200"
-                            >
-                                <img src={m.albumCover} alt={m.titleShort} className="w-16 h-16 rounded-lg object-cover" />
-                                <div>
-                                    <div className="font-semibold">{m.titleShort}</div>
-                                    <div className="text-xs text-gray-600">{m.artistName}</div>
-                                </div>
-                                <button type="button" className='cursor-pointer ml-auto group' onClick={(e) => {
-                                    // 재생 누르면 모달 꺼짐 방지
-                                    e.stopPropagation();
-                                    setPreviewUrl(m.preview);
-                                }}
-                                ><FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" /></button>
+                        {/* 사진 */}
+                        {community?.images && community?.images.length > 0 && (
+                            <div className="mt-3 flex gap-2">
+                                {community?.images.map((img) => (
+                                    <img
+                                        key={img.id}
+                                        src={getImages(img)} // DB images 테이블 url 컬럼이 path임
+                                        alt={`게시글 이미지${img.id + 1}`}
+                                        className="w-full max-w-[160px] h-auto rounded-lg object-cover"
+                                    />
+                                ))}
                             </div>
-
-                        ))
-                    )}
-
-                    {/* 사진 */}
-                    {community.images && community.images.length > 0 && (
-                        <div className="mt-3 flex gap-2">
-                            {community.images.map((img) => (
-                                <img
-                                    key={img.id}
-                                    src={getImages(img)} // DB images 테이블 url 컬럼이 path임
-                                    alt={`게시글 이미지${img.id + 1}`}
-                                    className="w-full max-w-[160px] h-auto rounded-lg object-cover"
-                                />
-                            ))}
+                        )}
+                        {/* 댓글/좋아요 아이콘들 */}
+                        <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
+                            <div className="flex items-center gap-1"><FiMessageCircle className="inline" /> {community.comments}</div>
+                            <div className="flex items-center gap-1"><FiHeart className="inline" /> {community.likes}</div>
+                            {/* 기타 아이콘 더 필요시 추가 */}
                         </div>
-                    )}
-                    {/* 댓글/좋아요 아이콘들 */}
-                    <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
-                        <div className="flex items-center gap-1"><FiMessageCircle className="inline" /> {community.comments}</div>
-                        <div className="flex items-center gap-1"><FiHeart className="inline" /> {community.likes}</div>
-                        {/* 기타 아이콘 더 필요시 추가 */}
                     </div>
-                </div>
-            </div >
+                </div >
+            }
         </div >
     )
 
