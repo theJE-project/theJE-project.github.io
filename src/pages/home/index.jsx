@@ -213,7 +213,7 @@ export function Home() {
                         <button
                             className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
             ${tab === 'following'
-                                    ? 'text-black border-b-5 border-blue-500 bg-gray-50'
+                                    ? 'text-black border-b-4 border-blue-500 bg-gray-50'
                                     : 'text-gray-500'}
             transition-colors duration-150`}
                             onClick={() => setTab('following')}
