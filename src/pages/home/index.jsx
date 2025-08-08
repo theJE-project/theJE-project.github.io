@@ -4,7 +4,7 @@ import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
 import { useMusic } from '../../hooks/useMusics';
-import { FiImage, FiMusic, FiMessageCircle, FiHeart, FiPlay, FiPause } from "react-icons/fi";
+import { FiImage, FiMusic, FiMessageCircle, FiHeart, FiPlay, FiPause, FiBarChart2 } from "react-icons/fi";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
@@ -143,9 +143,24 @@ export function Home() {
         console.log("선택된 음악:", m);
     }
 
-    // 상세페이지 이동
-    const handleDetail = (id) => navigate(`/${id}`);
+    // 조회수 증가 api 호출
+    const increaseView = async (id) => {
+        try {
+            const response = await springBoot.put(`/communities/view/${id}`);
+            revalidator.revalidate();
+            const result = response.data;
+            return result;
+        } catch (error) {
+            console.log("조회수 증가 api 호출 실패", error);
+            return null;
+        }
+    }
 
+    // 상세페이지 이동
+    const handleDetail = (id) => {
+        increaseView(id);
+        navigate(`/${id}`);
+    }
 
 
 
@@ -164,7 +179,7 @@ export function Home() {
         const result = await postCommunity(data);
         try {
             setContent('');
-            images.length=0;
+            images.length = 0;
             setSelectedMusic(null);
             revalidator.revalidate();
             console.log("글 작성 성공:", result);
@@ -395,117 +410,114 @@ export function Home() {
                 <audio controls src={previewUrl} autoPlay className="hidden" />
             )}
 
-
             {/* 피드 */}
-            < div className="flex flex-col gap-3" >
-                {
-                    (feed ?? []).map((c) => (
-                        <div key={c.id} onClick={(e) => {
+            <div className="flex flex-col gap-3">
+                {(feed ?? []).map((c) => (
+                    <div
+                        key={c.id}
+                        onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            handleDetail(c.id)
-                        }} className="bg-white hover:bg-gray-50 p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200 cursor-pointer">
-                            <div className="flex items-center gap-3">
-                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
+                            handleDetail(c.id);
+                        }}
+                        className="bg-white hover:bg-gray-50 p-5 rounded-lg border-1 border-gray-200 cursor-pointer"
+                    >
+                        <div className="flex gap-3">
+                            {/* 왼쪽 프로필 */}
+                            <div className="flex-shrink-0">
+                                <div className="w-10 h-10 rounded-full bg-blue-500 overflow-hidden flex items-center justify-center text-white font-bold text-lg">
                                     {c?.users?.img
-                                        ? <img src={c.users?.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
-                                        : c.users?.name?.charAt(0)
-                                    }
+                                        ? <img src={c.users.img} alt="profile" className="w-full h-full object-cover" />
+                                        : c?.users?.name?.charAt(0)}
                                 </div>
-                                <div>
-                                    <span className="font-bold">{c?.users?.name}</span>
-                                    <span className="ml-1 text-gray-500 text-sm">@{c?.users?.account}</span>
-                                    <span className="ml-2 text-gray-400 text-xs">{dayjs(c.created_at).fromNow()}</span>
+                            </div>
+
+                            {/* 오른쪽: 모든 내용 */}
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-bold truncate">{c?.users?.name}</span>
+                                    <span className="text-gray-500 text-sm">@{c?.users?.account}</span>
+                                    <span className="text-gray-400 text-xs">· {dayjs(c.created_at).fromNow()}</span>
+
+                                    {tab === 'all' && user?.id && (
+                                        <div className="ml-auto">
+                                            {c?.users?.id === user?.id ? (
+                                                <button
+                                                    className="text-gray-500 hover:text-red-500 font-bold cursor-pointer"
+                                                    onClick={(e) => {
+                                                        e.preventDefault(); e.stopPropagation();
+                                                        deleteCommunity(c.id);
+                                                    }}
+                                                >
+                                                    삭제
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    className="text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white transition-colors rounded-2xl px-3 py-1 font-semibold cursor-pointer"
+                                                    onClick={(e) => {
+                                                        e.preventDefault(); e.stopPropagation();
+                                                        followOrUnfollow(c?.users?.id, c?.users?._following, c?.users?.name);
+                                                    }}
+                                                >
+                                                    {c?.users?._following ? '언팔로우' : '팔로우'}
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
-                                {/* <button type='button' className='cursor-pointer' onClick={() => deleteCommunity(c.id)}>삭제</button> */}
-                                {tab === 'all' && user.id && (
-                                    <div className="ml-auto">
-                                        {c?.users?.id === user?.id ? (
-                                            <button
-                                                className="text-gray-500 hover:text-red-500 font-bold cursor-pointer"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    deleteCommunity(c.id)
-                                                }}
-                                            >
-                                                삭제
-                                            </button>
-                                        ) : (
-                                            <button
-                                                className="text-gray-500 font-bold hover:text-blue-500 cursor-pointer"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    followOrUnfollow(c?.users?.id, c?.users?._following, c?.users?.name)
-                                                }}
-                                            >
-                                                {c?.users?._following ?
-                                                    <div className='text-gray-500 border border-gray-500 rounded-2xl px-3 py-1'>언팔로우 </div>
-                                                    :
-                                                    <div className='text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white transition-colors rounded-2xl px-3 py-1'>팔로우</div>}
-                                            </button>
-                                        )}
+
+                                <div className="mt-1 text-base text-gray-900 whitespace-pre-line break-words">
+                                    {c.content}
+                                </div>
+
+                                {c.musics && c.musics.length > 0 && c.musics.map((m) => (
+                                    <div
+                                        key={m.id}
+                                        className="mt-2 flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200"
+                                    >
+                                        <img src={m.albumCover} alt={m.titleShort} className="w-16 h-16 rounded-lg object-cover" />
+                                        <div className="min-w-0">
+                                            <div className="font-semibold truncate">{m.titleShort}</div>
+                                            <div className="text-xs text-gray-600 truncate">{m.artistName}</div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            className="cursor-pointer ml-auto group"
+                                            onClick={(e) => {
+                                                e.preventDefault(); e.stopPropagation();
+                                                previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview);
+                                            }}
+                                        >
+                                            {previewUrl === m.preview
+                                                ? <FiPause className="text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />
+                                                : <FiPlay className="text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />}
+                                        </button>
+                                    </div>
+                                ))}
+
+                                {c.images && c.images.length > 0 && (
+                                    <div className="mt-3 gap-2">
+                                        {c.images.map((img) => (
+                                            <img
+                                                key={img.id}
+                                                src={getImages(img)}
+                                                alt=""
+                                                className="w-full h-auto rounded-lg object-cover"
+                                            />
+                                        ))}
                                     </div>
                                 )}
 
-                            </div>
-
-
-                            {/* 글 내용 */}
-                            <div className="text-base text-gray-900 whitespace-pre-line">{c.content}</div>
-
-                            {/* 음악 카드 */}
-                            {c.musics && c.musics.length > 0 && (
-                                c.musics.map((m) => (
-                                    <div
-                                        key={m.id}
-                                        className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 
-                                        transition-colors border border-gray-200"
-                                    >
-                                        <img src={m.albumCover} alt={m.titleShort} className="w-16 h-16 rounded-lg object-cover" />
-                                        <div>
-                                            <div className="font-semibold">{m.titleShort}</div>
-                                            <div className="text-xs text-gray-600">{m.artistName}</div>
-                                        </div>
-                                        <button type="button" className='cursor-pointer ml-auto group' onClick={(e) => {
-                                            // 재생 누르면 모달 꺼짐 방지
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            { previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview); }
-                                        }}
-                                        >{previewUrl === m.preview ?
-                                            <FiPause className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />
-                                            :
-                                            <FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />}
-                                        </button>
-                                    </div>
-
-                                ))
-                            )}
-
-                            {/* 사진 */}
-                            {c.images && c.images.length > 0 && (
-                                <div className="mt-3 flex gap-2">
-                                    {c.images.map((img) => (
-                                        <img
-                                            key={img.id}
-                                            src={getImages(img)} // DB images 테이블 url 컬럼이 path임
-                                            alt={`게시글 이미지${img.id + 1}`}
-                                            className="w-full max-w-[160px] h-auto rounded-lg object-cover"
-                                        />
-                                    ))}
+                                <div className="mt-2 flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
+                                    <div className="flex items-center gap-1"><FiMessageCircle /> {c.comments}</div>
+                                    <div className="flex items-center gap-1"><FiHeart /> {c.likes}</div>
+                                    <div className="flex items-center gap-1"><FiBarChart2 /> {c.count}</div>
                                 </div>
-                            )}
-                            {/* 댓글/좋아요 아이콘들 */}
-                            <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
-                                <div className="flex items-center gap-1"><FiMessageCircle className="inline" /> {c.comments}</div>
-                                <div className="flex items-center gap-1"><FiHeart className="inline" /> {c.likes}</div>
                             </div>
                         </div>
-                    ))
-                }
-            </div >
+                    </div>
+                ))}
+            </div>
         </div >
     )
 

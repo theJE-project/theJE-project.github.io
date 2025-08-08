@@ -4,7 +4,7 @@ import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
 import { useMusic } from '../../hooks/useMusics';
-import { FiImage, FiMusic, FiMessageCircle, FiHeart, FiPlay } from "react-icons/fi";
+import { FiMessageCircle, FiHeart, FiPlay, FiArrowLeft } from "react-icons/fi";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
@@ -96,8 +96,16 @@ export function HomeDetail() {
     return (
         <div className="w-full max-w-[600px] mx-auto">
             {/* 피드 */}
-            { !community.id && <button className='cursor-pointer' onClick={()=>navigate('/')}>삭제된 글입니다.홈으로</button>}
-            { community.id && community.users &&
+            {!community.id && <div>삭제된 글입니다.</div>}
+            <div className="h-12 sticky top-17 bg-white/90 backdrop-blur">
+                <div className="max-w-[600px] mx-auto h-12 flex items-center gap-3 px-4">
+                    <button onClick={() => navigate(-1)} className="cursor-pointer p-2 -ml-2">
+                        <FiArrowLeft className="text-xl" />
+                    </button>
+                    <div className="font-bold text-lg">뒤로가기</div>
+                </div>
+            </div>
+            {community.id && community.users &&
                 < div className="flex flex-col gap-3" >
                     <div className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                         <div className="flex items-center gap-3">
@@ -107,12 +115,11 @@ export function HomeDetail() {
                                     : community.users?.name?.charAt(0)
                                 }
                             </div>
-                            <div>
+                            <div className='flex flex-col'>
                                 <span className="font-bold">{community?.users?.name}</span>
-                                <span className="ml-1 text-gray-500 text-sm">@{community?.users?.account}</span>
-                                <span className="ml-2 text-gray-400 text-xs">{dayjs(community.created_at).fromNow()}</span>
+                                <span className="text-gray-500 text-sm">@{community?.users?.account}</span>
+
                             </div>
-                            {/* <button type='button' className='cursor-pointer' onClick={() => deleteCommunity(c.id)}>삭제</button> */}
                             {user.id && (
                                 <div className="ml-auto">
                                     {community?.users?.id === user?.id ? (
@@ -183,6 +190,7 @@ export function HomeDetail() {
                                 ))}
                             </div>
                         )}
+                        <span className="text-gray-400 text-xs">{dayjs(community.created_at).fromNow()} · {community.count} 조회수</span>
                         {/* 댓글/좋아요 아이콘들 */}
                         <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
                             <div className="flex items-center gap-1"><FiMessageCircle className="inline" /> {community.comments}</div>
