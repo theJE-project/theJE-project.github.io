@@ -4,6 +4,7 @@ import axios from 'axios'; // axios 추가
 import { springBoot } from '../../axios/springboot';
 import { Link, useLoaderData, useNavigate, useRouteLoaderData } from 'react-router-dom';
 import { useImage } from '../../hooks';
+import { FiPlus, FiPlusCircle } from 'react-icons/fi';
 
 
 export { loader } from './loader'
@@ -72,8 +73,16 @@ export function Group() {
         return matchesGenre && matchesMood;
     })
 
+    const handleClick = () => {
+        if (!user.id) {
+            alert("로그인 후 이용해주세요")
+            return;
+        }
+        navigate('/group/create');
+    }
+
     return (
-        <div className="max-w-5xl mx-auto my-5">
+        <div className="p-6 max-w-4xl mx-auto my-5">
 
             {/* 장르 */}
             <div className="mb-4">
@@ -103,28 +112,32 @@ export function Group() {
             {/* 추천 플레이리스트 */}
             <div className="my-10">
                 {/* 상단 */}
-                <div className='flex justify-between'>
+                <div className='flex flex-col sm:flex-row justify-between'>
                     <h2 className="text-2xl font-semibold py-2">추천 플레이리스트</h2>
-                    <div className='relative'>
-                        <Link to={'/group/create'}>생성테스트</Link>
-                        <button onClick={() => setIsDropDownOpen(!isDropDownOpen)}
-                            className="flex items-center gap-1 text-blue-500 px-3 py-1 rounded-md cursor-pointer">{selectMenu}<TbArrowsUpDown /></button>
 
-                        {isDropDownOpen && (
-                            <div className="absolute right-0 mt-2 w-28 bg-white rounded-md shadow-md z-10">
-                                {["인기순", "최신순"].map(option => (
-                                    <button key={option}
-                                        onClick={() => {
-                                            setSelectMenu(option);
-                                            setIsDropDownOpen(false);
-                                        }}
-                                        className={`block w-full text-left px-4 py-2 hover:bg-gray-300 ${selectMenu === option ? "text-blue-500 font-semibold" : ""
-                                            }`}>
-                                        {option}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                    <div className='flex justify-between items-center sm:w-auto'>
+                        <button onClick={handleClick} className='px-3 py-1 flex bg-blue-100 text-gray-700 rounded-xl cursor-pointer gap-1 hover:bg-gray-300 hover:text-black'><span>새 플레이리스트</span><FiPlus size={20} className='' /></button>
+
+                        <div className='relative inline-block'>
+                            <button onClick={() => setIsDropDownOpen(!isDropDownOpen)}
+                                className="flex items-center gap-1 px-3 py-1 rounded-md cursor-pointer">{selectMenu}<TbArrowsUpDown /></button>
+
+                            {isDropDownOpen && (
+                                <div className="absolute top-full right-0 mt-2 w-28 bg-white rounded-md shadow-md z-10">
+                                    {["인기순", "최신순"].map(option => (
+                                        <button key={option}
+                                            onClick={() => {
+                                                setSelectMenu(option);
+                                                setIsDropDownOpen(false);
+                                            }}
+                                            className={`block w-full text-left px-4 py-2 hover:bg-gray-300 ${selectMenu === option ? "text-blue-500 font-semibold" : ""
+                                                }`}>
+                                            {option}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
                 {console.log(playlistData)}
@@ -132,23 +145,25 @@ export function Group() {
                 {/* 플레이리스트 목록 */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center">
                     {filterPlaylists.map((playlist, index) => (
-                        <div key={index} className="p-2 rounded-lg w-full max-w-[16rem] max-h-100 overflow-hidden cursor-pointer"
-                        onClick={() => navigate(`/group/${playlist.id}`)}>
-                            <img
-                                src={`${playlist.images.length !== 0
+                        <div key={index} className="rounded-lg max-h-100 overflow-hidden cursor-pointer w-full"
+                            onClick={() => navigate(`/group/${playlist.id}`)}>
+                            <div className='p-3 aspect-square  overflow-hidden'>
+                                <img
+                                    src={`${playlist.images.length !== 0
                                         ? getImages(playlist.images[0])
                                         : playlist.musics[0]?.albumCover
-                                    }`}
-                                alt="image error"
-                                className="object-cover h-60 w-60 rounded-md"
-                            />
-                            <h3 className="py-2 text-lg font-semibold">{playlist.title}</h3>
+                                        }`}
+                                    alt="image error"
+                                    className="rounded-md object-cover w-full h-full"
+                                />
+
+                            </div>
+                            <h3 className="py-2 text-lg font-semibold ">{playlist.title}</h3>
                             <p className="line-clamp-2 max-w-full overflow-hidden">
                                 {playlist.hash?.split(',').map((tag, index) => tag ? (
                                     <span key={index} className="inline-block my-1 px-1 mr-1 break-words text-blue-500 bg-gray-200 rounded-md "> #{tag}</span>
                                 ) : null)}
                             </p>
-                            {/* 필요한 데이터 추가적으로 표시 */}
                         </div>
                     ))}
                 </div>

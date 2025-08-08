@@ -15,7 +15,6 @@ export function GroupCreate() {
 
     const { images, setImages, getImages } = useImage(); // 이미지 훅
     const [previewUrls, setPreviewUrls] = useState([]);
-    const [fallbackImages, setFallbackImages] = useState([]); // 앨범커버 이미지
 
     const { musics, getMusics } = useMusic(); // music 훅 (음악 가져오기)
     const [music, setMusics] = useState(); // 결과 저장?
@@ -71,6 +70,7 @@ export function GroupCreate() {
 
         try {
             await fetchPlaylistData(data);
+            alert("플레이리스트 생성이 완료되었습니다.")
             navigate('/group');
         } catch (error) {
             
