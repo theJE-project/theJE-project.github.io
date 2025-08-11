@@ -5,6 +5,7 @@ import { useImage } from '../../hooks';
 import { FaListUl, FaUserCircle } from 'react-icons/fa';
 import { GiConsoleController } from 'react-icons/gi';
 import { HiDotsVertical } from 'react-icons/hi';
+import { FiPause, FiPlay } from 'react-icons/fi';
 
 
 export { loader } from './loader'
@@ -18,6 +19,16 @@ export function GroupDetail() {
     const [playlistData, setPlaylistData] = useState(null); // 플레이리스트데이터
     const [isFollowing, setIsFollowing] = useState(false); // 팔로우
     const [isMenuOpen, setIsMenuOpen] = useState();
+    const [previewUrl, setPreviewUrl] = useState(null);
+
+    // 재생시간 변환
+    const formatDuration = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        // 초가 한 자리면 0 붙이기 (예: 3 -> 03)
+        const paddedSecs = secs.toString().padStart(2, '0');
+        return `${mins}:${paddedSecs}`;
+    };
 
 
     useEffect(() => {
@@ -45,7 +56,7 @@ export function GroupDetail() {
 
     // 팔로우 
     const handleFollowToggle = async () => {
-        if(!user.id){
+        if (!user.id) {
             alert("로그인 후 이용해주세요")
         }
 
@@ -57,7 +68,7 @@ export function GroupDetail() {
             if (isFollowing) {
                 const confirmUnfollow = window.confirm("언팔로우 하시겠습니까?");
                 if (!confirmUnfollow) return;
-                
+
                 await springBoot.delete('followers/delete', {
                     params: {
                         follower: user.id, // 로그인 사용자
@@ -137,6 +148,10 @@ export function GroupDetail() {
                                         >
                                             삭제
                                         </button>
+                                        <button onClick={() => navigate(`/group/update/${playlistData.id}`, { state: { playlistData } })}>
+                                            수정
+                                        </button>
+
                                     </div>
                                 )}
                             </div>
@@ -163,7 +178,7 @@ export function GroupDetail() {
                             {user && playlistData.users.id !== user.id && (
                                 <button
                                     onClick={handleFollowToggle}
-                                    className={`text-xs px-3 py-0.5 rounded-2xl border ${isFollowing ? 'border-gray-400 text-black bg-gray-200' : 'bg-blue-400 text-white'
+                                    className={`text-xs px-3 py-0.5 rounded-2xl border ${isFollowing ? 'text-gray-500 border-gray-500 hover:bg-gray-500 hover:text-white' : 'bg-blue-500 text-white'
                                         }`}
                                 >
                                     {isFollowing ? '팔로잉' : '팔로우'}
@@ -193,7 +208,7 @@ export function GroupDetail() {
                         {playlistData.musics.map((track, index) => (
                             <div
                                 key={index}
-                                className="flex flex-wrap px-4 py-3 rounded-lg"
+                                className="flex flex-wrap px-4 py-3 rounded-lg items-center"
                             >
                                 <div className='h-full'>
                                     <img src={track.albumCover}
@@ -203,7 +218,7 @@ export function GroupDetail() {
 
                                 <div className='ml-4 flex flex-col justify-center gap-1 '>
                                     <p className="font-semibold">{track.titleShort}</p>
-                                    <p className="text-sm text-gray-400">{track.artistName}</p>
+                                    <p className="text-sm text-gray-500">{track.artistName}</p>
                                 </div>
                                 {/* <div>
                                         {track.preview && (
@@ -215,13 +230,26 @@ export function GroupDetail() {
 
                                     </div> */}
 
-                                <div className='ml-auto'>
+                                <div className='flex ml-auto gap-2'>
+                                    <p className='text-sm text-gray-500'>{formatDuration(track.duration)}</p>
                                     {/* 음악 재생 버튼 */}
-                                    {track.preview && (
+                                    <button type='button'
+                                        className='text-blue-500'
+                                        onClick={() => { previewUrl === track.preview ? setPreviewUrl(null) : setPreviewUrl(track.preview); }}>
+                                        {previewUrl === track.preview ?
+                                            <FiPause size={20} />
+                                            :
+                                            <FiPlay size={20} />}
+                                    </button>
+                                    {/* {track.preview && (
                                         <audio controls className='p-0 ' >
                                             <source src={track.preview} type='audio/mpeg' />
                                             브라우저가 오디오를 지원 X
                                         </audio>
+                                    )} */}
+                                    {previewUrl && (
+                                        <audio controls src={previewUrl} autoPlay className="hidden"
+                                            onEnded={() => setPreviewUrl(null)} />
                                     )}
                                 </div>
 
