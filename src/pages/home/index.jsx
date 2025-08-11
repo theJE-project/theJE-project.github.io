@@ -242,6 +242,7 @@ export function Home() {
                                     <TextareaAutosize
                                         value={content}
                                         onChange={(e) => setContent(e.target.value)}
+                                        // maxLength={200}
                                         placeholder="좋아하는 음악을 공유해보세요!"
                                         minRows={1}
                                         className="w-full resize-none border-none focus:ring-0 text-base placeholder-gray-400 outline-none bg-transparent"
@@ -249,13 +250,24 @@ export function Home() {
                                     {/* 노래 미리보기 */}
                                     {selectedMusic && (
                                         <div
-                                            className="flex items-center gap-3 p-3 rounded-lg bg-[#f5faff] hover:bg-[#e1effc] transition-colors border border-[#d4e7fa]"
+                                            className="flex items-center gap-3 p-3 rounded-lg bg-[#f5faff] hover:bg-[#e1effc] transition-colors border border-[#d4e7fa] relative"
                                         >
                                             <img src={selectedMusic.albumCover} alt={selectedMusic.titleShort} className="w-16 h-16 rounded-lg object-cover" />
                                             <div>
                                                 <div className="font-semibold">{selectedMusic.titleShort}</div>
                                                 <div className="text-xs text-gray-600">{selectedMusic.artistName}</div>
+
                                             </div>
+                                            <button
+                                                type="button"
+                                                className="absolute top-[3px] right-[3px] bg-black/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs cursor-pointer"
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // 상위 클릭 방지
+                                                    setSelectedMusic(null); // 선택 음악 초기화
+                                                }}
+                                            >
+                                                ×
+                                            </button>
                                             {/* <button type="button" className='cursor-pointer ml-auto' onClick={(e) => {
                                                 // 재생 누르면 모달 꺼짐 방지
                                                 e.stopPropagation();
@@ -301,7 +313,7 @@ export function Home() {
                                         >
                                             <FiMusic className="inline text-lg" />
                                         </button>
-                                        {/* 추가 아이콘들 필요시 여기에 */}
+
                                     </div>
                                 </div>
                                 <button
@@ -419,7 +431,7 @@ export function Home() {
             <button type='button' onClick={handleRefresh} className="mx-auto my-4 w-full max-w-[600px]
                 flex items-center justify-center
                 rounded-full border border-blue-200 bg-blue-50
-                px-4 py-2 font-semibold text-blue-600 cursor-pointer
+                px-4 py-2 font-semibold text-blue-600 cursor-pointer hover:bg-blue-100
                 active:scale-[0.99] transition" disabled={revalidator.state === 'loading'}>새 게시글 보기</button>
             {/* 피드 */}
             <div className="flex flex-col gap-3">
@@ -476,8 +488,8 @@ export function Home() {
                                                 </button>
                                             ) : (
                                                 <button
-                                                    className={`border rounded-full px-2 py-0.5 text-sm font-semibold cursor-pointer transition-colors ${c?.users?._following
-                                                        ? 'text-gray-500 border-gray-500 hover:bg-gray-500 hover:text-white'
+                                                    className={`border rounded-full px-3 py-0.5 text-sm font-semibold cursor-pointer transition-colors ${c?.users?._following
+                                                        ? 'text-gray-500 border-gray-500'
                                                         : 'text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white'
                                                         }`}
                                                     onClick={(e) => {
@@ -534,7 +546,12 @@ export function Home() {
                                             />
                                         ))}
                                     </div>
+
                                 )}
+
+
+
+
 
                                 <div className="mt-2 flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
                                     <div className="flex items-center gap-1"><FiMessageCircle /> {c.comments}</div>
