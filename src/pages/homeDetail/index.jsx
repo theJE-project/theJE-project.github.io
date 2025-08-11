@@ -148,7 +148,7 @@ export function HomeDetail() {
 
 
                         {/* 글 내용 */}
-                        <div className="text-base text-gray-900 whitespace-pre-line">{community?.content}</div>
+                        <div className="text-lg text-gray-900 whitespace-pre-line">{community?.content}</div>
 
                         {/* 음악 카드 */}
                         {previewUrl && (
@@ -190,7 +190,7 @@ export function HomeDetail() {
                                 ))}
                             </div>
                         )}
-                        <span className="text-gray-400 text-xs">{dayjs(community.created_at).fromNow()} · 조회수 {community.count}</span>
+                        <span className="text-gray-400 text-xs">{dayjs(community.created_at).format('YYYY년 MM월 DD일, A hh시 mm분')} · 조회수 {community.count}</span>
                         {/* 댓글/좋아요 아이콘들 */}
                         <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
                             <div className="flex items-center gap-1"><FiMessageCircle className="inline" /> {community.comments}</div>

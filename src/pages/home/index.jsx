@@ -1,5 +1,5 @@
 import { useLoaderData, useRouteLoaderData, useNavigate, useRevalidator } from 'react-router-dom'
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
@@ -38,6 +38,13 @@ export function Home() {
     const handleRefresh = () => {
         revalidator.revalidate();
     }
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            handleRefresh();
+        }, 300000);
+        return () => clearInterval(timer);
+    }, []);
 
 
     // 글작성 api 호출
@@ -221,7 +228,7 @@ export function Home() {
                     {/* <h3 className="font-bold text-lg mb-3">피드</h3> */}
 
                     {/* 글쓰기 */}
-                    <div className="bg-white p-5 rounded-b-lg mb-10 border-1 border-gray-200">
+                    <div className="bg-white p-5 rounded-b-lg border-1 border-gray-200">
                         <form onSubmit={handleSubmit}>
                             <div className="flex items-start gap-3">
                                 {/* 프로필 둥근 이미지 (임시, 사용자 첫글자 원) */}
@@ -409,7 +416,11 @@ export function Home() {
                 <audio controls src={previewUrl} autoPlay className="hidden" />
             )}
             {/* 새로고침 버튼 */}
-            <button type='button' onClick={handleRefresh} className='cursor-pointer mx-auto flex items-center' disabled={revalidator.state === 'loading'}>새 게시글 보기</button>
+            <button type='button' onClick={handleRefresh} className="mx-auto my-4 w-full max-w-[600px]
+                flex items-center justify-center
+                rounded-full border border-blue-200 bg-blue-50
+                px-4 py-2 font-semibold text-blue-600 cursor-pointer
+                active:scale-[0.99] transition" disabled={revalidator.state === 'loading'}>새 게시글 보기</button>
             {/* 피드 */}
             <div className="flex flex-col gap-3">
                 {list.length === 0 ? (
@@ -446,7 +457,7 @@ export function Home() {
 
                             {/* 오른쪽: 모든 내용 */}
                             <div className="flex-1">
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 mb-2">
                                     <span className="font-bold truncate">{c?.users?.name}</span>
                                     <span className="text-gray-500 text-sm">@{c?.users?.account}</span>
                                     <span className="text-gray-400 text-xs"> {dayjs(c.created_at).fromNow()}</span>
@@ -465,7 +476,7 @@ export function Home() {
                                                 </button>
                                             ) : (
                                                 <button
-                                                    className={`border rounded-2xl px-3 py-1 font-semibold cursor-pointer transition-colors ${c?.users?._following
+                                                    className={`border rounded-full px-2 py-0.5 text-sm font-semibold cursor-pointer transition-colors ${c?.users?._following
                                                         ? 'text-gray-500 border-gray-500 hover:bg-gray-500 hover:text-white'
                                                         : 'text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white'
                                                         }`}
