@@ -19,6 +19,11 @@ export {
 } from './groupDetail'
 
 export {
+    GroupUpdate,
+    loader as groupUpdateLoader,
+} from './groupUpdate'
+
+export {
     Home,
     loader as homeLoader,    
 } from './home'

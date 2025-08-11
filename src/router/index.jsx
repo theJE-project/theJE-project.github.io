@@ -6,6 +6,7 @@ import {
     Group, groupLoader,
     GroupCreate, groupCreateLoader,
     GroupDetail, groupDetailLoader,
+    GroupUpdate, groupUpdateLoader,
     My, myloader,
     Login,
     SignUp,
@@ -52,6 +53,12 @@ export const router = createHashRouter([
                 id:'groupDetail',
                 loader: groupDetailLoader,
                 element:<GroupDetail />
+            },
+            {
+                path: 'group/update/:id',
+                id:'groupUpdate',
+                loader: groupUpdateLoader,
+                element:<GroupUpdate />
             },
             {
                 path: 'my',

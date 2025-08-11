@@ -83,7 +83,6 @@ export function Group() {
 
     return (
         <div className="p-6 max-w-4xl mx-auto my-5">
-
             {/* 장르 */}
             <div className="mb-4">
                 <p className='pb-2 text-xl font-semibold'>장르</p>
@@ -145,7 +144,7 @@ export function Group() {
                 {/* 플레이리스트 목록 */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center">
                     {filterPlaylists.map((playlist, index) => (
-                        <div key={index} className="rounded-lg max-h-100 overflow-hidden cursor-pointer w-full"
+                        <div key={index} className="rounded-lgoverflow-hidden cursor-pointer w-full"
                             onClick={() => navigate(`/group/${playlist.id}`)}>
                             <div className='p-3 aspect-square  overflow-hidden'>
                                 <img
