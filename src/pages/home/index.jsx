@@ -196,7 +196,7 @@ export function Home() {
             {/* 전체/팔로잉 탭 */}
             {user?.id && (
                 <>
-                    <div className="flex h-12 sticky top-17 bg-white/90" onClick={() => handleRefresh()}>
+                    <div className="flex h-12 sticky top-17 bg-white/90">
                         <button
                             className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
             ${tab === 'all'
@@ -408,6 +408,8 @@ export function Home() {
             {previewUrl && (
                 <audio controls src={previewUrl} autoPlay className="hidden" />
             )}
+            {/* 새로고침 버튼 */}
+            <button type='button' onClick={handleRefresh} className='cursor-pointer mx-auto flex items-center' disabled={revalidator.state === 'loading'}>새 게시글 보기</button>
             {/* 피드 */}
             <div className="flex flex-col gap-3">
                 {list.length === 0 ? (

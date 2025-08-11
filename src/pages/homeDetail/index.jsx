@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
-import { FiMessageCircle, FiHeart, FiPlay, FiArrowLeft } from "react-icons/fi";
+import { FiMessageCircle, FiHeart, FiPlay, FiArrowLeft, FiAlertTriangle } from "react-icons/fi";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
@@ -90,7 +90,10 @@ export function HomeDetail() {
     return (
         <div className="w-full max-w-[600px] mx-auto">
             {/* 피드 */}
-            {!community.id && <div>삭제된 글입니다.</div>}
+            {(!community || !community?.id) && <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                <FiAlertTriangle size={40} className="mb-3" />
+                <p className="text-gray-500">게시글이 없습니다</p>
+            </div>}
             <div className="h-12 sticky top-17 bg-white/90 backdrop-blur">
                 <div className="max-w-[600px] mx-auto h-12 flex items-center gap-3 px-4">
                     <button onClick={() => navigate(-1)} className="cursor-pointer p-2 -ml-2">
@@ -125,16 +128,19 @@ export function HomeDetail() {
                                         </button>
                                     ) : (
                                         <button
-                                            className="cursor-pointer"
-                                            onClick={() =>
-                                                followOrUnfollow(community?.users?.id, community?.users?._following, community?.users?.name)}
+                                            className={`border rounded-2xl px-3 py-1 font-semibold cursor-pointer transition-colors ${community?.users?._following
+                                                ? 'text-gray-500 border-gray-500 hover:bg-gray-500 hover:text-white'
+                                                : 'text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white'
+                                                }`}
+                                            onClick={() => {
+                                                followOrUnfollow(community?.users?.id, community?.users?._following, community?.users?.name);
+                                            }}
                                         >
-                                            {community?.users?._following ?
-                                                <div className='text-white bg-blue-500 rounded-2xl px-3 py-1'>팔로우 취소</div>
-                                                :
-                                                <div className='text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white transition-colors rounded-2xl px-3 py-1'>팔로우</div>}
+                                            {community?.users?._following ? '팔로잉' : '팔로우'}
                                         </button>
                                     )}
+
+
                                 </div>
                             )}
 
