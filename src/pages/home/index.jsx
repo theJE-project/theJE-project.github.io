@@ -1,5 +1,5 @@
 import { useLoaderData, useRouteLoaderData, useNavigate, useRevalidator } from 'react-router-dom'
-import { useEffect, useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
@@ -28,14 +28,11 @@ export function Home() {
     const { images, setImages, getImages, deleteImage } = useImage();
 
     const [tab, setTab] = useState('all'); // all or following
-    const [feed, setFeed] = useState(tab === 'all' ? communities1 : followingCommunities);
 
     dayjs.extend(relativeTime);
     dayjs.locale('ko');
 
-    useEffect(() => {
-        setFeed(tab === 'all' ? communities1 : followingCommunities);
-    }, [tab, communities1, followingCommunities]);
+    const list = tab === 'all' ? (communities1 ?? []) : (followingCommunities ?? {});
 
     // 피드 새로고침
     const handleRefresh = () => {
@@ -413,7 +410,19 @@ export function Home() {
             )}
             {/* 피드 */}
             <div className="flex flex-col gap-3">
-                {(feed ?? []).map((c) => (
+                {list.length === 0 ? (
+                    tab === 'following'
+                        ? <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                            <FiUserPlus size={40} className="mb-3" />
+                            <p className="text-gray-500">팔로우한 사용자가 없습니다</p>
+                            <p className="text-sm text-gray-400">다른 사용자를 팔로우해보세요</p>
+                        </div>
+                        : <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                            <FiAlertTriangle size={40} className="mb-3" />
+                            <p className="text-gray-500">게시글이 없습니다</p>
+                            <p className="text-sm text-gray-400">좋아하는 음악을 공유해보세요</p>
+                        </div>
+                ) : (list.map((c) => (
                     <div
                         key={c.id}
                         onClick={(e) => {
@@ -522,7 +531,7 @@ export function Home() {
                             </div>
                         </div>
                     </div>
-                ))}
+                )))}
             </div>
         </div >
     )
