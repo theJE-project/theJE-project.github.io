@@ -1,5 +1,5 @@
-export { 
-    Layout, 
+export {
+    Layout,
     loader as layoutLoader,
 } from './layout'
 
@@ -20,15 +20,20 @@ export {
 
 export {
     Home,
-    loader as homeLoader,    
+    loader as homeLoader,
 } from './home'
+
+export {
+    HomeDetail,
+    loader as homeDetailLoader,
+} from './homeDetail'
 
 export {
     My,
     loader as myloader,
 } from './my'
 
-export { 
+export {
     Login,
     Redirect,
     SignUp
@@ -41,3 +46,13 @@ export {
 export {
     Loading
 } from './loading'
+
+export {
+    Notifications
+} from './notifications'
+
+export {
+    Search
+} from './search'
+
+export { User, loader as userLoader } from './user';

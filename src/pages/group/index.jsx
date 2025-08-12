@@ -2,20 +2,25 @@ import { useState, useEffect } from 'react'
 import { TbArrowsUpDown } from 'react-icons/tb';
 import axios from 'axios'; // axios 추가
 import { springBoot } from '../../axios/springboot';
-import { useLoaderData, useRouteLoaderData } from 'react-router-dom';
+import { Link, useLoaderData, useNavigate, useRouteLoaderData } from 'react-router-dom';
+import { useImage } from '../../hooks';
 
 
 export { loader } from './loader'
 export function Group() {
+    const navigate = useNavigate();
     const [selectMenu, setSelectMenu] = useState("인기순");
     const [isDropDownOpen, setIsDropDownOpen] = useState(false); // 인기순 최신순 드롭다운
 
     const [selectGenre, setSelectGenre] = useState("전체"); // 장르 선택
-    const [selectMood, setSelectMood] = useState([]); // 무드 선택
+    const [selectMood, setSelectMood] = useState(["전체"]); // 무드 선택
     // const [playlistData, setPlaylistData] = useState([]); // API 응답 데이터 저장
     const playlistData = useLoaderData(); // playList Loader
-    const { user } = useRouteLoaderData('defult');
-    console.log(user)
+    const { user } = useRouteLoaderData('default'); // 로그인 사용자
+    const { getImages } = useImage();
+
+    const emojiRegex = /\p{Emoji_Presentation}|\p{Emoji}\uFE0F/gu; // 이모지 제거
+    // console.log(user)
 
     // 무드 선택 함수
     const toggleMood = (mood) => {
@@ -40,8 +45,8 @@ export function Group() {
 
             // 배열 비어있으면 처리하는거
             if (newMoods.length === 0) {
-                alert("무드를 선택해주세요"); // alert
-                // newMoods =["전체"]; // 선택한거 없으면 전체로 
+                // alert("무드를 선택해주세요"); // alert
+                newMoods = ["전체"]; // 선택한거 없으면 전체로 
             }
 
             setSelectMood(newMoods);
@@ -49,35 +54,33 @@ export function Group() {
 
     }
 
-    // Spring Boot API 호출 함수
-    // const fetchPlaylistData = async () => {
-    //     try {
-    //         // Spring Boot 서버에 GET 요청 보내기
-    //         const response = await springBoot.get('group');
-    //         // 받은 데이터를 상태에 저장
-    //         setPlaylistData(response.data);
-    //         console.log(playlistData);
-    //     } catch (error) {
-    //         console.error('API 호출 오류:', error);
-    //     }
-    // };
+    // 선택한 무드에서 이모지 제거
+    const selectMoodCleaned = selectMood.map(mood => mood.replace(emojiRegex, '').trim());
 
-    // useEffect(() => {
-    //     // 컴포넌트가 마운트될 때 API 호출
-    //     fetchPlaylistData();
-    // }, []);
+    // 필터 처리
+    const filterPlaylists = playlistData.filter(playlist => {
+        // DB 해시태그
+        const hashArray = playlist.hash?.split(',').map(tag => tag.replace(emojiRegex, '').trim()) || []; // string > 배열로
 
-    // console.log(playlistData);
+        // 장르 필터
+        const matchesGenre = selectGenre === "전체" || hashArray.includes(selectGenre);
+
+        // 무드 필터
+        const matchesMood = selectMoodCleaned.includes("전체") || hashArray.some(tag =>
+            selectMoodCleaned.some(mood => tag.includes(mood)));
+
+        return matchesGenre && matchesMood;
+    })
 
     return (
-        <div className="max-w-7xl mx-auto my-5">
+        <div className="max-w-5xl mx-auto my-5">
 
             {/* 장르 */}
             <div className="mb-4">
                 <p className='pb-2 text-xl font-semibold'>장르</p>
                 <div className="flex flex-wrap gap-2">
                     {['전체', 'Pop', '발라드', '댄스', '랩/힙합', 'R&B', '인디음악', '록/메탈', '클래식'].map(genre => (
-                        <button key={genre}
+                        <button type="button" key={genre}
                             onClick={() => setSelectGenre(genre)} // 클릭 시 상태 업데이트
                             className={`px-3 py-1 rounded-md border border-gray-200 shadow-md ${selectGenre === genre ? "bg-blue-500 duration-300 text-white" : "bg-white text-gray-700 font-bold"}`}>{genre}</button>
 
@@ -90,7 +93,7 @@ export function Group() {
                 <p className='pb-2 text-xl font-semibold'>무드</p>
                 <div className="flex flex-wrap gap-2">
                     {['전체', '🏖️ 여름', '🎶 신나는', '😎 기분업', '🚗 드라이브', '💻 집중/작업', '💪 운동', '☕ 카페', '✈️ 여행', '🌿 휴식', '💌 위로', '😢 슬픈', '🔥 응원'].map(mood => (
-                        <button key={mood}
+                        <button type="button" key={mood}
                             onClick={() => toggleMood(mood)}
                             className={`px-3 py-1 rounded-md border border-gray-200 shadow-md ${selectMood.includes(mood) ? "bg-amber-500 duratation-300 text-white" : "bg-white text-gray-700"}`}>{mood}</button>
                     ))}
@@ -101,8 +104,9 @@ export function Group() {
             <div className="my-10">
                 {/* 상단 */}
                 <div className='flex justify-between'>
-                    <h2 className="text-3xl font-semibold py-2">추천 플레이리스트</h2>
+                    <h2 className="text-2xl font-semibold py-2">추천 플레이리스트</h2>
                     <div className='relative'>
+                        <Link to={'/group/create'}>생성테스트</Link>
                         <button onClick={() => setIsDropDownOpen(!isDropDownOpen)}
                             className="flex items-center gap-1 text-blue-500 px-3 py-1 rounded-md cursor-pointer">{selectMenu}<TbArrowsUpDown /></button>
 
@@ -123,17 +127,29 @@ export function Group() {
                         )}
                     </div>
                 </div>
+                {console.log(playlistData)}
 
                 {/* 플레이리스트 목록 */}
-                <div>
-                    {playlistData.map((playlist, index) => (
-                    <div key={index}>
-                        <p>제목: {playlist?.title}</p>
-                        <p>설명: {playlist?.content}</p>
-                        <p>태그: {playlist?.hash}</p>
-                        <p>공개 여부: {playlist?.isVisible ? "공개" : "비공개"}</p>
-                    </div>
-
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center">
+                    {filterPlaylists.map((playlist, index) => (
+                        <div key={index} className="p-2 rounded-lg w-full max-w-[16rem] max-h-100 overflow-hidden cursor-pointer"
+                        onClick={() => navigate(`/group/${playlist.id}`)}>
+                            <img
+                                src={`${playlist.images.length !== 0
+                                        ? getImages(playlist.images[0])
+                                        : playlist.musics[0]?.albumCover
+                                    }`}
+                                alt="image error"
+                                className="object-cover h-60 w-60 rounded-md"
+                            />
+                            <h3 className="py-2 text-lg font-semibold">{playlist.title}</h3>
+                            <p className="line-clamp-2 max-w-full overflow-hidden">
+                                {playlist.hash?.split(',').map((tag, index) => tag ? (
+                                    <span key={index} className="inline-block my-1 px-1 mr-1 break-words text-blue-500 bg-gray-200 rounded-md "> #{tag}</span>
+                                ) : null)}
+                            </p>
+                            {/* 필요한 데이터 추가적으로 표시 */}
+                        </div>
                     ))}
                 </div>
             </div>
