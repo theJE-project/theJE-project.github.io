@@ -15,7 +15,7 @@ export function GroupCreate() {
     const { user } = useRouteLoaderData('default'); // 로그인 사용자
 
     const { images, setImages, getImages } = useImage(); // 이미지 훅
-    const [previewUrls, setPreviewUrls] = useState([]);
+    const [imagePreviewUrls, setImagePreviewUrls] = useState([]); // 이미지 미리보기
 
     const { musics, getMusics } = useMusic(); // music 훅 (음악 가져오기)
     const [music, setMusics] = useState(); // 결과 저장?
@@ -119,7 +119,7 @@ export function GroupCreate() {
 
         // 미리보기 preview
         const localUrl = URL.createObjectURL(file);
-        setPreviewUrls([localUrl]);
+        setImagePreviewUrls([localUrl]);
 
         await setImages(e);
     }
@@ -152,8 +152,7 @@ export function GroupCreate() {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         // 초가 한 자리면 0 붙이기 (예: 3 -> 03)
-        const paddedSecs = secs.toString().padStart(2, '0');
-        return `${mins}:${paddedSecs}`;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
     return (
@@ -174,13 +173,13 @@ export function GroupCreate() {
                     <div className="flex flex-wrap gap-4">
                         <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-md w-64 h-64">
                             <label className="flex flex-col items-center gap-2 cursor-pointer text-gray-500">
-                                {previewUrls.length === 0 ? (
+                                {imagePreviewUrls.length === 0 ? (
                                     <>
                                         <MdOutlineAddPhotoAlternate size={40} />
                                         이미지 없음
                                     </>
                                 ) : (
-                                    previewUrls.map((url, index) => (
+                                    imagePreviewUrls.map((url, index) => (
                                         <img
                                             key={index}
                                             src={url}
@@ -298,7 +297,7 @@ export function GroupCreate() {
                         {/* 음악 결과 목록 */}
                         <div className="my-2 max-h-70 overflow-y-auto bg-gray-100 rounded">
                             {musics.length === 0 && musicSearch.trim() !== "" && <p>검색 결과가 없습니다.</p>}
-                            {musics.map((music) => (
+                            {musics.map((music, index) => (
                                 <div key={music.url} className="flex my-2 p-1 border border-gray-300 rounded-md bg-white items-center">
                                     <div className='m-2 w-20 h-20'>
                                         <img src={music.albumCover}
@@ -400,7 +399,7 @@ export function GroupCreate() {
 
                 {/* 하단 버튼 */}
                 <div className="flex justify-between gap-4">
-                    <button className="px-4 py-2 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-200">취소</button>
+                    <button onClick={() => navigate(-1) } className="px-4 py-2 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-200">취소</button>
                     <button
                         onClick={handleSubmit}
                         className="px-4 py-2 rounded-md bg-blue-400 text-white hover:bg-blue-600">플레이리스트 생성</button>
