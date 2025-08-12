@@ -14,44 +14,59 @@ export function GroupUpdate() {
     const navigate = useNavigate();
     const { id } = useParams();
     const location = useLocation();
-    const { user } = useRouteLoaderData('default');
-    const { images, setImages, getImages, resetImages } = useImage();
-    const { musics, getMusics } = useMusic();
+
+    const { user } = useRouteLoaderData('default'); // 로그인 사용자 
+    const { images, setImages, getImages, resetImages } = useImage(); // 이미지 훅
+    const { musics, getMusics } = useMusic(); // music 훅
 
     // 수정 대상 데이터 (수정페이지로 라우팅 시 state로 넘긴 playlistData)
     const playlistData = location.state?.playlistData;
 
     // 폼 상태
-    const [previewUrls, setPreviewUrls] = useState([]);
-    const [musicList, setMusicList] = useState([]);
-    const [musicSearch, setMusicSearch] = useState('');
-    const [previewUrl, setPreviewUrl] = useState(null);
+    const [previewUrls, setPreviewUrls] = useState([]); // 이미지 미리보기 url
+    const [musicList, setMusicList] = useState([]); // music List 상태
+    const [musicSearch, setMusicSearch] = useState(''); // music 검색 
+    const [previewUrl, setPreviewUrl] = useState(null); // music 미리듣기 
 
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [visibility, setVisibility] = useState(true);
-    const [tagInput, setTagInput] = useState('');
-    const [tagList, setTagList] = useState([]);
-    const [tagError, setTagError] = useState('');
+    const [title, setTitle] = useState(''); // 제목
+    const [description, setDescription] = useState(''); // 설명
+    const [visibility, setVisibility] = useState(true); // 공개 여부
+    const [tagInput, setTagInput] = useState(''); // 태그 입력
+    const [tagList, setTagList] = useState([]); // 태그 리스트
+    const [tagError, setTagError] = useState(''); // 태그 경고
+    const [imageList, setImageList] = useState([]); // 기존 이미지 저장용
 
     // 플레이리스트 초기값 세팅
     useEffect(() => {
         if (playlistData) {
+            // music 세팅: music 속성 및 형태 변환
+            const changeMusicList = (playlistData.musics || []).map(music => ({
+                ...music,
+                id: null,
+                url: music.id,
+            }));
+            
+            // 이미지 세팅: 기존 서버 이미지 주소 배열을 previewUrls로 설정
+            if (playlistData.images?.length > 0) {
+                const serverImageUrls = playlistData.images.map(img => getImages(img));
+                setPreviewUrls(serverImageUrls); // 미리보기용
+                setImageList(playlistData.images); 
+
+                console.log("이미지 출력", playlistData.images);
+            } else {
+                setPreviewUrls([]);
+                setImageList([]);
+            }
+
+            // 데이터 세팅
             setTitle(playlistData.title || '');
             setDescription(playlistData.content || '');
             setVisibility(playlistData.is_visible ?? true);
             setTagList(playlistData.hash ? playlistData.hash.split(',').filter(Boolean) : []);
-            setMusicList(playlistData.musics || []);
+            setMusicList(changeMusicList);
 
-            // 이미지 세팅: 기존 서버 이미지 주소 배열을 previewUrls로 설정
-            if (playlistData.images?.length > 0) {
-                const serverImageUrls = playlistData.images.map(img => getImages(img));
-                setPreviewUrls(serverImageUrls);
-            } else {
-                setPreviewUrls([]);
-            }
         }
-    }, [playlistData, getImages]);
+    }, [playlistData]);
 
     // 태그 입력 Enter 처리
     const enterTags = (e) => {
@@ -66,17 +81,18 @@ export function GroupUpdate() {
             const newTag = tagInput.trim();
             if (!tagList.includes(newTag)) {
                 setTagList([...tagList, newTag]);
-                setTagError('');
+                setTagError("");
             }
-            setTagInput('');
+            setTagInput("");
         }
     };
 
+    // 태그 삭제
     const deleteTags = (tagDelete) => {
         const newTagList = tagList.filter((tag) => tag !== tagDelete);
         setTagList(newTagList);
         if (newTagList.length <= 20) {
-            setTagError('');
+            setTagError("");
         }
     };
 
@@ -85,11 +101,21 @@ export function GroupUpdate() {
         const file = e.target.files[0];
         if (!file) return;
 
-        // 새로 업로드한 이미지 미리보기
+        await resetImages();
+
+        // 이미지 미리보기
         const localUrl = URL.createObjectURL(file);
-        setPreviewUrls([localUrl]); // 수정 시 대표이미지 1개만 사용한다고 가정
-        await setImages(e);
+
+        // 수정 시 대표이미지 1개만 사용
+        setPreviewUrls([localUrl]);
+
+        await setImages(e); // 기존 배열 무시하고 파일 1개만 저장
+        setImageList([]); // 새 이미지 업로드하면 기존 서버 이미지 초기화
     };
+
+    useEffect(() => {
+        console.log("이미지 변경 콘솔:", images)
+    }, [images])
 
     // 음악 검색 핸들러
     const handleMusicSearch = (e) => {
@@ -101,10 +127,14 @@ export function GroupUpdate() {
     // 음악 추가
     const addMusic = (music) => {
         if (musicList.find(m => m.url === music.url)) return;
-        setMusicList(prev => [...prev, music]);
-        setMusicSearch('');
-        getMusics('');
+        setMusicList(prev => [...prev, music]); // 리스트에 추가
+
+
+        // 검색창 초기화
+        setMusicSearch("");
+        getMusics("");
     };
+
 
     // 음악 삭제
     const deleteMusic = (music) => {
@@ -118,7 +148,7 @@ export function GroupUpdate() {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
-    // 수정 제출
+    // 수정 폼 제출
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -133,8 +163,9 @@ export function GroupUpdate() {
 
         const data = {
             users: user.id,
-            categories: 2, // 필요하면 수정 가능
-            images, // 이미지 파일 혹은 URL
+            categories: 2,
+            //
+            images: imageList.length > 0? imageList : images, 
             title,
             content: description,
             is_visible: visibility,
@@ -142,8 +173,10 @@ export function GroupUpdate() {
             musics: musicList,
         };
 
+        console.log(data);
+
         try {
-            await springBoot.put(`/communities/${id}`, data);
+            await springBoot.put(`/communities/update/${id}`, data);
             alert('플레이리스트가 수정되었습니다.');
             navigate(`/group/${id}`);
         } catch (error) {
@@ -161,7 +194,7 @@ export function GroupUpdate() {
                 <p className="text-lg text-gray-700 font-medium">플레이리스트 정보를 수정하고 저장하세요</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="bg-white border border-gray-400 rounded-xl shadow p-6 mb-10">
+            <div className="bg-white border border-gray-400 rounded-xl shadow p-6 mb-10">
                 <h2 className='text-lg font-semibold pb-4'>플레이리스트 정보</h2>
 
 
@@ -288,11 +321,13 @@ export function GroupUpdate() {
                     />
                     <div className="my-2 max-h-70 overflow-y-auto bg-gray-100 rounded">
                         {musics.length === 0 && musicSearch.trim() !== '' && <p>검색 결과가 없습니다.</p>}
-                        {musics.map((music) => (
+
+                        {musics.map((music, index) => (
                             <div
-                                key={music.url}
+                                key={music.url ?? index}
                                 className="flex my-2 p-1 border border-gray-300 rounded-md bg-white items-center"
                             >
+
                                 <div className="m-2 w-20 h-20">
                                     <img src={music.albumCover} className="w-full h-full object-cover rounded-xl" />
                                 </div>
@@ -376,11 +411,11 @@ export function GroupUpdate() {
                     >
                         취소
                     </button>
-                    <button type="submit" className="px-4 py-2 rounded-md bg-blue-400 text-white hover:bg-blue-600">
+                    <button type="button" onClick={handleSubmit} className="px-4 py-2 rounded-md bg-blue-400 text-white hover:bg-blue-600">
                         플레이리스트 수정
                     </button>
                 </div>
-            </form>
+            </div>
         </div>
     );
 }
