@@ -90,10 +90,6 @@ export function HomeDetail() {
     return (
         <div className="w-full max-w-[600px] mx-auto">
             {/* 피드 */}
-            {(!community || !community?.id) && <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-                <FiAlertTriangle size={40} className="mb-3" />
-                <p className="text-gray-500">게시글이 없습니다</p>
-            </div>}
             <div className="h-12 sticky top-17 bg-white/90 backdrop-blur">
                 <div className="max-w-[600px] mx-auto h-12 flex items-center gap-3 px-4">
                     <button onClick={() => navigate(-1)} className="cursor-pointer p-2 -ml-2">
@@ -102,12 +98,16 @@ export function HomeDetail() {
                     <div className="font-bold text-lg">뒤로가기</div>
                 </div>
             </div>
-            {community.id && community.users &&
+            {(!community?.id) && <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                <FiAlertTriangle size={40} className="mb-3" />
+                <p className="text-gray-500">삭제된 게시글입니다.</p>
+            </div>}
+            {community?.id && community?.users &&
                 < div className="flex flex-col gap-3" >
                     <div className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                         <div className="flex items-center gap-3">
                             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
-                                {community?.users?.img
+                                {community.users?.img
                                     ? <img src={community.users?.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
                                     : community.users?.name?.charAt(0)
                                 }
