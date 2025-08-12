@@ -55,6 +55,7 @@ const getFollowingCommunities = async (userId) => {
 }
 
 
+// *안씀*
 // const getFollowing = async (target) => {
 //     try {
 //         const response = await springBoot.get("/followers/is-following", {
@@ -67,7 +68,6 @@ const getFollowingCommunities = async (userId) => {
 //         return null;
 //     }
 // }
-
 
 
 

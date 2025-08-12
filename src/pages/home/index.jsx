@@ -1,5 +1,5 @@
-import { useLoaderData, useRouteLoaderData, useNavigate, useRevalidator } from 'react-router-dom'
-import { useState, useRef, useEffect } from 'react';
+import { useLoaderData, useRouteLoaderData, useNavigate, useRevalidator, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
@@ -32,7 +32,19 @@ export function Home() {
     dayjs.extend(relativeTime);
     dayjs.locale('ko');
 
-    const list = tab === 'all' ? (communities1 ?? []) : (followingCommunities ?? {});
+    const list = tab === 'all' ? (communities1 ?? []) : (followingCommunities ?? []);
+
+
+    // 탭 한번 더 누르면 맨위로+새고
+    const onClickTab = (next) => {
+        if (next === tab) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            revalidator.revalidate();
+            return;
+        }
+        setTab(next);
+    };
+
 
     // 피드 새로고침
     const handleRefresh = () => {
@@ -184,7 +196,7 @@ export function Home() {
         const result = await postCommunity(data);
         try {
             setContent('');
-            images.length = 0;
+            images.length = 0; // 고쳐야댐
             setSelectedMusic(null);
             revalidator.revalidate();
             console.log("글 작성 성공:", result);
@@ -210,7 +222,7 @@ export function Home() {
                                     ? 'text-black border-b-4 border-blue-500 bg-gray-50'
                                     : 'text-gray-500'}
             transition-colors duration-150`}
-                            onClick={() => setTab('all')}
+                            onClick={() => onClickTab('all')}
                         >
                             전체
                         </button>
@@ -220,7 +232,7 @@ export function Home() {
                                     ? 'text-black border-b-4 border-blue-500 bg-gray-50'
                                     : 'text-gray-500'}
             transition-colors duration-150`}
-                            onClick={() => setTab('following')}
+                            onClick={() => onClickTab('following')}
                         >
                             팔로잉
                         </button>
@@ -234,7 +246,7 @@ export function Home() {
                                 {/* 프로필 둥근 이미지 (임시, 사용자 첫글자 원) */}
                                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
                                     {user?.img
-                                        ? <img src={user.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
+                                        ? <img src={getImages({ url: user.img })} alt="profile" className="w-10 h-10 rounded-full object-cover" />
                                         : user?.name?.charAt(0)
                                     }
                                 </div>
@@ -460,17 +472,22 @@ export function Home() {
                         <div className="flex gap-3">
                             {/* 왼쪽 프로필 */}
                             <div className="flex-shrink-0">
-                                <div className="w-10 h-10 rounded-full bg-blue-500 overflow-hidden flex items-center justify-center text-white font-bold text-lg">
+                                <Link to={`/user/${c.users?.id}`} 
+                                onClick={(e) => e.stopPropagation()}
+                                className="w-10 h-10 rounded-full bg-blue-500 overflow-hidden flex items-center justify-center text-white font-bold text-lg"
+                                aria-label={`${c.users?.name} 프로필로 이동`}
+                                >
                                     {c?.users?.img
-                                        ? <img src={c.users.img} alt="profile" className="w-full h-full object-cover" />
+                                        ? <img src={getImages({ url: c.users.img })} alt="profile" className="w-full h-full object-cover" />
                                         : c?.users?.name?.charAt(0)}
-                                </div>
+                                </Link>
                             </div>
-
                             {/* 오른쪽: 모든 내용 */}
                             <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="font-bold truncate">{c?.users?.name}</span>
+                                    <Link to={`/user/${c.users?.id}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="font-bold truncate">{c?.users?.name}</Link>
                                     <span className="text-gray-500 text-sm">@{c?.users?.account}</span>
                                     <span className="text-gray-400 text-xs"> {dayjs(c.created_at).fromNow()}</span>
 
