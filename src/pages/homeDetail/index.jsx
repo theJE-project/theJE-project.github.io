@@ -129,7 +129,7 @@ export function HomeDetail() {
                                     ) : (
                                         <button
                                             className={`border rounded-2xl px-3 py-1 font-semibold cursor-pointer transition-colors ${community?.users?._following
-                                                ? 'text-gray-500 border-gray-500 hover:bg-gray-500 hover:text-white'
+                                                ? 'text-gray-500 border-gray-500'
                                                 : 'text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white'
                                                 }`}
                                             onClick={() => {
