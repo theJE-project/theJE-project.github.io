@@ -25,7 +25,7 @@ export function Home() {
     // 재생바
     const [previewUrl, setPreviewUrl] = useState(null);
 
-    const { images, setImages, getImages, deleteImage } = useImage();
+    const { images, setImages, getImages, deleteImage, resetImages } = useImage();
 
     const [tab, setTab] = useState('all'); // all or following
 
@@ -111,7 +111,8 @@ export function Home() {
                     followee: target,
                 }
             });
-            return response.data;
+            const result = response.data;
+            return result;
         } catch (error) {
             console.log("팔로우 취소 api 호출 실패", error);
             return null;
@@ -142,6 +143,10 @@ export function Home() {
         const files = e.target.files;
         // 파일이 없으면 리턴
         if (!files || !files.length) return;
+        if (files.length + images.length > 4) {
+            alert("최대 4장까지 업로드 가능합니다.");
+            return;
+        }
         setImages(e);
     }
     /**/
@@ -196,7 +201,7 @@ export function Home() {
         const result = await postCommunity(data);
         try {
             setContent('');
-            images.length = 0; // 고쳐야댐
+            resetImages();
             setSelectedMusic(null);
             revalidator.revalidate();
             console.log("글 작성 성공:", result);
@@ -332,7 +337,7 @@ export function Home() {
                                 <button
                                     disabled={!content && !images.length && !selectedMusic}
                                     type="submit"
-                                    onClick={()=>setPreviewUrl(null)}
+                                    onClick={() => setPreviewUrl(null)}
                                     className="ml-2 px-5 py-2 bg-blue-500 text-white font-bold rounded-full hover:bg-blue-400 disabled:bg-gray-300 transition cursor-pointer"
                                 >
                                     공유하기
@@ -440,7 +445,7 @@ export function Home() {
                 {revalidator.state === 'loading' ? '...' : ''}
             </div> */}
             {previewUrl && (
-                <audio onEnded={()=>setPreviewUrl(null)} controls src={previewUrl} autoPlay className="hidden" />
+                <audio onEnded={() => setPreviewUrl(null)} controls src={previewUrl} autoPlay className="hidden" />
             )}
             {/* 새로고침 버튼 */}
             <button type='button' onClick={handleRefresh} className="mx-auto my-4 w-full max-w-2xl
@@ -475,10 +480,10 @@ export function Home() {
                         <div className="flex gap-3">
                             {/* 왼쪽 프로필 */}
                             <div className="flex-shrink-0">
-                                <Link to={`/user/${c.users?.id}`} 
-                                onClick={(e) => e.stopPropagation()}
-                                className="w-10 h-10 rounded-full bg-blue-500 overflow-hidden flex items-center justify-center text-white font-bold text-lg"
-                                aria-label={`${c.users?.name} 프로필로 이동`}
+                                <Link to={`/user/${c.users?.id}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-10 h-10 rounded-full bg-blue-500 overflow-hidden flex items-center justify-center text-white font-bold text-lg"
+                                    aria-label={`${c.users?.name} 프로필로 이동`}
                                 >
                                     {c?.users?.img
                                         ? <img src={getImages({ url: c.users.img })} alt="profile" className="w-full h-full object-cover" />
@@ -489,8 +494,8 @@ export function Home() {
                             <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Link to={`/user/${c.users?.id}`}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="font-bold truncate hover:underline">{c?.users?.name}</Link>
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="font-bold truncate hover:underline">{c?.users?.name}</Link>
                                     <span className="text-gray-500 text-sm">@{c?.users?.account}</span>
                                     <span className="text-gray-400 text-xs"> {dayjs(c.created_at).fromNow()}</span>
 
@@ -555,7 +560,7 @@ export function Home() {
                                     </div>
                                 ))}
 
-                                {c.images && c.images.length > 0 && (
+                                {/* {c.images && c.images.length > 0 && (
                                     <div className="mt-3 gap-2">
                                         {c.images.map((img) => (
                                             <img
@@ -567,7 +572,91 @@ export function Home() {
                                         ))}
                                     </div>
 
-                                )}
+                                )} */}
+
+                                {c?.images?.length > 0 && (() => {
+                                    const imgs = c.images.slice(0, 4);
+
+                                    // 1장
+                                    if (imgs.length === 1) {
+                                        return (
+                                            <div className="mt-3 rounded-xl overflow-hidden">
+                                                <div>
+                                                    <img
+                                                        src={getImages(imgs[0])}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
+                                    // 2장
+                                    if (imgs.length === 2) {
+                                        return (
+                                            <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
+                                                {imgs.map(it => (
+                                                    <div key={it.id}>
+                                                        <img
+                                                            src={getImages(it)}
+                                                            alt=""
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    }
+
+                                    if (imgs.length === 3) {
+                                        return (
+                                            <div className="mt-3 rounded-xl overflow-hidden">
+                                                <div className="grid grid-cols-2 grid-rows-2 gap-1 aspect-[4/3]">
+
+                                                    <img
+                                                        src={getImages(imgs[0])}
+                                                        alt=""
+                                                        className="col-span-1 row-span-2 w-full h-full object-cover"
+                                                        loading="lazy" decoding="async"
+                                                    />
+
+
+                                                    <img
+                                                        src={getImages(imgs[1])}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                        loading="lazy" decoding="async"
+                                                    />
+                                                    <img
+                                                        src={getImages(imgs[2])}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                        loading="lazy" decoding="async"
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
+                                    // 4장 (2x2)
+                                    return (
+                                        <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
+                                            {imgs.map(it => (
+                                                <div key={it.id} className="aspect-[4/3]">
+                                                    <img
+                                                        src={getImages(it)}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                })()}
+
+
+
 
 
 

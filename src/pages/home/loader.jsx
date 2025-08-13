@@ -18,13 +18,14 @@ import { springBoot } from "@axios";
 //     }
 // }
 
-// 팔로우 여부 조회하려고 만든 거
+// 팔로우 여부 조회하려고 만든 거(로그인 유저 기준 피드)
 const getCommunities1 = async (userId) => {
     try {
         const response = await springBoot.get('/communities/byUser', {
             params: {
                 category: 1,
                 user: userId,
+                size: 100,
             }
         });
         const result = response.data;

@@ -182,7 +182,7 @@ export function HomeDetail() {
                         )}
 
                         {/* 사진 */}
-                        {community?.images && community?.images.length > 0 && (
+                        {/* {community?.images && community?.images.length > 0 && (
                             <div className="mt-3 flex gap-2">
                                 {community?.images.map((img) => (
                                     <img
@@ -193,7 +193,94 @@ export function HomeDetail() {
                                     />
                                 ))}
                             </div>
-                        )}
+                        )} */}
+
+                        {community?.images?.length > 0 && (() => {
+                                    const imgs = community.images.slice(0, 4);
+                                    
+
+                                    // 1장
+                                    if (imgs.length === 1) {
+                                        return (
+                                            <div className="mt-3 rounded-xl overflow-hidden">
+                                                <div>
+                                                    <img
+                                                        src={getImages(imgs[0])}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
+                                    // 2장
+                                    if (imgs.length === 2) {
+                                        return (
+                                            <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
+                                                {imgs.map(it => (
+                                                    <div key={it.id}>
+                                                        <img
+                                                            src={getImages(it)}
+                                                            alt=""
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    }
+
+                                    // 3장 (왼쪽 크게/오른쪽 위/아래 두 장)
+                                    if (imgs.length === 3) {
+                                        return (
+                                            <div className="mt-3 rounded-xl overflow-hidden">
+                                                <div className="grid grid-cols-2 grid-rows-2 gap-1 aspect-[4/3]">
+                                                    {/* 왼쪽: 두 행 차지 */}
+                                                    <img
+                                                        src={getImages(imgs[0])}
+                                                        alt=""
+                                                        className="col-span-1 row-span-2 w-full h-full object-cover"
+                                                        loading="lazy" decoding="async"
+                                                    />
+
+                                                    {/* 오른쪽 위/아래 */}
+                                                    <img
+                                                        src={getImages(imgs[1])}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                        loading="lazy" decoding="async"
+                                                    />
+                                                    <img
+                                                        src={getImages(imgs[2])}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                        loading="lazy" decoding="async"
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
+                                    // 4장 (2x2)
+                                    return (
+                                        <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
+                                            {imgs.map(it => (
+                                                <div key={it.id} className="aspect-[4/3]">
+                                                    <img
+                                                        src={getImages(it)}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                })()}
+
+
+
+
                         <span className="text-gray-400 text-xs">{dayjs(community.created_at).format('YYYY년 MM월 DD일, A hh시 mm분')} · 조회수 {community.count}</span>
                         {/* 댓글/좋아요 아이콘들 */}
                         <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
