@@ -43,14 +43,14 @@ export function GroupUpdate() {
             const changeMusicList = (playlistData.musics || []).map(music => ({
                 ...music,
                 id: null,
-                url: music.id,
+                url: String(music.id),
             }));
-            
+
             // 이미지 세팅: 기존 서버 이미지 주소 배열을 previewUrls로 설정
             if (playlistData.images?.length > 0) {
                 const serverImageUrls = playlistData.images.map(img => getImages(img));
                 setPreviewUrls(serverImageUrls); // 미리보기용
-                setImageList(playlistData.images); 
+                setImageList(playlistData.images);
 
                 console.log("이미지 출력", playlistData.images);
             } else {
@@ -63,10 +63,16 @@ export function GroupUpdate() {
             setDescription(playlistData.content || '');
             setVisibility(playlistData.is_visible ?? true);
             setTagList(playlistData.hash ? playlistData.hash.split(',').filter(Boolean) : []);
+
+            console.log(changeMusicList.map(m => m.url));
             setMusicList(changeMusicList);
 
         }
     }, [playlistData]);
+
+    useEffect(() => {
+        console.log(musicList.map(m => m.url));
+    }, [musicList]);
 
     // 태그 입력 Enter 처리
     const enterTags = (e) => {
@@ -113,9 +119,7 @@ export function GroupUpdate() {
         setImageList([]); // 새 이미지 업로드하면 기존 서버 이미지 초기화
     };
 
-    useEffect(() => {
-        console.log("이미지 변경 콘솔:", images)
-    }, [images])
+
 
     // 음악 검색 핸들러
     const handleMusicSearch = (e) => {
@@ -164,7 +168,7 @@ export function GroupUpdate() {
             users: user.id,
             categories: 2,
             //
-            images: imageList.length > 0? imageList : images, 
+            images: imageList.length > 0 ? imageList : images,
             title,
             content: description,
             is_visible: visibility,
@@ -237,8 +241,9 @@ export function GroupUpdate() {
                         value={title}
                         maxLength={30}
                         className="w-full border border-gray-300 px-4 py-2 rounded-md"
-                        placeholder="플레이리스트 제목을 입력하세요 ( 최대 30자 )"
+                        placeholder="플레이리스트 제목을 입력하세요"
                     />
+                    <div className="text-sm text-right text-gray-400">{title.length}/30</div>
                 </div>
 
                 {/* 설명 */}
@@ -310,14 +315,14 @@ export function GroupUpdate() {
 
                 {/* 음악 검색 */}
                 {previewUrl && (
-                                        <audio
-                                            controls
-                                            src={previewUrl}
-                                            autoPlay
-                                            className="hidden"
-                                            onEnded={() => setPreviewUrl(null)}
-                                        />
-                                    )}
+                    <audio
+                        controls
+                        src={previewUrl}
+                        autoPlay
+                        className="hidden"
+                        onEnded={() => setPreviewUrl(null)}
+                    />
+                )}
                 <div className="mb-4">
                     <label className="block font-medium mb-1">음악 추가</label>
                     <input
@@ -330,9 +335,9 @@ export function GroupUpdate() {
                     <div className="my-2 max-h-70 overflow-y-auto rounded">
                         {musics.length === 0 && musicSearch.trim() !== '' && <p>검색 결과가 없습니다.</p>}
 
-                        {musics.map((music, index) => (
+                        {musics.map((music) => (
                             <div
-                                key={music.url ?? index}
+                                key={music.url}
                                 className="flex my-2 p-1 border border-gray-300 rounded-md bg-white items-center"
                             >
 
@@ -345,6 +350,8 @@ export function GroupUpdate() {
                                 </div>
                                 <div className="flex ml-auto gap-2">
                                     <p className="text-sm text-gray-500">{formatDuration(music.duration)}</p>
+
+                                    {/* 재생버튼 */}
                                     <button
                                         type="button"
                                         className="text-blue-500"
@@ -354,9 +361,10 @@ export function GroupUpdate() {
                                     >
                                         {previewUrl === music.preview ? <FiPause size={20} /> : <FiPlay size={20} />}
                                     </button>
-                                    
+
+                                    {/* 추가버튼 */}
                                     <button
-                                        onClick={() => {addMusic(music); setPreviewUrl(null)}}
+                                        onClick={() => { addMusic(music); setPreviewUrl(null) }}
                                         disabled={musicList.find((m) => m.url === music.url) !== undefined}
                                         className="text-blue-500 disabled:text-gray-400"
                                     >

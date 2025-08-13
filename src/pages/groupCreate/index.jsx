@@ -80,6 +80,10 @@ export function GroupCreate() {
         }
     };
 
+    useEffect(() => {
+        console.log("음악리스트: " , musicList)
+    }, [musicList])
+
     // 태그 enter 처리
     const enterTags = (e) => {
         if (e.key === "Enter" && tagInput.trim() !== "") {
@@ -216,7 +220,8 @@ export function GroupCreate() {
                         onChange={(e) => setTitle(e.target.value)}
                         maxLength={30}
                         className="w-full border border-gray-300 px-4 py-2 rounded-md"
-                        placeholder='플레이리스트 제목을 입력하세요 ( 최대 30자 )' />
+                        placeholder='플레이리스트 제목을 입력하세요' />
+                    <div className="text-sm text-right text-gray-400">{title.length}/30</div>
                 </div>
 
                 {/* 설명  */}
@@ -301,7 +306,7 @@ export function GroupCreate() {
                         {/* 음악 결과 목록 */}
                         <div className="my-2 max-h-70 overflow-y-auto rounded">
                             {musics.length === 0 && musicSearch.trim() !== "" && <p>검색 결과가 없습니다.</p>}
-                            {musics.map((music, index) => (
+                            {musics.map((music) => (
                                 <div key={music.url} className="flex my-2 p-1 border border-gray-300 rounded-md bg-white items-center">
                                     <div className='m-2 w-20 h-20'>
                                         <img src={music.albumCover}
@@ -336,7 +341,7 @@ export function GroupCreate() {
 
 
                                         {/* 추가버튼 */}
-                                        <button onClick={() => {addMusic(music); setPreviewUrl(null)}}
+                                        <button onClick={() => { addMusic(music); setPreviewUrl(null) }}
                                             disabled={musicList.find(m => m.url === music.url) !== undefined}
                                             className=" text-blue-500 disabled:text-gray-400">
                                             {musicList.find(m => m.url === music.url) ? <FiPlus size={20} /> : <FiPlus size={20} />}
