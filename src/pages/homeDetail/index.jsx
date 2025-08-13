@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
-import { FiMessageCircle, FiHeart, FiPlay, FiArrowLeft, FiAlertTriangle } from "react-icons/fi";
+import { FiMessageCircle, FiHeart, FiPlay, FiArrowLeft, FiAlertTriangle, FiPause } from "react-icons/fi";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
@@ -128,9 +128,10 @@ export function HomeDetail() {
                                         </button>
                                     ) : (
                                         <button
+
                                             className={`border rounded-2xl px-3 py-1 font-semibold cursor-pointer transition-colors ${community?.users?._following
-                                                ? 'text-gray-500 border-gray-500'
-                                                : 'text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white'
+                                                ? 'text-gray-500 border-gray-500 hover:text-red-500 hover:border-red-500 hover:bg-red-50'
+                                                : 'bg-blue-500 text-white hover:bg-blue-400'
                                                 }`}
                                             onClick={() => {
                                                 followOrUnfollow(community?.users?.id, community?.users?._following, community?.users?.name);
@@ -152,7 +153,7 @@ export function HomeDetail() {
 
                         {/* 음악 카드 */}
                         {previewUrl && (
-                            <audio controls src={previewUrl} autoPlay className="hidden" />
+                            <audio onEnded={() => setPreviewUrl(null)} controls src={previewUrl} autoPlay className="hidden" />
                         )}
                         {community?.musics && community?.musics.length > 0 && (
                             community?.musics.map((m) => (
@@ -169,9 +170,12 @@ export function HomeDetail() {
                                     <button type="button" className='cursor-pointer ml-auto group' onClick={(e) => {
                                         // 재생 누르면 모달 꺼짐 방지
                                         e.stopPropagation();
-                                        setPreviewUrl(m.preview);
+                                        { previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview); }
                                     }}
-                                    ><FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" /></button>
+                                    >{previewUrl === m.preview ?
+                                        <FiPause className="inline text-xl text-blue-300 group-hover:text-blue-500" />
+                                        :
+                                        <FiPlay className="inline text-xl text-blue-300 group-hover:text-blue-500" />}</button>
                                 </div>
 
                             ))

@@ -129,7 +129,6 @@ export function GroupUpdate() {
         if (musicList.find(m => m.url === music.url)) return;
         setMusicList(prev => [...prev, music]); // 리스트에 추가
 
-
         // 검색창 초기화
         setMusicSearch("");
         getMusics("");
@@ -310,6 +309,15 @@ export function GroupUpdate() {
                 </div>
 
                 {/* 음악 검색 */}
+                {previewUrl && (
+                                        <audio
+                                            controls
+                                            src={previewUrl}
+                                            autoPlay
+                                            className="hidden"
+                                            onEnded={() => setPreviewUrl(null)}
+                                        />
+                                    )}
                 <div className="mb-4">
                     <label className="block font-medium mb-1">음악 추가</label>
                     <input
@@ -319,7 +327,7 @@ export function GroupUpdate() {
                         onChange={handleMusicSearch}
                         className="w-full border border-gray-300 rounded-md px-4 py-2"
                     />
-                    <div className="my-2 max-h-70 overflow-y-auto bg-gray-100 rounded">
+                    <div className="my-2 max-h-70 overflow-y-auto rounded">
                         {musics.length === 0 && musicSearch.trim() !== '' && <p>검색 결과가 없습니다.</p>}
 
                         {musics.map((music, index) => (
@@ -346,17 +354,9 @@ export function GroupUpdate() {
                                     >
                                         {previewUrl === music.preview ? <FiPause size={20} /> : <FiPlay size={20} />}
                                     </button>
-                                    {previewUrl && (
-                                        <audio
-                                            controls
-                                            src={previewUrl}
-                                            autoPlay
-                                            className="hidden"
-                                            onEnded={() => setPreviewUrl(null)}
-                                        />
-                                    )}
+                                    
                                     <button
-                                        onClick={() => addMusic(music)}
+                                        onClick={() => {addMusic(music); setPreviewUrl(null)}}
                                         disabled={musicList.find((m) => m.url === music.url) !== undefined}
                                         className="text-blue-500 disabled:text-gray-400"
                                     >

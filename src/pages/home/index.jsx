@@ -211,7 +211,7 @@ export function Home() {
     // console.log(musics);
     // console.log(user.name);
     return (
-        <div className="w-full max-w-[600px] mx-auto">
+        <div className="w-full max-w-2xl mx-auto">
             {/* 전체/팔로잉 탭 */}
             {user?.id && (
                 <>
@@ -276,6 +276,7 @@ export function Home() {
                                                 onClick={(e) => {
                                                     e.stopPropagation(); // 상위 클릭 방지
                                                     setSelectedMusic(null); // 선택 음악 초기화
+                                                    setPreviewUrl(null); // 음악재생 종료
                                                 }}
                                             >
                                                 ×
@@ -331,6 +332,7 @@ export function Home() {
                                 <button
                                     disabled={!content && !images.length && !selectedMusic}
                                     type="submit"
+                                    onClick={()=>setPreviewUrl(null)}
                                     className="ml-2 px-5 py-2 bg-blue-500 text-white font-bold rounded-full hover:bg-blue-400 disabled:bg-gray-300 transition cursor-pointer"
                                 >
                                     공유하기
@@ -362,10 +364,11 @@ export function Home() {
                             <div className="flex items-center justify-between p-6 border-b border-gray-200">
                                 <h2 className="text-lg font-bold">음악 검색</h2>
                                 <button
-                                    className="text-gray-400 hover:text-gray-700"
+                                    className="text-gray-400 hover:text-gray-700 cursor-pointer"
                                     onClick={() => {
                                         setOpen(false);
                                         getMusics('');
+                                        setPreviewUrl(null)
                                     }}
                                 >
                                     <span className="text-2xl">&times;</span>
@@ -410,9 +413,9 @@ export function Home() {
                                             { previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview); }
                                         }}
                                         >{previewUrl === m.preview ?
-                                            <FiPause className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />
+                                            <FiPause className="inline text-xl text-blue-300 group-hover:text-blue-500" />
                                             :
-                                            <FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />}
+                                            <FiPlay className="inline text-xl text-blue-300 group-hover:text-blue-500" />}
                                         </button>
                                     </div>
                                 )) : (
@@ -437,10 +440,10 @@ export function Home() {
                 {revalidator.state === 'loading' ? '...' : ''}
             </div> */}
             {previewUrl && (
-                <audio controls src={previewUrl} autoPlay className="hidden" />
+                <audio onEnded={()=>setPreviewUrl(null)} controls src={previewUrl} autoPlay className="hidden" />
             )}
             {/* 새로고침 버튼 */}
-            <button type='button' onClick={handleRefresh} className="mx-auto my-4 w-full max-w-[600px]
+            <button type='button' onClick={handleRefresh} className="mx-auto my-4 w-full max-w-2xl
                 flex items-center justify-center
                 rounded-full border border-blue-200 bg-blue-50
                 px-4 py-2 font-semibold text-blue-600 cursor-pointer hover:bg-blue-100
@@ -487,7 +490,7 @@ export function Home() {
                                 <div className="flex items-center gap-2 mb-2">
                                     <Link to={`/user/${c.users?.id}`}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="font-bold truncate">{c?.users?.name}</Link>
+                                    className="font-bold truncate hover:underline">{c?.users?.name}</Link>
                                     <span className="text-gray-500 text-sm">@{c?.users?.account}</span>
                                     <span className="text-gray-400 text-xs"> {dayjs(c.created_at).fromNow()}</span>
 
@@ -506,8 +509,8 @@ export function Home() {
                                             ) : (
                                                 <button
                                                     className={`border rounded-full px-3 py-0.5 text-sm font-semibold cursor-pointer transition-colors ${c?.users?._following
-                                                        ? 'text-gray-500 border-gray-500'
-                                                        : 'text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white'
+                                                        ? 'text-gray-500 border-gray-500 hover:bg-red-50 hover:text-red-500 hover:border-red-500'
+                                                        : 'text-white bg-blue-500 hover:bg-blue-400'
                                                         }`}
                                                     onClick={(e) => {
                                                         e.preventDefault();

@@ -76,7 +76,7 @@ export function GroupCreate() {
             alert("플레이리스트 생성이 완료되었습니다.")
             navigate('/group');
         } catch (error) {
-
+            console.log(error)
         }
     };
 
@@ -294,8 +294,12 @@ export function GroupCreate() {
                             className='w-full border border-gray-300 rounded-md px-4 py-2'
                         />
 
+                        {previewUrl && (
+                            <audio controls src={previewUrl} autoPlay className="hidden"
+                                onEnded={() => setPreviewUrl(null)} />
+                        )}
                         {/* 음악 결과 목록 */}
-                        <div className="my-2 max-h-70 overflow-y-auto bg-gray-100 rounded">
+                        <div className="my-2 max-h-70 overflow-y-auto rounded">
                             {musics.length === 0 && musicSearch.trim() !== "" && <p>검색 결과가 없습니다.</p>}
                             {musics.map((music, index) => (
                                 <div key={music.url} className="flex my-2 p-1 border border-gray-300 rounded-md bg-white items-center">
@@ -329,13 +333,10 @@ export function GroupCreate() {
                                                 브라우저가 오디오를 지원 X
                                             </audio>
                                         )} */}
-                                        {previewUrl && (
-                                            <audio controls src={previewUrl} autoPlay className="hidden"
-                                                onEnded={() => setPreviewUrl(null)} />
-                                        )}
+
 
                                         {/* 추가버튼 */}
-                                        <button onClick={() => addMusic(music)}
+                                        <button onClick={() => {addMusic(music); setPreviewUrl(null)}}
                                             disabled={musicList.find(m => m.url === music.url) !== undefined}
                                             className=" text-blue-500 disabled:text-gray-400">
                                             {musicList.find(m => m.url === music.url) ? <FiPlus size={20} /> : <FiPlus size={20} />}
@@ -399,7 +400,7 @@ export function GroupCreate() {
 
                 {/* 하단 버튼 */}
                 <div className="flex justify-between gap-4">
-                    <button onClick={() => navigate(-1) } className="px-4 py-2 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-200">취소</button>
+                    <button onClick={() => navigate(-1)} className="px-4 py-2 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-200">취소</button>
                     <button
                         onClick={handleSubmit}
                         className="px-4 py-2 rounded-md bg-blue-400 text-white hover:bg-blue-600">플레이리스트 생성</button>

@@ -54,6 +54,13 @@ const getFollowingCommunities = async (userId) => {
     }
 }
 
+// // 좋아요 개수
+// const getLikes = async (id) =>{
+//     try{
+//         const response = await springBoot.post('/likes/count')
+//     }
+// }
+
 
 // *안씀*
 // const getFollowing = async (target) => {

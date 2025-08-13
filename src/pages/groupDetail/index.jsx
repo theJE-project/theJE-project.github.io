@@ -184,7 +184,7 @@ export function GroupDetail() {
                             {user && playlistData.users.id !== user.id && (
                                 <button
                                     onClick={handleFollowToggle}
-                                    className={`text-xs px-3 py-0.5 rounded-2xl border ${isFollowing ? 'text-gray-500 border-gray-500 hover:bg-gray-500 hover:text-white' : 'bg-blue-500 text-white'
+                                    className={`text-xs px-3 py-0.5 rounded-2xl border ${isFollowing ? 'text-gray-500 border-gray-500 hover:text-red-500 hover:border-red-500 hover:bg-red-50' : 'bg-blue-500 text-white hover:bg-blue-400'
                                         }`}
                                 >
                                     {isFollowing ? '팔로잉' : '팔로우'}
@@ -206,6 +206,10 @@ export function GroupDetail() {
                     </div>
 
                     {/* 음악 리스트 */}
+                    {previewUrl && (
+                                        <audio controls src={previewUrl} autoPlay className="hidden"
+                                            onEnded={() => setPreviewUrl(null)} />
+                                    )}
                     <div className="my-2 p-4 bg-blue-200/30 rounded-xl border border-gray-300">
                         <div className='flex justify-between font-medium '>
                             <span className='flex items-center gap-2'><FaListUl />음악 목록</span>
@@ -253,10 +257,7 @@ export function GroupDetail() {
                                             브라우저가 오디오를 지원 X
                                         </audio>
                                     )} */}
-                                    {previewUrl && (
-                                        <audio controls src={previewUrl} autoPlay className="hidden"
-                                            onEnded={() => setPreviewUrl(null)} />
-                                    )}
+                                    
                                 </div>
 
                             </div>
