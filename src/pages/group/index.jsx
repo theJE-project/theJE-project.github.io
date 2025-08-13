@@ -115,7 +115,7 @@ export function Group() {
                     <h2 className="text-2xl font-semibold py-2">추천 플레이리스트</h2>
 
                     <div className='flex justify-between items-center sm:w-auto'>
-                        <button onClick={handleClick} className='px-3 py-1 flex bg-blue-100 text-gray-700 rounded-xl cursor-pointer gap-1 hover:bg-gray-300 hover:text-black'><span>새 플레이리스트</span><FiPlus size={20} className='' /></button>
+                        <button onClick={handleClick} className='px-3 py-1 flex bg-blue-100 text-gray-700 rounded-xl cursor-pointer gap-1 hover:bg-gray-300 hover:text-black'><span>새 플레이리스트</span><FiPlus size={20} /></button>
 
                         <div className='relative inline-block'>
                             <button onClick={() => setIsDropDownOpen(!isDropDownOpen)}
