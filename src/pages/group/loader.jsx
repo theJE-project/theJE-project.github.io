@@ -8,10 +8,7 @@ export const loader = async ({ params, request }) => {
                 category: 2,
             }
         });
-
-        console.log(response.data); // 응답 확인
         return response.data;
-
     } catch (error) {
         console.error('API 호출 오류:', error);
         return [];

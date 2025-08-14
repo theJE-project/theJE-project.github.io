@@ -15,7 +15,7 @@ export function Layout() {
     const [searchParams, setSearchParams] = useSearchParams();
     const findUser = Object.keys(loader.user).length === 0;
     const [search, setSearch] = useState(false);
-    const notifications = loader.notifications.filter(notification => !notification.isRead);
+    const notifications = loader.notifications.filter(notification => !notification.is_read);
 
     const handleSerachBlur = (e) => {
         const value = e.target.value;
@@ -45,7 +45,7 @@ export function Layout() {
         e.preventDefault();
         const response = await springBoot.put(`/notifications`, {
             id: o.id,
-            isRead: false, // 임시 false 
+            is_read: true, // 읽은처리
         }).then((obj) => {
             setShowNotifications(false);
             console.log(o)
@@ -177,7 +177,7 @@ export function Layout() {
                                                         onClick={(e) => handleNotification(e, notification)}
                                                     >
                                                         <div className="flex items-start space-x-3">
-                                                            <div className={`w-2 h-2 rounded-full mt-2 ${!notification.isRead ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
+                                                            <div className={`w-2 h-2 rounded-full mt-2 ${!notification.is_read ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
                                                             <div className="flex-1">
                                                                 <p className="text-sm text-gray-900">{notification.content}</p>
                                                                 <p className="text-xs text-gray-500 mt-1">{notification.createdAt}</p>
