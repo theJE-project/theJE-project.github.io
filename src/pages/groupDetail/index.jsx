@@ -6,6 +6,8 @@ import { FaListUl, FaUserCircle } from 'react-icons/fa';
 import { GiConsoleController } from 'react-icons/gi';
 import { HiDotsVertical } from 'react-icons/hi';
 import { FiPause, FiPlay } from 'react-icons/fi';
+import { Likes } from '../likes/index';
+import { Comments } from '../comments/index';
 
 
 export { loader } from './loader'
@@ -263,6 +265,17 @@ export function GroupDetail() {
                             </div>
                         ))}
                     </div>
+
+                    <Likes
+                        users={user.id}
+                        board_types='1'
+                        board={playlistData.id}
+                    />
+                    {/* <Comments
+                        userId={user.id}
+                        board_types='1'
+                        board={playlistData.id}
+                    /> */}
                 </div>
             ) : (
                 <p className="text-gray-400">로딩 중...</p>
