@@ -1,5 +1,5 @@
 import { useLoaderData, useRouteLoaderData, useNavigate, useRevalidator, Link } from 'react-router-dom'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
@@ -12,6 +12,9 @@ import 'dayjs/locale/ko';
 import { Likes } from '../likes/index';
 
 export function Home() {
+    dayjs.extend(relativeTime);
+    dayjs.locale('ko');
+
     const { communities1, followingCommunities } = useLoaderData();
     const { user, categories } = useRouteLoaderData('default');
 
@@ -25,21 +28,53 @@ export function Home() {
     const [open, setOpen] = useState(false);
     // 재생바
     const [previewUrl, setPreviewUrl] = useState(null);
-
     const { images, setImages, getImages, deleteImage, resetImages } = useImage();
-
     const [tab, setTab] = useState('all'); // all or following
-
-    dayjs.extend(relativeTime);
-    dayjs.locale('ko');
-
     const list = tab === 'all' ? (communities1 ?? []) : (followingCommunities ?? []);
+
+    // 탭별 스크롤 위치 저장(메모리)
+    const scrollPositions = useRef({ all: 0, following: 0 });
+
+    // 탭 복원 시 부드러운 스크롤 없이 즉시 점프
+    const jumpTo = (y) => {
+        const root = document.scrollingElement || document.documentElement;
+        const prev = root.style.scrollBehavior;   // 기존 값 백업
+        root.style.scrollBehavior = 'auto';       // 전역 smooth 강제 OFF
+        window.scrollTo(0, y);                    // 즉시 점프
+        setTimeout(() => { root.style.scrollBehavior = prev; }, 0); // 다음 틱에 원복
+    };
+
+    // 처음 마운트 시, 세션스토리지 값 메모리에 복원
+    useEffect(() => {
+        ['all', 'following'].forEach((t) => {
+            const v = Number(sessionStorage.getItem(`feed:scroll:${t}`));
+            if (!Number.isNaN(v)) scrollPositions.current[t] = v;
+        });
+    }, []);
+
+    useEffect(() => {
+        const onScroll = () => {
+            const y = window.scrollY;
+            scrollPositions.current[tab] = y;                      // 메모리 저장
+            sessionStorage.setItem(`feed:scroll:${tab}`, String(y)); // (선택) 세션 저장
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, [tab]);
+
+
+    useEffect(() => {
+        const y = scrollPositions.current[tab] || 0;
+        // 레이아웃 그리기 직후 반영되도록 requestAnimationFrame 한 번 감싸도 부드러움
+        requestAnimationFrame(() => jumpTo(y));
+    }, [tab]);
 
 
     // 탭 한번 더 누르면 맨위로+새고
     const onClickTab = (next) => {
         if (next === tab) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // window.scrollTo({ top: 0, behavior: 'smooth' });
+            jumpTo(0);
             revalidator.revalidate();
             return;
         }
