@@ -21,11 +21,18 @@ import { springBoot } from "@axios";
 // 팔로우 여부 조회하려고 만든 거
 const getCommunities1 = async (userId) => {
     try {
+        console.log('getCommunities1 - userId : ' + userId)
+        /*
         const response = await springBoot.get('/communities/byUser', {
             params: {
-                category: 1,
-                user: userId,
+                category: Number(1),
+                follower: userId,
             }
+        });
+        */
+        const response = await springBoot.post('/communities/byUser', {
+            category: Number(1),
+            follower: userId,
         });
         const result = response.data;
         console.log("피드 불러오기 성공:", result);
@@ -38,17 +45,23 @@ const getCommunities1 = async (userId) => {
 
 // 팔로잉 유저 글
 const getFollowingCommunities = async (userId) => {
-    try{
+    try {
+        /*
         const response = await springBoot.get('/communities/followee', {
             params: {
                 category: 1,
                 user: userId,
             }
         });
+        */
+        const response = await springBoot.post('/communities/followee', {
+            category: 1,
+            user: userId,
+        });
         const result = response.data;
         console.log("팔로잉 유저 글 불러오기 성공:", result);
         return result;
-    }catch(error){
+    } catch (error) {
         console.error("팔로잉 유저 글 불러오기 실패:", error);
         return [];
     }

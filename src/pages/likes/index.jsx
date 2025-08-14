@@ -22,7 +22,8 @@ export function Likes({ users, board_types, board }) {
         fetchLikes();
     }, [users, board_types, board]);
 
-    const handleLike = async () => {
+    const handleLike = async (e) => {
+        e.stopPropagation()
         if (!users) {
             alert("로그인이 필요합니다.");
             return;
@@ -53,7 +54,7 @@ export function Likes({ users, board_types, board }) {
     return (
         <button
             disabled={loading}  // 로딩 중엔 버튼 비활성화
-            onClick={handleLike}
+            onClick={e => handleLike(e)}
             className={`flex items-center gap-1 text-sm ${liked ? 'text-red-500' : 'text-gray-400'}`}
         >
             <FiHeart className="inline" />

@@ -18,6 +18,16 @@ export function Notifications() {
 
     const sortedNotifications = [...filtered].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // 최신순 정렬
 
+    // 각 필터별 알림 개수 계산
+    const countByFilter = {
+        0: notifications.length, // 전체
+        9: notifications.filter(n => !n.is_read).length, // 읽지않음
+        4: notifications.filter(n => n.board_types === 4).length,
+        3: notifications.filter(n => n.board_types === 3).length,
+        2: notifications.filter(n => n.board_types === 2).length,
+        1: notifications.filter(n => n.board_types === 1).length,
+    };
+
     const getMessage = (n) => {
         switch (n.board_types) {
             case 4: return '회원님의 플레이리스트를 좋아요하였습니다.';
@@ -28,25 +38,31 @@ export function Notifications() {
         }
     };
 
-    const hendleNav = useCallback((e, boardType, board) => {
+    const hendleNav = useCallback(async (e, id, boardType, board) => {
         e.preventDefault();
+        try {
+            const response = await springBoot.put(`/notifications`, {
+                id: id,
+                is_read: true, // 읽은처리
+            });
+        } catch (error) {
+            console.error('API 호출 오류:', error);
+        }
+
         let path = '/';
 
         switch (boardType) {
             case 1:
-                path = `/communities/${board}`;
+                path = `/group/${board}`;
                 break;
             case 2:
-                //path = `/notifications/${board}`;
-                path = `/communities/${board}`;
+                path = `/${board}`;
                 break;
             case 3:
-                //path = `/comments/${board}`;
-                path = `/communities/${board}`;
+                path = `/${board}`;
                 break;
             case 4:
-                //path = `/likes/${board}`;
-                path = `/communities/${board}`;
+                path = `/${board}`;
                 break;
             default:
                 path = '/';
@@ -72,7 +88,7 @@ export function Notifications() {
         }
     }
 
-    
+
 
     return (
         <div className="max-w-xl mx-auto p-4">
@@ -131,7 +147,11 @@ export function Notifications() {
                                 : `${inactiveTextColor} border`
                                 }`}
                         >
-                            {tab.label}
+                            {tab.label}{" "}
+                            <span className="ml-1 font-semibold whitespace-nowrap">
+                                ({countByFilter[tab.type] || 0})
+                            </span>
+
                         </button>
                     );
                 })}
@@ -148,7 +168,7 @@ export function Notifications() {
                         <Link
                             to="#"
                             className="flex items-start gap-4 p-4 w-full h-full block text-inherit no-underline"
-                            onClick={e => hendleNav(e, n.board_types, n.board)}
+                            onClick={e => hendleNav(e, n.id, n.board_types, n.board)}
                         >
                             <img
                                 src={n.sender?.img || 'https://placehold.co/40x40'}

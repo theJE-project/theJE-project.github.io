@@ -102,7 +102,7 @@ export function HomeDetail() {
                     <div className="font-bold text-lg">뒤로가기</div>
                 </div>
             </div>
-            {community.id && community.users &&
+            {community?.id && community.users &&
                 < div className="flex flex-col gap-3" >
                     <div className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                         <div className="flex items-center gap-3">

@@ -9,6 +9,8 @@ import TextareaAutosize from 'react-textarea-autosize';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
+import { Likes } from '../likes/index';
+import { Comments } from '../comments/index';
 
 export function Home() {
     const { communities1, followingCommunities } = useLoaderData();
@@ -93,11 +95,9 @@ export function Home() {
     // 팔로우 취소 api 호출
     const unfollow = async (target) => {
         try {
-            const response = await springBoot.delete(`/followers/delete`, {
-                params: {
-                    follower: user.id,
-                    followee: target,
-                }
+            const response = await springBoot.post(`/followers/delete`, {
+                follower: user.id,
+                followee: target,
             });
             return response.data;
         } catch (error) {
@@ -113,6 +113,7 @@ export function Home() {
             if (isFollowing) {
                 if (!confirm(`${userName} 님을 팔로우 취소 하시겠습니까?`)) return;
                 result = await unfollow(target);
+                alert('');
             } else {
                 if (!confirm(`${userName} 님을 팔로우 하시겠습니까?`)) return;
                 result = await follow(target);
@@ -558,6 +559,16 @@ export function Home() {
                                     <div className="flex items-center gap-1"><FiHeart /> {c.likes}</div>
                                     <div className="flex items-center gap-1"><FiBarChart2 /> {c.count}</div>
                                 </div>
+                                <Comments
+                                    userId={user.id}
+                                    board_types='1'
+                                    board={c.id}
+                                />
+                                <Likes
+                                    users={user.id}
+                                    board_types='1'
+                                    board={c.id}
+                                />
                             </div>
                         </div>
                     </div>

@@ -33,6 +33,8 @@ export function GroupCreate() {
 
     // api 연결
     const fetchPlaylistData = async (data) => {
+        console.log('서버에 보낼 데이터:', JSON.stringify(data, null, 2));
+        
         try {
             const response = await springBoot.post('/communities', data);
 
@@ -68,8 +70,6 @@ export function GroupCreate() {
             hash: tagList.join(','),
             musics: musicList,
         }
-
-        console.log(data);
 
         try {
             await fetchPlaylistData(data);
