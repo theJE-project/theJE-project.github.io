@@ -139,7 +139,7 @@ export function HomeDetail() {
 
                                             className={`border rounded-2xl px-3 py-1 font-semibold cursor-pointer transition-colors ${community?.users?._following
                                                 ? 'text-gray-500 border-gray-500 hover:text-red-500 hover:border-red-500 hover:bg-red-50'
-                                                : 'bg-blue-500 text-white hover:bg-blue-400'
+                                                : 'bg-blue-500 text-white hover:bg-blue-400 border-blue-500'
                                                 }`}
                                             onClick={() => {
                                                 followOrUnfollow(community?.users?.id, community?.users?._following, community?.users?.name);

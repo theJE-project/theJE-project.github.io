@@ -1,5 +1,5 @@
 import { useLoaderData, useRouteLoaderData, useNavigate, useRevalidator, Link } from 'react-router-dom'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
@@ -12,6 +12,9 @@ import 'dayjs/locale/ko';
 import { Likes } from '../likes/index';
 
 export function Home() {
+    dayjs.extend(relativeTime);
+    dayjs.locale('ko');
+
     const { communities1, followingCommunities } = useLoaderData();
     const { user, categories } = useRouteLoaderData('default');
 
@@ -25,21 +28,53 @@ export function Home() {
     const [open, setOpen] = useState(false);
     // 재생바
     const [previewUrl, setPreviewUrl] = useState(null);
-
     const { images, setImages, getImages, deleteImage, resetImages } = useImage();
-
     const [tab, setTab] = useState('all'); // all or following
-
-    dayjs.extend(relativeTime);
-    dayjs.locale('ko');
-
     const list = tab === 'all' ? (communities1 ?? []) : (followingCommunities ?? []);
+
+    // 탭별 스크롤 위치 저장(메모리)
+    const scrollPositions = useRef({ all: 0, following: 0 });
+
+    // 탭 복원 시 부드러운 스크롤 없이 즉시 점프
+    const jumpTo = (y) => {
+        const root = document.scrollingElement || document.documentElement;
+        const prev = root.style.scrollBehavior;   // 기존 값 백업
+        root.style.scrollBehavior = 'auto';       // 전역 smooth 강제 OFF
+        window.scrollTo(0, y);                    // 즉시 점프
+        setTimeout(() => { root.style.scrollBehavior = prev; }, 0); // 다음 틱에 원복
+    };
+
+    // 처음 마운트 시, 세션스토리지 값 메모리에 복원
+    useEffect(() => {
+        ['all', 'following'].forEach((t) => {
+            const v = Number(sessionStorage.getItem(`feed:scroll:${t}`));
+            if (!Number.isNaN(v)) scrollPositions.current[t] = v;
+        });
+    }, []);
+
+    useEffect(() => {
+        const onScroll = () => {
+            const y = window.scrollY;
+            scrollPositions.current[tab] = y;                      // 메모리 저장
+            sessionStorage.setItem(`feed:scroll:${tab}`, String(y)); // (선택) 세션 저장
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, [tab]);
+
+
+    useEffect(() => {
+        const y = scrollPositions.current[tab] || 0;
+        // 레이아웃 그리기 직후 반영되도록 requestAnimationFrame 한 번 감싸도 부드러움
+        requestAnimationFrame(() => jumpTo(y));
+    }, [tab]);
 
 
     // 탭 한번 더 누르면 맨위로+새고
     const onClickTab = (next) => {
         if (next === tab) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // window.scrollTo({ top: 0, behavior: 'smooth' });
+            jumpTo(0);
             revalidator.revalidate();
             return;
         }
@@ -184,7 +219,18 @@ export function Home() {
         navigate(`/${id}`);
     }
 
+    // 음악 검색창 포커스
+    const inputRef = useRef(null);
 
+    const focusSearch = () => {
+    setOpen(true);
+    // React의 상태 업데이트가 비동기라서 다음 tick에서 실행
+    requestAnimationFrame(() => {
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
+    });
+};
 
     // 폼 제출
     const handleSubmit = async (e) => {
@@ -245,7 +291,7 @@ export function Home() {
                     {/* <h3 className="font-bold text-lg mb-3">피드</h3> */}
 
                     {/* 글쓰기 */}
-                    <div className="bg-white p-5 rounded-b-lg border-1 border-gray-200">
+                    <div className="bg-white p-5 border-b border-gray-300">
                         <form onSubmit={handleSubmit}>
                             <div className="flex items-start gap-3">
                                 {/* 프로필 둥근 이미지 (임시, 사용자 첫글자 원) */}
@@ -329,7 +375,7 @@ export function Home() {
                                             }}
                                             className="text-gray-400 hover:text-gray-600 transition cursor-pointer"
                                         >
-                                            <FiMusic className="inline text-lg" />
+                                            <FiMusic className="inline text-lg" onClick={focusSearch} />
                                         </button>
 
                                     </div>
@@ -386,6 +432,7 @@ export function Home() {
                                     type="text"
                                     placeholder="아티스트, 곡명, 앨범으로 검색하세요"
                                     onChange={handleMusicSearch}
+                                    ref = {inputRef}
                                     className="w-full border rounded-lg px-4 py-3 text-base outline-none placeholder:text-gray-400 bg-gray-50"
                                 />
                                 {/* {previewUrl && (
@@ -448,13 +495,14 @@ export function Home() {
                 <audio onEnded={() => setPreviewUrl(null)} controls src={previewUrl} autoPlay className="hidden" />
             )}
             {/* 새로고침 버튼 */}
-            <button type='button' onClick={handleRefresh} className="mx-auto my-4 w-full max-w-2xl
+            {/* 
+            <button type='button' onClick={handleRefresh} className="mx-auto w-full max-w-2xl
                 flex items-center justify-center
-                rounded-full border border-blue-200 bg-blue-50
                 px-4 py-2 font-semibold text-blue-600 cursor-pointer hover:bg-blue-100
-                active:scale-[0.99] transition" disabled={revalidator.state === 'loading'}>새 게시글 보기</button>
+                active:scale-[0.99] transition" disabled={revalidator.state === 'loading'}></button> 
+                /**/}
             {/* 피드 */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col">
                 {list.length === 0 ? (
                     tab === 'following'
                         ? <div className="flex flex-col items-center justify-center py-12 text-gray-400">
@@ -475,7 +523,8 @@ export function Home() {
                             e.stopPropagation();
                             handleDetail(c.id);
                         }}
-                        className="bg-white hover:bg-gray-50 p-5 rounded-lg border-1 border-gray-200 cursor-pointer"
+                        // className="bg-white hover:bg-gray-50 p-5 rounded-lg border-1 border-gray-200 cursor-pointer"
+                        className="bg-white hover:bg-gray-50 p-5 border-b border-gray-200 cursor-pointer"
                     >
                         <div className="flex gap-3">
                             {/* 왼쪽 프로필 */}
@@ -515,7 +564,7 @@ export function Home() {
                                                 <button
                                                     className={`border rounded-full px-3 py-0.5 text-sm font-semibold cursor-pointer transition-colors ${c?.users?._following
                                                         ? 'text-gray-500 border-gray-500 hover:bg-red-50 hover:text-red-500 hover:border-red-500'
-                                                        : 'text-white bg-blue-500 hover:bg-blue-400'
+                                                        : 'text-white bg-blue-500 border-blue-500 hover:bg-blue-400'
                                                         }`}
                                                     onClick={(e) => {
                                                         e.preventDefault();
@@ -655,7 +704,7 @@ export function Home() {
                                     );
                                 })()}
 
-                                <div className="mt-2 flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
+                                <div className="mt-2 flex items-center gap-8 pt-2 text-gray-400 text-sm  border-gray-100">
                                     <div className="flex items-center gap-1"><FiMessageCircle /> {c.comments}</div>
                                     {/* <div className="flex items-center gap-1"><FiHeart /> {c.likes}</div> */}
                                     <Likes

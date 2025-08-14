@@ -22,16 +22,14 @@ export function Layout() {
         searchRef.current.forEach(ref => {
             if (ref) ref.value = '';
         });
-        if (value) { 
-            searchParams.set('q', value); 
-        } else { 
+        if (value) { searchParams.set('q', value); } 
+        else { 
             searchParams.delete('q'); 
+            return;
         }
         setSearchParams(searchParams);
         setShowHombeger(false);
-        if (local.pathname.split('/')[1] != "group") {
-            navigate(`/search?q=${value}`);
-        }
+        navigate(`/search?q=${value}`);
     };
 
     const hendleNav = useCallback((e, o) => {
