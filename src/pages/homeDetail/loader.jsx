@@ -7,6 +7,7 @@ const getCommunity = async (id, userId) => {
         const response = await springBoot.get(`/communities/community/${id}`, {
             params: {
                 user: userId,
+                size: 100,
             }
         });
         const result = response.data;
