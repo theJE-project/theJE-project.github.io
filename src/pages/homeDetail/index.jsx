@@ -7,6 +7,8 @@ import { FiMessageCircle, FiHeart, FiPlay, FiArrowLeft, FiAlertTriangle, FiPause
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
+import { Likes } from '../likes/index';
+import { Comments } from '../comments/index';
 
 export function HomeDetail() {
     const { community } = useLoaderData();
@@ -279,6 +281,17 @@ export function HomeDetail() {
 
                         <span className="text-gray-400 text-xs">{dayjs(community.created_at).format('YYYY년 MM월 DD일, A hh시 mm분')} · 조회수 {community.count}</span>
                         {/* 댓글/좋아요 아이콘들 */}
+                        <Likes
+                            users={user.id}
+                            board_types='1'
+                            board={community.id}
+                        />
+                        <Comments
+                            userId={user.id}
+                            board_types='1'
+                            board={community.id}
+                        />
+                        
                         <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
                             <div className="flex items-center gap-1"><FiMessageCircle className="inline" /> {community.comments}</div>
                             <div className="flex items-center gap-1"><FiHeart className="inline" /> {community.likes}</div>

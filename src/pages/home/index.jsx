@@ -10,7 +10,6 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
 import { Likes } from '../likes/index';
-import { Comments } from '../comments/index';
 
 export function Home() {
     const { communities1, followingCommunities } = useLoaderData();
@@ -656,28 +655,16 @@ export function Home() {
                                     );
                                 })()}
 
-
-
-
-
-
-
-
                                 <div className="mt-2 flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
                                     <div className="flex items-center gap-1"><FiMessageCircle /> {c.comments}</div>
-                                    <div className="flex items-center gap-1"><FiHeart /> {c.likes}</div>
+                                    {/* <div className="flex items-center gap-1"><FiHeart /> {c.likes}</div> */}
+                                    <Likes
+                                        users={user.id}
+                                        board_types='1'
+                                        board={c.id}
+                                    />
                                     <div className="flex items-center gap-1"><FiBarChart2 /> {c.count}</div>
                                 </div>
-                                <Comments
-                                    userId={user.id}
-                                    board_types='1'
-                                    board={c.id}
-                                />
-                                <Likes
-                                    users={user.id}
-                                    board_types='1'
-                                    board={c.id}
-                                />
                             </div>
                         </div>
                     </div>
