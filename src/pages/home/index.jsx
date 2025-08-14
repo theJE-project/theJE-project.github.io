@@ -1,5 +1,5 @@
-import { useLoaderData, useRouteLoaderData, useNavigate, useRevalidator } from 'react-router-dom'
-import { useState, useRef, useEffect } from 'react';
+import { useLoaderData, useRouteLoaderData, useNavigate, useRevalidator, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
@@ -27,14 +27,26 @@ export function Home() {
     // 재생바
     const [previewUrl, setPreviewUrl] = useState(null);
 
-    const { images, setImages, getImages, deleteImage } = useImage();
+    const { images, setImages, getImages, deleteImage, resetImages } = useImage();
 
     const [tab, setTab] = useState('all'); // all or following
 
     dayjs.extend(relativeTime);
     dayjs.locale('ko');
 
-    const list = tab === 'all' ? (communities1 ?? []) : (followingCommunities ?? {});
+    const list = tab === 'all' ? (communities1 ?? []) : (followingCommunities ?? []);
+
+
+    // 탭 한번 더 누르면 맨위로+새고
+    const onClickTab = (next) => {
+        if (next === tab) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            revalidator.revalidate();
+            return;
+        }
+        setTab(next);
+    };
+
 
     // 피드 새로고침
     const handleRefresh = () => {
@@ -99,7 +111,8 @@ export function Home() {
                 follower: user.id,
                 followee: target,
             });
-            return response.data;
+            const result = response.data;
+            return result;
         } catch (error) {
             console.log("팔로우 취소 api 호출 실패", error);
             return null;
@@ -131,6 +144,10 @@ export function Home() {
         const files = e.target.files;
         // 파일이 없으면 리턴
         if (!files || !files.length) return;
+        if (files.length + images.length > 4) {
+            alert("최대 4장까지 업로드 가능합니다.");
+            return;
+        }
         setImages(e);
     }
     /**/
@@ -185,7 +202,7 @@ export function Home() {
         const result = await postCommunity(data);
         try {
             setContent('');
-            images.length = 0;
+            resetImages();
             setSelectedMusic(null);
             revalidator.revalidate();
             console.log("글 작성 성공:", result);
@@ -200,7 +217,7 @@ export function Home() {
     // console.log(musics);
     // console.log(user.name);
     return (
-        <div className="w-full max-w-[600px] mx-auto">
+        <div className="w-full max-w-2xl mx-auto">
             {/* 전체/팔로잉 탭 */}
             {user?.id && (
                 <>
@@ -211,7 +228,7 @@ export function Home() {
                                     ? 'text-black border-b-4 border-blue-500 bg-gray-50'
                                     : 'text-gray-500'}
             transition-colors duration-150`}
-                            onClick={() => setTab('all')}
+                            onClick={() => onClickTab('all')}
                         >
                             전체
                         </button>
@@ -221,7 +238,7 @@ export function Home() {
                                     ? 'text-black border-b-4 border-blue-500 bg-gray-50'
                                     : 'text-gray-500'}
             transition-colors duration-150`}
-                            onClick={() => setTab('following')}
+                            onClick={() => onClickTab('following')}
                         >
                             팔로잉
                         </button>
@@ -235,7 +252,7 @@ export function Home() {
                                 {/* 프로필 둥근 이미지 (임시, 사용자 첫글자 원) */}
                                 <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
                                     {user?.img
-                                        ? <img src={user.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
+                                        ? <img src={getImages({ url: user.img })} alt="profile" className="w-10 h-10 rounded-full object-cover" />
                                         : user?.name?.charAt(0)
                                     }
                                 </div>
@@ -265,6 +282,7 @@ export function Home() {
                                                 onClick={(e) => {
                                                     e.stopPropagation(); // 상위 클릭 방지
                                                     setSelectedMusic(null); // 선택 음악 초기화
+                                                    setPreviewUrl(null); // 음악재생 종료
                                                 }}
                                             >
                                                 ×
@@ -320,6 +338,7 @@ export function Home() {
                                 <button
                                     disabled={!content && !images.length && !selectedMusic}
                                     type="submit"
+                                    onClick={() => setPreviewUrl(null)}
                                     className="ml-2 px-5 py-2 bg-blue-500 text-white font-bold rounded-full hover:bg-blue-400 disabled:bg-gray-300 transition cursor-pointer"
                                 >
                                     공유하기
@@ -351,10 +370,11 @@ export function Home() {
                             <div className="flex items-center justify-between p-6 border-b border-gray-200">
                                 <h2 className="text-lg font-bold">음악 검색</h2>
                                 <button
-                                    className="text-gray-400 hover:text-gray-700"
+                                    className="text-gray-400 hover:text-gray-700 cursor-pointer"
                                     onClick={() => {
                                         setOpen(false);
                                         getMusics('');
+                                        setPreviewUrl(null)
                                     }}
                                 >
                                     <span className="text-2xl">&times;</span>
@@ -399,9 +419,9 @@ export function Home() {
                                             { previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview); }
                                         }}
                                         >{previewUrl === m.preview ?
-                                            <FiPause className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />
+                                            <FiPause className="inline text-xl text-blue-300 group-hover:text-blue-500" />
                                             :
-                                            <FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />}
+                                            <FiPlay className="inline text-xl text-blue-300 group-hover:text-blue-500" />}
                                         </button>
                                     </div>
                                 )) : (
@@ -426,10 +446,10 @@ export function Home() {
                 {revalidator.state === 'loading' ? '...' : ''}
             </div> */}
             {previewUrl && (
-                <audio controls src={previewUrl} autoPlay className="hidden" />
+                <audio onEnded={() => setPreviewUrl(null)} controls src={previewUrl} autoPlay className="hidden" />
             )}
             {/* 새로고침 버튼 */}
-            <button type='button' onClick={handleRefresh} className="mx-auto my-4 w-full max-w-[600px]
+            <button type='button' onClick={handleRefresh} className="mx-auto my-4 w-full max-w-2xl
                 flex items-center justify-center
                 rounded-full border border-blue-200 bg-blue-50
                 px-4 py-2 font-semibold text-blue-600 cursor-pointer hover:bg-blue-100
@@ -461,17 +481,22 @@ export function Home() {
                         <div className="flex gap-3">
                             {/* 왼쪽 프로필 */}
                             <div className="flex-shrink-0">
-                                <div className="w-10 h-10 rounded-full bg-blue-500 overflow-hidden flex items-center justify-center text-white font-bold text-lg">
+                                <Link to={`/user/${c.users?.id}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-10 h-10 rounded-full bg-blue-500 overflow-hidden flex items-center justify-center text-white font-bold text-lg"
+                                    aria-label={`${c.users?.name} 프로필로 이동`}
+                                >
                                     {c?.users?.img
-                                        ? <img src={c.users.img} alt="profile" className="w-full h-full object-cover" />
+                                        ? <img src={getImages({ url: c.users.img })} alt="profile" className="w-full h-full object-cover" />
                                         : c?.users?.name?.charAt(0)}
-                                </div>
+                                </Link>
                             </div>
-
                             {/* 오른쪽: 모든 내용 */}
                             <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="font-bold truncate">{c?.users?.name}</span>
+                                    <Link to={`/user/${c.users?.id}`}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="font-bold truncate hover:underline">{c?.users?.name}</Link>
                                     <span className="text-gray-500 text-sm">@{c?.users?.account}</span>
                                     <span className="text-gray-400 text-xs"> {dayjs(c.created_at).fromNow()}</span>
 
@@ -490,8 +515,8 @@ export function Home() {
                                             ) : (
                                                 <button
                                                     className={`border rounded-full px-3 py-0.5 text-sm font-semibold cursor-pointer transition-colors ${c?.users?._following
-                                                        ? 'text-gray-500 border-gray-500'
-                                                        : 'text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white'
+                                                        ? 'text-gray-500 border-gray-500 hover:bg-red-50 hover:text-red-500 hover:border-red-500'
+                                                        : 'text-white bg-blue-500 hover:bg-blue-400'
                                                         }`}
                                                     onClick={(e) => {
                                                         e.preventDefault();
@@ -536,7 +561,7 @@ export function Home() {
                                     </div>
                                 ))}
 
-                                {c.images && c.images.length > 0 && (
+                                {/* {c.images && c.images.length > 0 && (
                                     <div className="mt-3 gap-2">
                                         {c.images.map((img) => (
                                             <img
@@ -548,7 +573,91 @@ export function Home() {
                                         ))}
                                     </div>
 
-                                )}
+                                )} */}
+
+                                {c?.images?.length > 0 && (() => {
+                                    const imgs = c.images.slice(0, 4);
+
+                                    // 1장
+                                    if (imgs.length === 1) {
+                                        return (
+                                            <div className="mt-3 rounded-xl overflow-hidden">
+                                                <div>
+                                                    <img
+                                                        src={getImages(imgs[0])}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
+                                    // 2장
+                                    if (imgs.length === 2) {
+                                        return (
+                                            <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
+                                                {imgs.map(it => (
+                                                    <div key={it.id}>
+                                                        <img
+                                                            src={getImages(it)}
+                                                            alt=""
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    }
+
+                                    if (imgs.length === 3) {
+                                        return (
+                                            <div className="mt-3 rounded-xl overflow-hidden">
+                                                <div className="grid grid-cols-2 grid-rows-2 gap-1 aspect-[4/3]">
+
+                                                    <img
+                                                        src={getImages(imgs[0])}
+                                                        alt=""
+                                                        className="col-span-1 row-span-2 w-full h-full object-cover"
+                                                        loading="lazy" decoding="async"
+                                                    />
+
+
+                                                    <img
+                                                        src={getImages(imgs[1])}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                        loading="lazy" decoding="async"
+                                                    />
+                                                    <img
+                                                        src={getImages(imgs[2])}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                        loading="lazy" decoding="async"
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
+                                    // 4장 (2x2)
+                                    return (
+                                        <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
+                                            {imgs.map(it => (
+                                                <div key={it.id} className="aspect-[4/3]">
+                                                    <img
+                                                        src={getImages(it)}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                })()}
+
+
+
 
 
 

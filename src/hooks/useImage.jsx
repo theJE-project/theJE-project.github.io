@@ -55,7 +55,7 @@ export const useImage = () => {
 
         const { error } = await supabase.storage
             .from('media')
-            .remove([image.url]); 
+            .remove([image.url]);
 
         if (error) {
             console.error('Failed to delete image:', image.url, error);
@@ -68,6 +68,17 @@ export const useImage = () => {
         return `https://nvugjssjjxtbbjnwimek.supabase.co/storage/v1/object/public/media/${path?.url}`;
     };
 
+    // 희원- 이미지 배열 전체 삭제
+    const resetImages = async() => {
+
+        // 저장된 이미지 리스트 전체를 삭제
+        for (const image of imageList) {
+            await supabase.storage.from('media').remove([image.url]);
+        }
+        setImageList([]);
+    }
+
+
     return {
         /** 이미지의 스토리지 경로 */
         images: imageList,
@@ -76,5 +87,6 @@ export const useImage = () => {
         /** 스토리지 경로로 가져오기 */
         getImages,
         deleteImage,
+        resetImages,
     };
 };

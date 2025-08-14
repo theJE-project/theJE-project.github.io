@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
-import { FiMessageCircle, FiHeart, FiPlay, FiArrowLeft, FiAlertTriangle } from "react-icons/fi";
+import { FiMessageCircle, FiHeart, FiPlay, FiArrowLeft, FiAlertTriangle, FiPause } from "react-icons/fi";
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
@@ -90,10 +90,6 @@ export function HomeDetail() {
     return (
         <div className="w-full max-w-[600px] mx-auto">
             {/* 피드 */}
-            {(!community || !community?.id) && <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-                <FiAlertTriangle size={40} className="mb-3" />
-                <p className="text-gray-500">게시글이 없습니다</p>
-            </div>}
             <div className="h-12 sticky top-17 bg-white/90 backdrop-blur">
                 <div className="max-w-[600px] mx-auto h-12 flex items-center gap-3 px-4">
                     <button onClick={() => navigate(-1)} className="cursor-pointer p-2 -ml-2">
@@ -107,7 +103,7 @@ export function HomeDetail() {
                     <div className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                         <div className="flex items-center gap-3">
                             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
-                                {community?.users?.img
+                                {community.users?.img
                                     ? <img src={community.users?.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
                                     : community.users?.name?.charAt(0)
                                 }
@@ -128,9 +124,10 @@ export function HomeDetail() {
                                         </button>
                                     ) : (
                                         <button
+
                                             className={`border rounded-2xl px-3 py-1 font-semibold cursor-pointer transition-colors ${community?.users?._following
-                                                ? 'text-gray-500 border-gray-500 hover:bg-gray-500 hover:text-white'
-                                                : 'text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white'
+                                                ? 'text-gray-500 border-gray-500 hover:text-red-500 hover:border-red-500 hover:bg-red-50'
+                                                : 'bg-blue-500 text-white hover:bg-blue-400'
                                                 }`}
                                             onClick={() => {
                                                 followOrUnfollow(community?.users?.id, community?.users?._following, community?.users?.name);
@@ -152,7 +149,7 @@ export function HomeDetail() {
 
                         {/* 음악 카드 */}
                         {previewUrl && (
-                            <audio controls src={previewUrl} autoPlay className="hidden" />
+                            <audio onEnded={() => setPreviewUrl(null)} controls src={previewUrl} autoPlay className="hidden" />
                         )}
                         {community?.musics && community?.musics.length > 0 && (
                             community?.musics.map((m) => (
@@ -169,16 +166,19 @@ export function HomeDetail() {
                                     <button type="button" className='cursor-pointer ml-auto group' onClick={(e) => {
                                         // 재생 누르면 모달 꺼짐 방지
                                         e.stopPropagation();
-                                        setPreviewUrl(m.preview);
+                                        { previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview); }
                                     }}
-                                    ><FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" /></button>
+                                    >{previewUrl === m.preview ?
+                                        <FiPause className="inline text-xl text-blue-300 group-hover:text-blue-500" />
+                                        :
+                                        <FiPlay className="inline text-xl text-blue-300 group-hover:text-blue-500" />}</button>
                                 </div>
 
                             ))
                         )}
 
                         {/* 사진 */}
-                        {community?.images && community?.images.length > 0 && (
+                        {/* {community?.images && community?.images.length > 0 && (
                             <div className="mt-3 flex gap-2">
                                 {community?.images.map((img) => (
                                     <img
@@ -189,7 +189,94 @@ export function HomeDetail() {
                                     />
                                 ))}
                             </div>
-                        )}
+                        )} */}
+
+                        {community?.images?.length > 0 && (() => {
+                                    const imgs = community.images.slice(0, 4);
+                                    
+
+                                    // 1장
+                                    if (imgs.length === 1) {
+                                        return (
+                                            <div className="mt-3 rounded-xl overflow-hidden">
+                                                <div>
+                                                    <img
+                                                        src={getImages(imgs[0])}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
+                                    // 2장
+                                    if (imgs.length === 2) {
+                                        return (
+                                            <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
+                                                {imgs.map(it => (
+                                                    <div key={it.id}>
+                                                        <img
+                                                            src={getImages(it)}
+                                                            alt=""
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    }
+
+                                    // 3장 (왼쪽 크게/오른쪽 위/아래 두 장)
+                                    if (imgs.length === 3) {
+                                        return (
+                                            <div className="mt-3 rounded-xl overflow-hidden">
+                                                <div className="grid grid-cols-2 grid-rows-2 gap-1 aspect-[4/3]">
+                                                    {/* 왼쪽: 두 행 차지 */}
+                                                    <img
+                                                        src={getImages(imgs[0])}
+                                                        alt=""
+                                                        className="col-span-1 row-span-2 w-full h-full object-cover"
+                                                        loading="lazy" decoding="async"
+                                                    />
+
+                                                    {/* 오른쪽 위/아래 */}
+                                                    <img
+                                                        src={getImages(imgs[1])}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                        loading="lazy" decoding="async"
+                                                    />
+                                                    <img
+                                                        src={getImages(imgs[2])}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                        loading="lazy" decoding="async"
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
+                                    // 4장 (2x2)
+                                    return (
+                                        <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
+                                            {imgs.map(it => (
+                                                <div key={it.id} className="aspect-[4/3]">
+                                                    <img
+                                                        src={getImages(it)}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                })()}
+
+
+
+
                         <span className="text-gray-400 text-xs">{dayjs(community.created_at).format('YYYY년 MM월 DD일, A hh시 mm분')} · 조회수 {community.count}</span>
                         {/* 댓글/좋아요 아이콘들 */}
                         <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">

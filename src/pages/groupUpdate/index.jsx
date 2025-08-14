@@ -1,18 +1,11 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useLocation, useRouteLoaderData } from 'react-router-dom';
-import { MdOutlineAddPhotoAlternate, MdOutlineFileUpload, MdOutlineLibraryMusic } from 'react-icons/md';
-import { RiMusicAiLine } from 'react-icons/ri';
-import { IoClose } from 'react-icons/io5';
-import { springBoot } from '../../axios/springboot';
-import { useImage } from '../../hooks';
-import { useMusic } from '../../hooks/useMusics';
-import { FiPause, FiPlay, FiPlus, FiX } from 'react-icons/fi';
+import { useLocation } from "react-router-dom";
+import PlaylistFrom from "../groupCreate/playlistForm";
+import { useImage } from "../../hooks";
 
-export { loader } from './loader';
+export { loader } from './loader'
 
 export function GroupUpdate() {
-    const navigate = useNavigate();
-    const { id } = useParams();
+    // groupDetail에서 데이터 받기
     const location = useLocation();
 
     const { user } = useRouteLoaderData('default'); // 로그인 사용자 
