@@ -1,5 +1,5 @@
-import { useLoaderData, useRouteLoaderData, useNavigate, useRevalidator, Link } from 'react-router-dom'
-import { useState, useEffect } from 'react';
+import { useLoaderData, useRouteLoaderData, useNavigate, useRevalidator, Link, useSearchParams } from 'react-router-dom'
+import { useState, useEffect, startTransition } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
@@ -11,6 +11,8 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
 
 export function Home() {
+    dayjs.extend(relativeTime);
+    dayjs.locale('ko');
     const { communities1, followingCommunities } = useLoaderData();
     const { user, categories } = useRouteLoaderData('default');
 
@@ -27,23 +29,33 @@ export function Home() {
 
     const { images, setImages, getImages, deleteImage, resetImages } = useImage();
 
-    const [tab, setTab] = useState('all'); // all or following
-
-    dayjs.extend(relativeTime);
-    dayjs.locale('ko');
+    // const [tab, setTab] = useState('all'); // all or following
+    const [sp, setSp] = useSearchParams();
+    const tab = sp.get('tab') === 'following' ? 'following' : 'all';
 
     const list = tab === 'all' ? (communities1 ?? []) : (followingCommunities ?? []);
 
-
-    // 탭 한번 더 누르면 맨위로+새고
     const onClickTab = (next) => {
         if (next === tab) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
             revalidator.revalidate();
             return;
         }
-        setTab(next);
+        startTransition(() => {
+            setSp({ tab: next }, { replace: true, preventScrollReset: true });
+        });
     };
+
+
+    // 탭 한번 더 누르면 맨위로+새고
+    // const onClickTab = (next) => {
+    //     if (next === tab) {
+    //         window.scrollTo({ top: 0, behavior: 'smooth' });
+    //         revalidator.revalidate();
+    //         return;
+    //     }
+    //     setTab(next);
+    // };
 
 
     // 피드 새로고침

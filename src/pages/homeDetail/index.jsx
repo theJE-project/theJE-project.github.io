@@ -1,5 +1,5 @@
-import { useLoaderData, useRouteLoaderData, useRevalidator, useNavigate } from 'react-router-dom'
-import { useState } from 'react';
+import { useLoaderData, useRouteLoaderData, useRevalidator, useNavigate, useNavigationType, ScrollRestoration } from 'react-router-dom'
+import { useState, useEffect } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
@@ -20,6 +20,18 @@ export function HomeDetail() {
 
     dayjs.extend(relativeTime);
     dayjs.locale('ko');
+
+    const navType = useNavigationType();
+
+    useEffect(() => {
+        if (navType !== 'POP') {
+            // 상세로 "진입"할 때만 위로
+            window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        }
+    }, [navType]);
+
+
+
 
 
     // 글삭제 api 호출
@@ -196,87 +208,87 @@ export function HomeDetail() {
                         )} */}
 
                         {community?.images?.length > 0 && (() => {
-                                    const imgs = community.images.slice(0, 4);
-                                    
+                            const imgs = community.images.slice(0, 4);
 
-                                    // 1장
-                                    if (imgs.length === 1) {
-                                        return (
-                                            <div className="mt-3 rounded-xl overflow-hidden">
-                                                <div>
-                                                    <img
-                                                        src={getImages(imgs[0])}
-                                                        alt=""
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    }
 
-                                    // 2장
-                                    if (imgs.length === 2) {
-                                        return (
-                                            <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
-                                                {imgs.map(it => (
-                                                    <div key={it.id}>
-                                                        <img
-                                                            src={getImages(it)}
-                                                            alt=""
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        );
-                                    }
-
-                                    // 3장 (왼쪽 크게/오른쪽 위/아래 두 장)
-                                    if (imgs.length === 3) {
-                                        return (
-                                            <div className="mt-3 rounded-xl overflow-hidden">
-                                                <div className="grid grid-cols-2 grid-rows-2 gap-1 aspect-[4/3]">
-                                                    {/* 왼쪽: 두 행 차지 */}
-                                                    <img
-                                                        src={getImages(imgs[0])}
-                                                        alt=""
-                                                        className="col-span-1 row-span-2 w-full h-full object-cover"
-                                                        loading="lazy" decoding="async"
-                                                    />
-
-                                                    {/* 오른쪽 위/아래 */}
-                                                    <img
-                                                        src={getImages(imgs[1])}
-                                                        alt=""
-                                                        className="w-full h-full object-cover"
-                                                        loading="lazy" decoding="async"
-                                                    />
-                                                    <img
-                                                        src={getImages(imgs[2])}
-                                                        alt=""
-                                                        className="w-full h-full object-cover"
-                                                        loading="lazy" decoding="async"
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-
-                                    // 4장 (2x2)
-                                    return (
-                                        <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
-                                            {imgs.map(it => (
-                                                <div key={it.id} className="aspect-[4/3]">
-                                                    <img
-                                                        src={getImages(it)}
-                                                        alt=""
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                </div>
-                                            ))}
+                            // 1장
+                            if (imgs.length === 1) {
+                                return (
+                                    <div className="mt-3 rounded-xl overflow-hidden">
+                                        <div>
+                                            <img
+                                                src={getImages(imgs[0])}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                            />
                                         </div>
-                                    );
-                                })()}
+                                    </div>
+                                );
+                            }
+
+                            // 2장
+                            if (imgs.length === 2) {
+                                return (
+                                    <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
+                                        {imgs.map(it => (
+                                            <div key={it.id}>
+                                                <img
+                                                    src={getImages(it)}
+                                                    alt=""
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            }
+
+                            // 3장 (왼쪽 크게/오른쪽 위/아래 두 장)
+                            if (imgs.length === 3) {
+                                return (
+                                    <div className="mt-3 rounded-xl overflow-hidden">
+                                        <div className="grid grid-cols-2 grid-rows-2 gap-1 aspect-[4/3]">
+                                            {/* 왼쪽: 두 행 차지 */}
+                                            <img
+                                                src={getImages(imgs[0])}
+                                                alt=""
+                                                className="col-span-1 row-span-2 w-full h-full object-cover"
+                                                loading="lazy" decoding="async"
+                                            />
+
+                                            {/* 오른쪽 위/아래 */}
+                                            <img
+                                                src={getImages(imgs[1])}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                                loading="lazy" decoding="async"
+                                            />
+                                            <img
+                                                src={getImages(imgs[2])}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                                loading="lazy" decoding="async"
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            // 4장 (2x2)
+                            return (
+                                <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
+                                    {imgs.map(it => (
+                                        <div key={it.id} className="aspect-[4/3]">
+                                            <img
+                                                src={getImages(it)}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        })()}
 
 
 
