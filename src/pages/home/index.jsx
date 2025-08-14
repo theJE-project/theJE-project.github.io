@@ -107,12 +107,13 @@ export function Home() {
     // 팔로우 취소 api 호출
     const unfollow = async (target) => {
         try {
-            const response = await springBoot.post(`/followers/delete`, {
-                follower: user.id,
-                followee: target,
+            const response = await springBoot.delete(`/followers/delete`, {
+                params: {
+                    follower: user.id,
+                    followee: target,
+                }
             });
-            const result = response.data;
-            return result;
+            return response.data;
         } catch (error) {
             console.log("팔로우 취소 api 호출 실패", error);
             return null;
@@ -126,7 +127,6 @@ export function Home() {
             if (isFollowing) {
                 if (!confirm(`${userName} 님을 팔로우 취소 하시겠습니까?`)) return;
                 result = await unfollow(target);
-                alert('');
             } else {
                 if (!confirm(`${userName} 님을 팔로우 하시겠습니까?`)) return;
                 result = await follow(target);
