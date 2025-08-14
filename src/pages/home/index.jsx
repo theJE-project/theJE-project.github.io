@@ -564,7 +564,7 @@ export function Home() {
                                                 <button
                                                     className={`border rounded-full px-3 py-0.5 text-sm font-semibold cursor-pointer transition-colors ${c?.users?._following
                                                         ? 'text-gray-500 border-gray-500 hover:bg-red-50 hover:text-red-500 hover:border-red-500'
-                                                        : 'text-white bg-blue-500 hover:bg-blue-400'
+                                                        : 'text-white bg-blue-500 border-blue-500 hover:bg-blue-400'
                                                         }`}
                                                     onClick={(e) => {
                                                         e.preventDefault();
