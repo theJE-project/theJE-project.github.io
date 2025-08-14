@@ -1,6 +1,6 @@
 export { loader } from './loader'
 import React, { useCallback, useRef, useState } from 'react';
-import { Link, Outlet, useLoaderData, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Outlet, useLoaderData, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { springBoot } from '@axios';
 
 export function Layout() {
@@ -11,6 +11,7 @@ export function Layout() {
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
     const [showHombeger, setShowHombeger] = useState(false);
     const [setShowAllNotifications] = useState(false);
+    const local = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
     const findUser = Object.keys(loader.user).length === 0;
     const [search, setSearch] = useState(false);
@@ -18,12 +19,15 @@ export function Layout() {
 
     const handleSerachBlur = (e) => {
         const value = e.target.value;
-        if (value) { searchParams.set('q', value); } else { searchParams.delete('q'); }
         searchRef.current.forEach(ref => {
             if (ref) ref.value = '';
         });
+        if (value) { searchParams.set('q', value); } else { searchParams.delete('q'); }
         setSearchParams(searchParams);
         setShowHombeger(false);
+        if(local.pathname.split('/')[1] != "group"){
+            navigate(`/search?q=${value}`);
+        }
     };
 
     const hendleNav = useCallback((e, o) => {
@@ -183,8 +187,8 @@ export function Layout() {
                                             <div className="p-3 border-t border-gray-200">
                                                 <button
                                                     onClick={() => {
-                                                        setShowAllNotifications(true);
                                                         setShowNotifications(false);
+                                                        navigate("notifications");
                                                     }}
                                                     className="text-sm text-blue-600 hover:text-blue-700 cursor-pointer"
                                                 >

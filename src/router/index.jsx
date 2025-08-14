@@ -6,11 +6,14 @@ import {
     Group, groupLoader,
     GroupCreate, groupCreateLoader,
     GroupDetail, groupDetailLoader,
+    GroupUpdate, groupUpdateLoader,
     My, myloader,
     Login,
     SignUp,
     Redirect,
     ErrorBoundary,
+    Notifications,
+    Search,
 } from "@pages";
 
 export const router = createHashRouter([
@@ -24,13 +27,18 @@ export const router = createHashRouter([
             {
                 path: '',
                 id: 'home',
-                loader:homeLoader,
+                loader: homeLoader,
                 element: <Home />,
+                shouldRevalidate: ({ currentUrl, nextUrl, formMethod }) => {
+                    if (formMethod && formMethod !== 'GET') return true; // 폼/변경은 재검증
+                    // 쿼리(tab)만 바뀌면 재실행하지 않음
+                    return currentUrl.pathname !== nextUrl.pathname;
+                },
             },
             {
                 path: '/:id',
                 id: 'homeDetail',
-                loader:homeDetailLoader,
+                loader: homeDetailLoader,
                 element: <HomeDetail />,
             },
             {
@@ -47,9 +55,15 @@ export const router = createHashRouter([
             },
             {
                 path: 'group/:id',
-                id:'groupDetail',
+                id: 'groupDetail',
                 loader: groupDetailLoader,
-                element:<GroupDetail />
+                element: <GroupDetail />
+            },
+            {
+                path: 'group/update/:id',
+                id: 'groupUpdate',
+                loader: groupUpdateLoader,
+                element: <GroupUpdate />
             },
             {
                 path: 'my',
@@ -72,6 +86,16 @@ export const router = createHashRouter([
                 path: 'login/redirect',
                 id: 'redirect',
                 element: <Redirect />
+            },
+            {
+                path: 'notifications',
+                id: 'notifications',
+                element: <Notifications />
+            },
+            {
+                path: '/search',
+                id: 'search',
+                element: <Search />
             }
         ]
     }

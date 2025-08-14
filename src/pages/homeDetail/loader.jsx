@@ -1,12 +1,13 @@
 import { springBoot } from "@axios";
 
-const user = localStorage.getItem('user-id');
+
 // 게시글 상세
-const getCommunity = async (id) => {
+const getCommunity = async (id, userId) => {
     try {
         const response = await springBoot.get(`/communities/community/${id}`, {
             params: {
-                user: user,
+                user: userId,
+                size: 100,
             }
         });
         const result = response.data;
@@ -21,7 +22,8 @@ const getCommunity = async (id) => {
 
 
 export const loader = async ({ params, request }) => {
-    const community = await getCommunity(params.id);
+    const userId = localStorage.getItem('user-id');
+    const community = await getCommunity(params.id, userId);
     return {
         community: community,
     }

@@ -1,6 +1,6 @@
 import { springBoot } from "@axios";
 
-const user = localStorage.getItem('user-id');
+
 // const getCommunities = async () => {
 //     try {
 //         const response = await springBoot.get('/communities', {
@@ -17,13 +17,14 @@ const user = localStorage.getItem('user-id');
 //     }
 // }
 
-// 팔로우 여부 조회하려고 만든 거
-const getCommunities1 = async () => {
+// 팔로우 여부 조회하려고 만든 거(로그인 유저 기준 피드)
+const getCommunities1 = async (userId) => {
     try {
         const response = await springBoot.get('/communities/byUser', {
             params: {
                 category: 1,
-                user: user,
+                user: userId,
+                size: 100,
             }
         });
         const result = response.data;
@@ -36,12 +37,12 @@ const getCommunities1 = async () => {
 }
 
 // 팔로잉 유저 글
-const getFollowingCommunities = async () => {
+const getFollowingCommunities = async (userId) => {
     try{
         const response = await springBoot.get('/communities/followee', {
             params: {
                 category: 1,
-                user: user,
+                user: userId,
             }
         });
         const result = response.data;
@@ -53,7 +54,15 @@ const getFollowingCommunities = async () => {
     }
 }
 
+// // 좋아요 개수
+// const getLikes = async (id) =>{
+//     try{
+//         const response = await springBoot.post('/likes/count')
+//     }
+// }
 
+
+// *안씀*
 // const getFollowing = async (target) => {
 //     try {
 //         const response = await springBoot.get("/followers/is-following", {
@@ -70,11 +79,11 @@ const getFollowingCommunities = async () => {
 
 
 
-
 export const loader = async ({ params, request }) => {
     // const communities = await getCommunities();
-    const communities1 = await getCommunities1();
-    const followingCommunities = await getFollowingCommunities();
+    const userId = localStorage.getItem('user-id');
+    const communities1 = await getCommunities1(userId);
+    const followingCommunities = await getFollowingCommunities(userId);
     return {
         // communities: communities,
         communities1: communities1,

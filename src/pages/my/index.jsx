@@ -52,6 +52,7 @@ export function My() {
         return <div className="py-10 text-center text-gray-600">로딩 중...</div>;
     }
 
+    // console.log(posts)
     const postsCount = profile.postsCount || posts.length || 0;
     const followers = profile.followers || 0;
     const following = profile.following || 0;

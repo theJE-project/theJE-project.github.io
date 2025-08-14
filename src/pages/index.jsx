@@ -19,6 +19,11 @@ export {
 } from './groupDetail'
 
 export {
+    GroupUpdate,
+    loader as groupUpdateLoader,
+} from './groupUpdate'
+
+export {
     Home,
     loader as homeLoader,    
 } from './home'
@@ -46,3 +51,11 @@ export {
 export {
     Loading
 } from './loading'
+
+export {
+    Notifications
+} from './notifications'
+
+export {
+    Search
+} from './search'
