@@ -219,7 +219,18 @@ export function Home() {
         navigate(`/${id}`);
     }
 
+    // 음악 검색창 포커스
+    const inputRef = useRef(null);
 
+    const focusSearch = () => {
+    setOpen(true);
+    // React의 상태 업데이트가 비동기라서 다음 tick에서 실행
+    requestAnimationFrame(() => {
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
+    });
+};
 
     // 폼 제출
     const handleSubmit = async (e) => {
@@ -280,7 +291,7 @@ export function Home() {
                     {/* <h3 className="font-bold text-lg mb-3">피드</h3> */}
 
                     {/* 글쓰기 */}
-                    <div className="bg-white p-5 rounded-b-lg border-1 border-gray-200">
+                    <div className="bg-white p-5 border-b border-gray-300">
                         <form onSubmit={handleSubmit}>
                             <div className="flex items-start gap-3">
                                 {/* 프로필 둥근 이미지 (임시, 사용자 첫글자 원) */}
@@ -364,7 +375,7 @@ export function Home() {
                                             }}
                                             className="text-gray-400 hover:text-gray-600 transition cursor-pointer"
                                         >
-                                            <FiMusic className="inline text-lg" />
+                                            <FiMusic className="inline text-lg" onClick={focusSearch} />
                                         </button>
 
                                     </div>
@@ -421,6 +432,7 @@ export function Home() {
                                     type="text"
                                     placeholder="아티스트, 곡명, 앨범으로 검색하세요"
                                     onChange={handleMusicSearch}
+                                    ref = {inputRef}
                                     className="w-full border rounded-lg px-4 py-3 text-base outline-none placeholder:text-gray-400 bg-gray-50"
                                 />
                                 {/* {previewUrl && (
@@ -483,13 +495,14 @@ export function Home() {
                 <audio onEnded={() => setPreviewUrl(null)} controls src={previewUrl} autoPlay className="hidden" />
             )}
             {/* 새로고침 버튼 */}
-            <button type='button' onClick={handleRefresh} className="mx-auto my-4 w-full max-w-2xl
+            {/* 
+            <button type='button' onClick={handleRefresh} className="mx-auto w-full max-w-2xl
                 flex items-center justify-center
-                rounded-full border border-blue-200 bg-blue-50
                 px-4 py-2 font-semibold text-blue-600 cursor-pointer hover:bg-blue-100
-                active:scale-[0.99] transition" disabled={revalidator.state === 'loading'}>새 게시글 보기</button>
+                active:scale-[0.99] transition" disabled={revalidator.state === 'loading'}></button> 
+                /**/}
             {/* 피드 */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col">
                 {list.length === 0 ? (
                     tab === 'following'
                         ? <div className="flex flex-col items-center justify-center py-12 text-gray-400">
@@ -510,7 +523,8 @@ export function Home() {
                             e.stopPropagation();
                             handleDetail(c.id);
                         }}
-                        className="bg-white hover:bg-gray-50 p-5 rounded-lg border-1 border-gray-200 cursor-pointer"
+                        // className="bg-white hover:bg-gray-50 p-5 rounded-lg border-1 border-gray-200 cursor-pointer"
+                        className="bg-white hover:bg-gray-50 p-5 border-b border-gray-200 cursor-pointer"
                     >
                         <div className="flex gap-3">
                             {/* 왼쪽 프로필 */}
@@ -690,7 +704,7 @@ export function Home() {
                                     );
                                 })()}
 
-                                <div className="mt-2 flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
+                                <div className="mt-2 flex items-center gap-8 pt-2 text-gray-400 text-sm  border-gray-100">
                                     <div className="flex items-center gap-1"><FiMessageCircle /> {c.comments}</div>
                                     {/* <div className="flex items-center gap-1"><FiHeart /> {c.likes}</div> */}
                                     <Likes
