@@ -1,10 +1,8 @@
-// src/pages/user/index.jsx
 import React, { useEffect, useState } from 'react';
 import { useLoaderData, useNavigate, useParams, Link } from 'react-router-dom';
 import { springBoot } from '../../axios/springboot';
 import { useImage } from '../../hooks/useImage';
 
-// ✅ loader만 재수출 (자기 자신 재수출 삭제)
 export { loader } from './loader';
 
 import dayjs from 'dayjs';

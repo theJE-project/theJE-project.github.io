@@ -6,7 +6,8 @@ import { IoClose } from 'react-icons/io5'
 import { springBoot } from '../../axios/springboot'
 import { useImage } from '../../hooks'
 import { useMusic } from '../../hooks/useMusics'
-import { FaPlayCircle, FaRegPauseCircle } from 'react-icons/fa'
+import { FaPlayCircle, FaPlus, FaRegPauseCircle } from 'react-icons/fa'
+import { FiPause, FiPlay, FiPlus, FiX } from 'react-icons/fi'
 export { loader } from './loader'
 
 export function GroupCreate() {
@@ -15,11 +16,11 @@ export function GroupCreate() {
 
     const { images, setImages, getImages } = useImage(); // 이미지 훅
     const [previewUrls, setPreviewUrls] = useState([]);
-    const [fallbackImages, setFallbackImages] = useState([]); // 앨범커버 이미지
 
     const { musics, getMusics } = useMusic(); // music 훅 (음악 가져오기)
     const [music, setMusics] = useState(); // 결과 저장?
-    const [musicList, setMusicList] = useState([]); // 음악 리스트
+    const [previewUrl, setPreviewUrl] = useState(null); // 현재 재생 중 음악 
+    const [musicList, setMusicList] = useState([]); // 음악 목록
     const [musicSearch, setMusicSearch] = useState(""); // 음악 검색
 
     const [title, setTitle] = useState(""); // 제목
@@ -27,6 +28,7 @@ export function GroupCreate() {
     const [visibility, setVisibility] = useState(true); // 공개 여부
     const [tagInput, setTagInput] = useState(""); // 태그(태그 입력창)
     const [tagList, setTagList] = useState([]); // 태그 배열
+    const [tagError, setTagError] = useState(""); // 태그 경고
 
 
     // api 연결
@@ -43,7 +45,7 @@ export function GroupCreate() {
     }
 
     // 폼제출
-    const handleSubmit = async(e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!title) {
@@ -71,9 +73,10 @@ export function GroupCreate() {
 
         try {
             await fetchPlaylistData(data);
+            alert("플레이리스트 생성이 완료되었습니다.")
             navigate('/group');
         } catch (error) {
-            
+
         }
     };
 
@@ -81,10 +84,17 @@ export function GroupCreate() {
     const enterTags = (e) => {
         if (e.key === "Enter" && tagInput.trim() !== "") {
             e.preventDefault(); // 폼 제출 막음
+
+            if (tagList.length >= 20) {
+                setTagError("※태그는 최대 20개까지 입력할 수 있습니다.")
+                return;
+            }
+
             const newTag = tagInput.trim();
 
             if (!tagList.includes(newTag)) {
                 setTagList([...tagList, newTag]); // 태그 추가
+                setTagError("");
             }
 
             setTagInput(""); // 입력창 초기화
@@ -93,7 +103,13 @@ export function GroupCreate() {
 
     // 태그 삭제
     const deleteTags = (tagDelete) => {
-        setTagList(tagList.filter((tags) => (tags) !== tagDelete)); // 선택한 태그 삭제
+        const newTagList = tagList.filter((tags) => (tags) !== tagDelete); // 선택한 태그 삭제
+
+        setTagList(newTagList);
+
+        if (newTagList.length <= 20) {
+            setTagError("");
+        }
     }
 
     // 이미지 처리 핸들러
@@ -129,6 +145,15 @@ export function GroupCreate() {
     // 음악 삭제 함수
     const deleteMusic = (music) => {
         setMusicList(prev => prev.filter(m => m.url !== music.url));
+    };
+
+    // 재생시간 변환
+    const formatDuration = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        // 초가 한 자리면 0 붙이기 (예: 3 -> 03)
+        const paddedSecs = secs.toString().padStart(2, '0');
+        return `${mins}:${paddedSecs}`;
     };
 
     return (
@@ -209,7 +234,11 @@ export function GroupCreate() {
                 {/* 태그  */}
                 <div className="gap-6 mb-4">
                     {/* 태그 입력 */}
-                    <label className='block font-medium mb-1'>태그</label>
+                    <div className='flex gap-2 items-center'>
+                        <label className='block font-medium mb-1'>태그</label>
+                        {tagError && <p className='text-sm text-red-500'>{tagError}</p>}
+
+                    </div>
                     <div className="flex flex-col md:flex-row justify-between">
                         <input type="text"
                             onChange={(e) => setTagInput(e.target.value)}
@@ -270,32 +299,50 @@ export function GroupCreate() {
                         <div className="my-2 max-h-70 overflow-y-auto bg-gray-100 rounded">
                             {musics.length === 0 && musicSearch.trim() !== "" && <p>검색 결과가 없습니다.</p>}
                             {musics.map((music) => (
-                                <div key={music.url} className="flex my-2 p-1 border border-gray-300 rounded-md bg-white">
+                                <div key={music.url} className="flex my-2 p-1 border border-gray-300 rounded-md bg-white items-center">
                                     <div className='m-2 w-20 h-20'>
                                         <img src={music.albumCover}
                                             className='w-full h-full object-cover rounded-xl' />
                                     </div>
 
                                     <div className='flex flex-col justify-center'>
-                                        <div className='flex my-1'>
-                                            <p className='text-base font-semibold'>{music.titleShort}</p>
-                                            <p>{music.duration}</p>
-                                        </div>
-                                        <p className=''>{music.artistName}</p>
-                                        {/* 음악 재생 버튼 */}
-                                        {music.preview && (
-                                            <audio controls className='p-0' >
-                                                <source src={music.preview} type='audio/mpeg' />
-                                                브라우저가 오디오를 지원 X
-                                            </audio>
-                                        )}
+                                        <p className='text-base font-semibold'>{music.titleShort}</p>
+                                        <p className='text-gray-700'>{music.artistName}</p>
                                     </div>
 
-                                    <button onClick={() => addMusic(music)}
-                                        disabled={musicList.find(m => m.url === music.url) !== undefined}
-                                        className="text-sm text-blue-600 disabled:text-gray-400">
-                                        {musicList.find(m => m.url === music.url) ? '추가됨' : '추가'}
-                                    </button>
+                                    {/* 재생, 추가 버튼 */}
+                                    <div className='flex ml-auto gap-2'>
+                                        <p className='text-sm text-gray-500'>{formatDuration(music.duration)}</p>
+                                        {/* 음악 재생 버튼 */}
+                                        <button type='button'
+                                            className='text-blue-500'
+                                            onClick={() => { previewUrl === music.preview ? setPreviewUrl(null) : setPreviewUrl(music.preview); }}>
+                                            {previewUrl === music.preview ?
+                                                <FiPause size={20} />
+                                                :
+                                                <FiPlay size={20} />}
+
+                                        </button>
+                                        {/* {previewUrl && (
+                                            <audio controls >
+                                                <source src={music.preview} type='audio/mpeg' 
+                                                className='hidden'/>
+                                                브라우저가 오디오를 지원 X
+                                            </audio>
+                                        )} */}
+                                        {previewUrl && (
+                                            <audio controls src={previewUrl} autoPlay className="hidden"
+                                                onEnded={() => setPreviewUrl(null)} />
+                                        )}
+
+                                        {/* 추가버튼 */}
+                                        <button onClick={() => addMusic(music)}
+                                            disabled={musicList.find(m => m.url === music.url) !== undefined}
+                                            className=" text-blue-500 disabled:text-gray-400">
+                                            {musicList.find(m => m.url === music.url) ? <FiPlus size={20} /> : <FiPlus size={20} />}
+                                        </button>
+                                    </div>
+
                                 </div>
 
                             ))}
@@ -310,25 +357,25 @@ export function GroupCreate() {
                         <label className="block font-medium mb-1">음악 목록</label>
                         <p className='text-gray-700'>{musicList.length} 곡</p>
                     </div>
-                    
+
                     <div className='border border-gray-300 rounded-xl max-h-96 overflow-y-auto'>
                         {musicList.length === 0 && <div className='h-40 flex flex-col items-center justify-center gap-2 text-gray-500 '> <MdOutlineLibraryMusic size={30} className='' /> <p className='text-lg '>좋아하는 음악을 추가해보세요</p></div>}
                         {/* 음악 입력 목록(배열) */}
                         {musicList.length > 0 && (
                             <div className="grid">
                                 {musicList.map((music) => (
-                                    <div key={music.url} className="flex">
+                                    <div key={music.url} className="flex my-2 p-1 rounded-md bg-white items-center">
                                         <div className='m-2 h-20 w-20'>
                                             <img src={music.albumCover}
                                                 className='w-full h-full rounded-xl' />
                                         </div>
 
                                         <div className='flex flex-col'>
-                                            <div className='flex'>
-                                                <p className='text-lg font-semibold'>{music.titleShort}</p>
-                                                <p>{music.duration}</p>
-                                            </div>
-                                            <p className=''>{music.artistName}</p>
+
+                                            <p className=' font-semibold'>{music.titleShort}</p>
+
+
+                                            <p className='text-gray-700'>{music.artistName}</p>
                                             {/* 음악 재생 버튼 */}
                                             {/* {music.preview && (
                                                 <audio controls >
@@ -339,9 +386,9 @@ export function GroupCreate() {
                                         </div>
                                         <button
                                             onClick={() => deleteMusic(music)} // 클릭 시 해당 태그 삭제
-                                            className="ml-2"
+                                            className="ml-auto pr-2 text-gray-700"
                                         >
-                                            <IoClose />
+                                            <FiX size={20} />
                                         </button>
                                     </div>
                                 ))}

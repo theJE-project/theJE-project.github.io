@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { springBoot } from '../../axios/springboot';
-import { useLoaderData, useNavigate, Link } from 'react-router-dom'; 
+import { useLoaderData, useNavigate, Link } from 'react-router-dom';
 import { useImage } from '../../hooks/useImage';
 import { FiPlay } from "react-icons/fi";
 export { loader } from './loader';
@@ -108,7 +108,7 @@ export function My() {
                 img: editForm.img,
             });
             sessionStorage.removeItem('user');
-            window.location.reload();  
+            window.location.reload();
             localStorage.setItem('user-name', editForm.name);
             localStorage.setItem('user-img', editForm.img);
             setShowEdit(false);
@@ -132,19 +132,19 @@ export function My() {
         const imageUrl = raw ? getImages({ url: raw }) : null;
         const musics = Array.isArray(item?.musics) ? item.musics : (item?.music ? [item.music] : []);
 
-        // (사진 + 제목) + 클릭 시 상세로 이동
+        // 플레이리스트 카드 (그대로)
         if (activeTab === "playlists") {
             return (
                 <Link
                     key={item.id}
-                    to={`/group/${item.id}`}                 
-                    className="w-60 block hover:opacity-90 transition cursor-pointer" 
+                    to={`/group/${item.id}`}
+                    className="w-60 block hover:opacity-90 transition cursor-pointer"
                 >
                     {imageUrl && (
                         <img
                             src={imageUrl}
                             alt={item.title || "플레이리스트"}
-                            className="w-60 h-60 object-cover rounded-lg border"
+                            className="w-60 h-60 object-cover"
                         />
                     )}
                     <div className="mt-2 font-semibold text-sm truncate">
@@ -155,83 +155,94 @@ export function My() {
         }
 
         return (
-            <div key={item.id} className="border-b border-gray-100 pb-6 last:border-b-0">
-                {/* 작성자 정보 */}
-                <div className="flex items-center mb-2">
-                    <div className="relative w-12 h-12 mr-3">
-                        {profile.img ? (
-                            <img
-                                src={getImages({ url: profile.img })}
-                                alt={profile.name}
-                                className="w-12 h-12 rounded-full object-cover border-2 border-blue-100"
-                            />
-                        ) : (
-                            <div className="w-12 h-12 rounded-full border-2 border-blue-100 bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
-                                {profile.name ? profile.name[0] : "?"}
-                            </div>
-                        )}
-                    </div>
-                    <span className="font-semibold text-lg text-gray-900">{profile.name}</span>
-                    <span className="ml-2 text-gray-500">@{profile.account}</span>
-
-                    {/* [변경] 날짜를 상대시간으로 */}
-                    <span className="ml-4 text-gray-400 text-sm">
-                        {fromNow(item.createdAt || item.created_at)}
-                    </span>
-                </div>
-
-                <div className="mb-3 text-gray-700">
-                    {item.content || item.artist || ''}
-                </div>
-
-                {/* 사진 */}
-                {imageUrl && (
-                    <div className="mt-2">
-                        {/* [변경] 게시물/좋아요 탭은 자연 크기 */}
-                        <img
-                            src={imageUrl}
-                            alt="게시글 이미지"
-                            className="w-full h-auto "
-                        />
-                    </div>
-                )}
-
-                {/* 음악 카드 */}
-                {musics.length > 0 && musics.map((m, i) => (
-                    <div
-                        key={i}
-                        className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200 mt-2"
+            <div
+                key={item.id}
+                className="bg-white hover:bg-gray-50 p-5 rounded-lg border border-gray-200 cursor-default"
+            >
+                <div className="flex gap-3">
+                    {/* 아바타 */}
+                    <Link
+                        to={`/user/${profile.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-10 h-10 rounded-full bg-blue-500 overflow-hidden flex items-center justify-center text-white font-bold text-lg"
+                        aria-label={`${profile.name} 프로필로 이동`}
                     >
-                        <img
-                            src={m?.albumCover || "/no-album.png"}
-                            alt={m?.titleShort || "음원"}
-                            className="w-16 h-16 rounded-lg object-cover"
-                        />
-                        <div className="min-w-0">
-                            <div className="font-semibold truncate">{m?.titleShort || "제목 없음"}</div>
-                            <div className="text-xs text-gray-600 truncate">{m?.artistName || "아티스트"}</div>
-                        </div>
-                        <button
-                            type="button"
-                            className="cursor-pointer ml-auto group"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (m?.preview) setPreviewUrl(m.preview);
-                            }}
-                        >
-                            <FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />
-                        </button>
-                    </div>
-                ))}
+                        {profile.img
+                            ? <img src={getImages({ url: profile.img })} alt="" className="w-full h-full object-cover" />
+                            : (profile.name?.charAt(0) || "?")}
+                    </Link>
 
-                <div className="flex space-x-6 text-gray-500 mt-2">
-                    <span className="flex items-center">💬&nbsp;{item.commentsCount || 0}</span>
-                    <span className="flex items-center">❤️&nbsp;{item.likesCount || 0}</span>
+                    {/* 오른쪽: 이름/핸들/시간 + 본문 */}
+                    <div className="flex-1">
+                        {/* 헤더: 이름/핸들/시간 한 줄 */}
+                        <div className="flex items-center gap-2 mb-2">
+                            <Link
+                                to={`/user/${profile.id}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="font-bold truncate"
+                            >
+                                {profile.name}
+                            </Link>
+                            <span className="text-gray-500 text-sm">@{profile.account}</span>
+                            <span className="text-gray-400 text-xs">
+                                {fromNow(item.createdAt || item.created_at)}
+                            </span>
+                        </div>
+
+                        {/* 본문 */}
+                        <div className="mt-1 text-base text-gray-900 whitespace-pre-line break-words">
+                            {item.content || item.artist || ''}
+                        </div>
+
+                        {/* 이미지 */}
+                        {imageUrl && (
+                            <img
+                                src={imageUrl}
+                                alt="게시글 이미지"
+                                className="mt-3 w-full h-auto rounded-lg object-cover"
+                            />
+                        )}
+
+                        {/* 음악 카드 */}
+                        {musics.length > 0 && musics.map((m, i) => (
+                            <div
+                                key={i}
+                                className="mt-2 flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200"
+                            >
+                                <img
+                                    src={m?.albumCover || "/no-album.png"}
+                                    alt={m?.titleShort || "음원"}
+                                    className="w-16 h-16 rounded-lg object-cover"
+                                />
+                                <div className="min-w-0">
+                                    <div className="font-semibold truncate">{m?.titleShort || "제목 없음"}</div>
+                                    <div className="text-xs text-gray-600 truncate">{m?.artistName || "아티스트"}</div>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="cursor-pointer ml-auto group"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        if (m?.preview) setPreviewUrl(m.preview);
+                                    }}
+                                >
+                                    <FiPlay className="text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />
+                                </button>
+                            </div>
+                        ))}
+
+                        {/* 하단 카운트 */}
+                        <div className="mt-2 flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
+                            <div className="flex items-center gap-1">💬 {item.commentsCount || 0}</div>
+                            <div className="flex items-center gap-1">❤️ {item.likesCount || 0}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
     };
+
 
     return (
         <div className="max-w-3xl mx-auto py-10">
@@ -369,8 +380,12 @@ export function My() {
                 </div>
 
                 {/* [유지] 플레이리스트 탭은 3열 그리드 */}
-                <div className={`p-6 ${activeTab === 'playlists' ? 'grid grid-cols-3 gap-4' : ''}`}>
-                    {activeTab === 'posts' && (posts.length === 0 ? <div className="py-8 text-center text-gray-500">작성한 글이 없습니다.</div> : <div className="space-y-6">{posts.map(renderCard)}</div>)}
+                <div className={`${activeTab === 'playlists' ? 'p-6 grid grid-cols-3 gap-4' : 'p-0'}`}>
+                    {activeTab === 'posts' && (
+                        posts.length === 0
+                            ? <div className="py-8 text-center text-gray-500">작성한 글이 없습니다.</div>
+                            : <div className="flex flex-col gap-3">{posts.map(renderCard)}</div>
+                    )} {/* Home처럼 gap-3 */}
                     {activeTab === 'playlists' && (playlists.length === 0 ? <div className="py-8 text-center text-gray-500">플레이리스트가 없습니다.</div> : playlists.map(renderCard))}
                     {activeTab === 'liked' && (liked.length === 0 ? <div className="py-8 text-center text-gray-500">좋아요한 음악이 없습니다.</div> : <div className="space-y-6">{liked.map(renderCard)}</div>)}
                 </div>

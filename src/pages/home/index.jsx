@@ -1,10 +1,11 @@
-import { useLoaderData, useRouteLoaderData, useNavigate, Link } from 'react-router-dom'
-import { useEffect, useState, useRef } from 'react';
+import { useLoaderData, useRouteLoaderData, useNavigate, useRevalidator, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
 import { useMusic } from '../../hooks/useMusics';
-import { FiImage, FiMusic, FiMessageCircle, FiHeart, FiPlay } from "react-icons/fi";
+import { FiImage, FiMusic, FiMessageCircle, FiHeart, FiPlay, FiPause, FiBarChart2, FiUserPlus, FiAlertTriangle } from "react-icons/fi";
+import TextareaAutosize from 'react-textarea-autosize';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ko';
@@ -12,7 +13,10 @@ import 'dayjs/locale/ko';
 export function Home() {
     const { communities1, followingCommunities } = useLoaderData();
     const { user, categories } = useRouteLoaderData('default');
+
     const navigate = useNavigate();
+    const revalidator = useRevalidator();
+
     const [content, setContent] = useState('');
     const { musics, getMusics } = useMusic();
     const [selectedMusic, setSelectedMusic] = useState(null);
@@ -24,19 +28,38 @@ export function Home() {
     const { images, setImages, getImages, deleteImage } = useImage();
 
     const [tab, setTab] = useState('all'); // all or following
-    const [feed, setFeed] = useState(tab === 'all' ? communities1 : followingCommunities);
 
     dayjs.extend(relativeTime);
     dayjs.locale('ko');
 
-    useEffect(() => {
-        setFeed(tab === 'all' ? communities1 : followingCommunities);
-    }, [tab, communities1, followingCommunities]);
+    const list = tab === 'all' ? (communities1 ?? []) : (followingCommunities ?? []);
 
-    const handleRefresh = async () => {
-        const updated = tab === 'all' ? await communities1 : await followingCommunities;
-        setFeed(updated);
+
+    // 탭 한번 더 누르면 맨위로+새고
+    const onClickTab = (next) => {
+        if (next === tab) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            revalidator.revalidate();
+            return;
+        }
+        setTab(next);
+    };
+    const toUserPage = (targetId) =>
+        user?.id && targetId === user.id ? '/my' : `/user/${targetId}`;
+
+
+    // 피드 새로고침
+    const handleRefresh = () => {
+        revalidator.revalidate();
     }
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            handleRefresh();
+        }, 300000);
+        return () => clearInterval(timer);
+    }, []);
+
 
     // 글작성 api 호출
     const postCommunity = async (data) => {
@@ -55,6 +78,7 @@ export function Home() {
         if (!confirm('게시글을 삭제할까요?')) return;
         try {
             const response = await springBoot.put(`/communities/${id}`);
+            revalidator.revalidate();
             const result = response.data;
             return result;
         } catch (error) {
@@ -97,14 +121,17 @@ export function Home() {
     }
 
 
-    const followOrUnfollow = async (target, isFollowing) => {
+    const followOrUnfollow = async (target, isFollowing, userName) => {
         try {
             let result;
             if (isFollowing) {
+                if (!confirm(`${userName} 님을 팔로우 취소 하시겠습니까?`)) return;
                 result = await unfollow(target);
             } else {
+                if (!confirm(`${userName} 님을 팔로우 하시겠습니까?`)) return;
                 result = await follow(target);
             }
+            revalidator.revalidate();
             console.log(result);
         } catch (error) {
             console.log("팔로우/언팔로우 실패", error);
@@ -135,23 +162,24 @@ export function Home() {
         console.log("선택된 음악:", m);
     }
 
-
-    // 피드 새고? 하려는건데 안쓸수도
-    /*
-    const fetchFeed = async () => {
-        const res = await springBoot.get('/communities');
-        try{
-            setFeed(res.data);
-        }catch(error){
-            console.log("피드 불러오기 실패", error);
+    // 조회수 증가 api 호출
+    const increaseView = async (id) => {
+        try {
+            const response = await springBoot.put(`/communities/view/${id}`);
+            revalidator.revalidate();
+            const result = response.data;
+            return result;
+        } catch (error) {
+            console.log("조회수 증가 api 호출 실패", error);
+            return null;
         }
-        
     }
-    /**/
 
     // 상세페이지 이동
-    const handleDetail = (id) => navigate(`/${id}`);
-
+    const handleDetail = (id) => {
+        increaseView(id);
+        navigate(`/${id}`);
+    }
 
 
 
@@ -170,22 +198,15 @@ export function Home() {
         const result = await postCommunity(data);
         try {
             setContent('');
-            //fetchFeed(); // 새 글 작성 후 피드 갱신
+            images.length = 0; // 고쳐야댐
+            setSelectedMusic(null);
+            revalidator.revalidate();
             console.log("글 작성 성공:", result);
         } catch (error) {
             console.error("글 작성 실패", error);
 
         }
     }
-
-    /*
-    useEffect(()=>{
-        fetchFeed();
-    },[]);
-    /**/
-
-
-
 
 
     // console.log(loader);
@@ -196,24 +217,24 @@ export function Home() {
             {/* 전체/팔로잉 탭 */}
             {user?.id && (
                 <>
-                    <div className="flex h-12 sticky top-17 bg-white">
+                    <div className="flex h-12 sticky top-17 bg-white/90">
                         <button
                             className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
             ${tab === 'all'
-                                    ? 'text-black border-b-5 border-blue-500 bg-gray-50'
-                                    : 'text-gray-400'}
+                                    ? 'text-black border-b-4 border-blue-500 bg-gray-50'
+                                    : 'text-gray-500'}
             transition-colors duration-150`}
-                            onClick={() => setTab('all')}
+                            onClick={() => onClickTab('all')}
                         >
                             전체
                         </button>
                         <button
                             className={`w-1/2 flex items-center justify-center font-semibold cursor-pointer
             ${tab === 'following'
-                                    ? 'text-black border-b-5 border-blue-500 bg-gray-50'
-                                    : 'text-gray-400'}
+                                    ? 'text-black border-b-4 border-blue-500 bg-gray-50'
+                                    : 'text-gray-500'}
             transition-colors duration-150`}
-                            onClick={() => setTab('following')}
+                            onClick={() => onClickTab('following')}
                         >
                             팔로잉
                         </button>
@@ -221,33 +242,46 @@ export function Home() {
                     {/* <h3 className="font-bold text-lg mb-3">피드</h3> */}
 
                     {/* 글쓰기 */}
-                    <div className="bg-white p-5 rounded-lg mb-6 border-1 border-gray-200">
+                    <div className="bg-white p-5 rounded-b-lg border-1 border-gray-200">
                         <form onSubmit={handleSubmit}>
                             <div className="flex items-start gap-3">
                                 {/* 프로필 둥근 이미지 (임시, 사용자 첫글자 원) */}
-                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
+                                <Link to="/my" className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
                                     {user?.img
                                         ? <img src={getImages({ url: user.img })} alt="profile" className="w-10 h-10 rounded-full object-cover" />
                                         : user?.name?.charAt(0)
                                     }
-                                </div>
+                                </Link>
                                 <div className="flex-1">
-                                    <textarea
+                                    <TextareaAutosize
                                         value={content}
                                         onChange={(e) => setContent(e.target.value)}
+                                        // maxLength={200}
                                         placeholder="좋아하는 음악을 공유해보세요!"
-                                        className="w-full resize-none border-none focus:ring-0 text-base placeholder-gray-400 outline-none min-h-[44px] bg-transparent"
+                                        minRows={1}
+                                        className="w-full resize-none border-none focus:ring-0 text-base placeholder-gray-400 outline-none bg-transparent"
                                     />
                                     {/* 노래 미리보기 */}
                                     {selectedMusic && (
                                         <div
-                                            className="flex items-center gap-3 p-3 rounded-lg bg-[#f5faff] hover:bg-[#e1effc] transition-colors border border-[#d4e7fa]"
+                                            className="flex items-center gap-3 p-3 rounded-lg bg-[#f5faff] hover:bg-[#e1effc] transition-colors border border-[#d4e7fa] relative"
                                         >
                                             <img src={selectedMusic.albumCover} alt={selectedMusic.titleShort} className="w-16 h-16 rounded-lg object-cover" />
                                             <div>
                                                 <div className="font-semibold">{selectedMusic.titleShort}</div>
                                                 <div className="text-xs text-gray-600">{selectedMusic.artistName}</div>
+
                                             </div>
+                                            <button
+                                                type="button"
+                                                className="absolute top-[3px] right-[3px] bg-black/70 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs cursor-pointer"
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // 상위 클릭 방지
+                                                    setSelectedMusic(null); // 선택 음악 초기화
+                                                }}
+                                            >
+                                                ×
+                                            </button>
                                             {/* <button type="button" className='cursor-pointer ml-auto' onClick={(e) => {
                                                 // 재생 누르면 모달 꺼짐 방지
                                                 e.stopPropagation();
@@ -256,8 +290,8 @@ export function Home() {
                                             ><FiPlay className="inline text-xl" color="#7faaf9" /></button> */}
                                         </div>
 
-                                    )
-                                    }
+                                    )}
+
                                     {/* 새 이미지 미리보기 */}
                                     <div className="img-preview-list flex flex-wrap gap-2 mt-3">
                                         {images.length > 0 && images.map((img) => (
@@ -293,12 +327,13 @@ export function Home() {
                                         >
                                             <FiMusic className="inline text-lg" />
                                         </button>
-                                        {/* 추가 아이콘들 필요시 여기에 */}
+
                                     </div>
                                 </div>
                                 <button
+                                    disabled={!content && !images.length && !selectedMusic}
                                     type="submit"
-                                    className="ml-2 px-5 py-2 bg-[#418FDE] text-white font-bold rounded-full shadow hover:bg-[#367cb3] transition cursor-pointer"
+                                    className="ml-2 px-5 py-2 bg-blue-500 text-white font-bold rounded-full hover:bg-blue-400 disabled:bg-gray-300 transition cursor-pointer"
                                 >
                                     공유하기
                                 </button>
@@ -347,9 +382,9 @@ export function Home() {
                                     onChange={handleMusicSearch}
                                     className="w-full border rounded-lg px-4 py-3 text-base outline-none placeholder:text-gray-400 bg-gray-50"
                                 />
-                                {previewUrl && (
-                                    <audio controls src={previewUrl} autoPlay className="w-full mt-2" />
-                                )}
+                                {/* {previewUrl && (
+                                    <audio controls src={previewUrl} autoPlay className="w-full mt-2 hidden" />
+                                )} */}
                             </div>
 
                             {/* 결과목록 */}
@@ -374,9 +409,13 @@ export function Home() {
                                         <button type="button" className='cursor-pointer group' onClick={(e) => {
                                             // 재생 누르면 모달 꺼짐 방지
                                             e.stopPropagation();
-                                            setPreviewUrl(m.preview);
+                                            previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview);
                                         }}
-                                        ><FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" /></button>
+                                        >{previewUrl === m.preview ?
+                                            <FiPause className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />
+                                            :
+                                            <FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />}
+                                        </button>
                                     </div>
                                 )) : (
                                     // 결과 없을 때
@@ -395,127 +434,154 @@ export function Home() {
             }
 
             {/* 새 게시글 */}
-            <button type='button' className='cursor-pointer' onClick={handleRefresh}>새 게시글 새고</button>
+            {/* <div type='button' className='cursor-pointer mx-auto flex items-center' onClick={handleRefresh} 
+            disabled={revalidator.state === 'loading'}>
+                {revalidator.state === 'loading' ? '...' : ''}
+            </div> */}
             {previewUrl && (
                 <audio controls src={previewUrl} autoPlay className="hidden" />
             )}
-
-
+            {/* 새로고침 버튼 */}
+            <button type='button' onClick={handleRefresh} className="mx-auto my-4 w-full max-w-[600px]
+                flex items-center justify-center
+                rounded-full border border-blue-200 bg-blue-50
+                px-4 py-2 font-semibold text-blue-600 cursor-pointer hover:bg-blue-100
+                active:scale-[0.99] transition" disabled={revalidator.state === 'loading'}>새 게시글 보기</button>
             {/* 피드 */}
-            < div className="flex flex-col gap-3" >
-                {
-                    (feed ?? []).map((c) => (
-                        <div key={c.id} onClick={(e) => {
+            <div className="flex flex-col gap-3">
+                {list.length === 0 ? (
+                    tab === 'following'
+                        ? <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                            <FiUserPlus size={40} className="mb-3" />
+                            <p className="text-gray-500">팔로우한 사용자가 없습니다</p>
+                            <p className="text-sm text-gray-400">다른 사용자를 팔로우해보세요</p>
+                        </div>
+                        : <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                            <FiAlertTriangle size={40} className="mb-3" />
+                            <p className="text-gray-500">게시글이 없습니다</p>
+                            <p className="text-sm text-gray-400">좋아하는 음악을 공유해보세요</p>
+                        </div>
+                ) : (list.map((c) => (
+                    <div
+                        key={c.id}
+                        onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            handleDetail(c.id)
-                        }} className="bg-white hover:bg-gray-50 p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200 cursor-pointer">
-                            <div className="flex items-center gap-3">
-                                <Link
-                                    to={`/user/${c.users?.id}`}
+                            handleDetail(c.id);
+                        }}
+                        className="bg-white hover:bg-gray-50 p-5 rounded-lg border-1 border-gray-200 cursor-pointer"
+                    >
+                        <div className="flex gap-3">
+                            {/* 왼쪽 프로필 */}
+                            <div className="flex-shrink-0">
+                                <Link to={toUserPage(c.users?.id)}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden bg-blue-500 flex items-center justify-center text-white font-bold text-lg"
+                                    className="w-10 h-10 rounded-full bg-blue-500 overflow-hidden flex items-center justify-center text-white font-bold text-lg"
                                     aria-label={`${c.users?.name} 프로필로 이동`}
                                 >
-                                    {c.users?.img
-                                        ? <img src={getImages({ url: c.users.img })} alt="" className="w-10 h-10 rounded-full object-cover" />
-                                        : c.users?.name?.charAt(0)
-                                    }
+                                    {c?.users?.img
+                                        ? <img src={getImages({ url: c.users.img })} alt="profile" className="w-full h-full object-cover" />
+                                        : c?.users?.name?.charAt(0)}
                                 </Link>
-                                <div className="min-w-0">
-                                    <Link
-                                        to={`/user/${c.users?.id}`}
-                                        onClick={(e) => e.stopPropagation()}
-                                        className="font-bold hover:underline"
-                                    >
-                                        {c.users?.name}
-                                    </Link>
-                                    <span className="ml-1 text-gray-500 text-sm">@{c.users?.account}</span>
-                                    <span className="ml-2 text-gray-400 text-xs">{dayjs(c.created_at).fromNow()}</span>
-                                </div>
-                                {/* <button type='button' className='cursor-pointer' onClick={() => deleteCommunity(c.id)}>삭제</button> */}
-                                {tab === 'all' && user.id && (
-                                    <div className="ml-auto">
-                                        {c.users?.id === user?.id ? (
-                                            <button
-                                                className="text-gray-500 hover:text-red-500 font-bold cursor-pointer"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    deleteCommunity(c.id)
-                                                }}
-                                            >
-                                                삭제
-                                            </button>
-                                        ) : (
-                                            <button
-                                                className="text-gray-500 font-bold hover:text-blue-500 cursor-pointer"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    followOrUnfollow(c.users?.id, c.users?._following)
-                                                }}
-                                            >
-                                                {c.users?._following ? '팔로우 취소' : '팔로우'}
-                                            </button>
-                                        )}
-                                    </div>
-                                )}
-
                             </div>
+                            {/* 오른쪽: 모든 내용 */}
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Link to={toUserPage(c.users?.id)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="font-bold truncate">{c?.users?.name}</Link>
+                                    <span className="text-gray-500 text-sm">@{c?.users?.account}</span>
+                                    <span className="text-gray-400 text-xs"> {dayjs(c.created_at).fromNow()}</span>
 
+                                    {tab === 'all' && user?.id && (
+                                        <div className="ml-auto">
+                                            {c?.users?.id === user?.id ? (
+                                                <button
+                                                    className="text-gray-500 hover:text-red-500 font-bold cursor-pointer"
+                                                    onClick={(e) => {
+                                                        e.preventDefault(); e.stopPropagation();
+                                                        deleteCommunity(c.id);
+                                                    }}
+                                                >
+                                                    삭제
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    className={`border rounded-full px-3 py-0.5 text-sm font-semibold cursor-pointer transition-colors ${c?.users?._following
+                                                        ? 'text-gray-500 border-gray-500'
+                                                        : 'text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white'
+                                                        }`}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        followOrUnfollow(c?.users?.id, c?.users?._following, c?.users?.name);
+                                                    }}
+                                                >
+                                                    {c?.users?._following ? '팔로잉' : '팔로우'}
+                                                </button>
 
-                            {/* 글 내용 */}
-                            <div className="text-base text-gray-900 whitespace-pre-line">{c.content}</div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
 
-                            {/* 음악 카드 */}
-                            {c.musics && c.musics.length > 0 && (
-                                c.musics.map((m, i) => (
+                                <div className="mt-1 text-base text-gray-900 whitespace-pre-line break-words">
+                                    {c.content}
+                                </div>
+
+                                {c.musics && c.musics.length > 0 && c.musics.map((m) => (
                                     <div
-                                        key={i}
-                                        className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 
-                                        transition-colors border border-gray-200"
+                                        key={m.id}
+                                        className="mt-2 flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200"
                                     >
                                         <img src={m.albumCover} alt={m.titleShort} className="w-16 h-16 rounded-lg object-cover" />
-                                        <div>
-                                            <div className="font-semibold">{m.titleShort}</div>
-                                            <div className="text-xs text-gray-600">{m.artistName}</div>
+                                        <div className="min-w-0">
+                                            <div className="font-semibold truncate">{m.titleShort}</div>
+                                            <div className="text-xs text-gray-600 truncate">{m.artistName}</div>
                                         </div>
-                                        <button type="button" className='cursor-pointer ml-auto group' onClick={(e) => {
-                                            // 재생 누르면 모달 꺼짐 방지
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            setPreviewUrl(m.preview);
-                                        }}
-                                        ><FiPlay className="inline text-xl text-[#7faaf9] group-hover:text-[#3583f5]" /></button>
+                                        <button
+                                            type="button"
+                                            className="cursor-pointer ml-auto group"
+                                            onClick={(e) => {
+                                                e.preventDefault(); e.stopPropagation();
+                                                previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview);
+                                            }}
+                                        >
+                                            {previewUrl === m.preview
+                                                ? <FiPause className="text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />
+                                                : <FiPlay className="text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />}
+                                        </button>
+                                    </div>
+                                ))}
+
+                                {c.images && c.images.length > 0 && (
+                                    <div className="mt-3 gap-2">
+                                        {c.images.map((img) => (
+                                            <img
+                                                key={img.id}
+                                                src={getImages(img)}
+                                                alt=""
+                                                className="w-full h-auto rounded-lg object-cover"
+                                            />
+                                        ))}
                                     </div>
 
-                                ))
-                            )}
+                                )}
 
-                            {/* 사진 */}
-                            {c.images && c.images.length > 0 && (
-                                <div className="mt-3 flex gap-2">
-                                    {c.images.map((img) => (
-                                        <img
-                                            key={img.id}
-                                            src={getImages(img)} // DB images 테이블 url 컬럼이 path임
-                                            alt={`게시글 이미지${img.id + 1}`}
-                                            className="w-full max-w-[160px] h-auto rounded-lg object-cover"
-                                        />
-                                    ))}
+
+
+
+
+                                <div className="mt-2 flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
+                                    <div className="flex items-center gap-1"><FiMessageCircle /> {c.comments}</div>
+                                    <div className="flex items-center gap-1"><FiHeart /> {c.likes}</div>
+                                    <div className="flex items-center gap-1"><FiBarChart2 /> {c.count}</div>
                                 </div>
-                            )}
-                            {/* 댓글/좋아요 아이콘들 */}
-                            <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
-                                <div className="flex items-center gap-1"><FiMessageCircle className="inline" /> {c.comments}</div>
-                                <div className="flex items-center gap-1"><FiHeart className="inline" /> {c.likes}</div>
-                                {/* 기타 아이콘 더 필요시 추가 */}
                             </div>
                         </div>
-                    ))
-                }
-            </div >
+                    </div>
+                )))}
+            </div>
         </div >
     )
 
