@@ -193,7 +193,13 @@ export function GroupDetail() {
                                 </button>
                             )}
                         </div>
-
+                        <div className='mr-2'>
+                            <Likes
+                                users={user.id}
+                                board_types='1'
+                                board={playlistData.id}
+                            />
+                        </div>
                     </div>
 
                     {/* 설명 */}
@@ -209,9 +215,9 @@ export function GroupDetail() {
 
                     {/* 음악 리스트 */}
                     {previewUrl && (
-                                        <audio controls src={previewUrl} autoPlay className="hidden"
-                                            onEnded={() => setPreviewUrl(null)} />
-                                    )}
+                        <audio controls src={previewUrl} autoPlay className="hidden"
+                            onEnded={() => setPreviewUrl(null)} />
+                    )}
                     <div className="my-2 p-4 bg-blue-200/30 rounded-xl border border-gray-300">
                         <div className='flex justify-between font-medium '>
                             <span className='flex items-center gap-2'><FaListUl />음악 목록</span>
@@ -259,18 +265,14 @@ export function GroupDetail() {
                                             브라우저가 오디오를 지원 X
                                         </audio>
                                     )} */}
-                                    
+
                                 </div>
 
                             </div>
                         ))}
                     </div>
 
-                    <Likes
-                        users={user.id}
-                        board_types='1'
-                        board={playlistData.id}
-                    />
+
                     {/* <Comments
                         userId={user.id}
                         board_types='1'
