@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useRouteLoaderData } from 'react-router-dom';
+import { useNavigate, useParams, useRouteLoaderData, Link } from 'react-router-dom';
 import { springBoot } from '../../axios/springboot';
 import { useImage } from '../../hooks';
 import { FaListUl, FaUserCircle } from 'react-icons/fa';
@@ -111,6 +111,11 @@ export function GroupDetail() {
         }
     }
 
+    // // 상세프로필 이동
+    const toUserPage = (targetId) => {
+        return user?.id && targetId === user.id ? '/my' : `/user/${targetId}`;
+    }
+
     return (
         <div className="flex flex-col items-center min-h-screen">
             {playlistData ? (
@@ -168,32 +173,35 @@ export function GroupDetail() {
                     </div>
 
                     {/* 작성자 정보 */}
-                    <div className="flex items-center justify-between my-2">
-                        <div className="flex items-center gap-2">
-                            <div>
-                                {playlistData.users.img ? (
-                                    <img
-                                        src={getImages(playlistData.users.img)}
-                                        alt='작성자 프로필'
-                                        className='rounded-full object-cover' />
-                                ) : (
-                                    <FaUserCircle className='text-gray-400' />
-                                )}
+                    <div className="flex items-center justify-start my-2">
+                        <Link to={toUserPage(playlistData.users?.id)}>
+                            <div className="flex items-center gap-2">
+                                <div className='rounded-full w-7 h-7'>
+                                    {playlistData.users.img ? (
+                                        <img
+                                            src={getImages({ url: playlistData.users.img })}
+                                            alt='작성자 프로필'
+                                            className='object-cover' />
+                                    ) : (
+                                        <FaUserCircle className='text-gray-400 w-full h-full' />
+                                    )}
+                                </div>
+                                <span className='font-medium'> {playlistData.users.name}</span>
                             </div>
-                            <span className='font-medium'> {playlistData.users.name}</span>
+                        </Link>
 
-                            {/* 팔로우 버튼 */}
-                            {user && playlistData.users.id !== user.id && (
-                                <button
-                                    onClick={handleFollowToggle}
-                                    className={`text-xs px-3 py-0.5 rounded-2xl border ${isFollowing ? 'text-gray-500 border-gray-500 hover:text-red-500 hover:border-red-500 hover:bg-red-50' : 'bg-blue-500 text-white hover:bg-blue-400'
-                                        }`}
-                                >
-                                    {isFollowing ? '팔로잉' : '팔로우'}
-                                </button>
-                            )}
-                        </div>
-                        <div className='mr-2'>
+                        {/* 팔로우 버튼 */}
+                        {user && playlistData.users.id !== user.id && (
+                            <button
+                                onClick={handleFollowToggle}
+                                className={`mx-4 px-3 py-0.5 rounded-2xl border ${isFollowing ? 'text-gray-500 border-gray-500 hover:text-red-500 hover:border-red-500 hover:bg-red-50' : 'bg-blue-500 text-white hover:bg-blue-400'
+                                    }`}
+                            >
+                                {isFollowing ? '팔로잉' : '팔로우'}
+                            </button>
+                        )}
+
+                        <div className='ml-auto mr-2'>
                             <Likes
                                 users={user.id}
                                 board_types='1'
@@ -281,7 +289,8 @@ export function GroupDetail() {
                 </div>
             ) : (
                 <p className="text-gray-400">로딩 중...</p>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
