@@ -115,7 +115,7 @@ export function Group() {
                     <h2 className="text-2xl font-semibold py-2">추천 플레이리스트</h2>
 
                     <div className='flex justify-between items-center sm:w-auto'>
-                        <button onClick={handleClick} className='px-3 py-1 flex bg-blue-100 text-gray-700 rounded-xl cursor-pointer gap-1 hover:bg-gray-300 hover:text-black'><span>새 플레이리스트</span><FiPlus size={20} className='' /></button>
+                        <button onClick={handleClick} className='px-3 py-1 flex bg-blue-100 text-gray-700 rounded-xl cursor-pointer gap-1 hover:bg-gray-300 hover:text-black'><span>새 플레이리스트</span><FiPlus size={20} /></button>
 
                         <div className='relative inline-block'>
                             <button onClick={() => setIsDropDownOpen(!isDropDownOpen)}
@@ -139,7 +139,6 @@ export function Group() {
                         </div>
                     </div>
                 </div>
-                {console.log(playlistData)}
 
                 {/* 플레이리스트 목록 */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 justify-items-center">
@@ -148,10 +147,13 @@ export function Group() {
                             onClick={() => navigate(`/group/${playlist.id}`)}>
                             <div className='p-3 aspect-square  overflow-hidden'>
                                 <img
-                                    src={`${playlist.images.length !== 0
-                                        ? getImages(playlist.images[0])
-                                        : playlist.musics[0]?.albumCover
-                                        }`}
+                                    src={
+                                        playlist.images && playlist.images.length > 0
+                                            ? getImages(playlist.images[0])
+                                            : playlist.musics && playlist.musics.length > 0
+                                                ? playlist.musics[0].albumCover
+                                                : ''  // 이미지가 없을 때 빈 문자열 혹은 기본 이미지 경로 넣기
+                                    }
                                     alt="image error"
                                     className="rounded-md object-cover w-full h-full"
                                 />

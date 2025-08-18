@@ -1,11 +1,14 @@
-import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect, useState, useCallback } from 'react';
+import { useLoaderData, useRouteLoaderData, useNavigate, useSearchParams, useRevalidator } from 'react-router-dom';
+import { springBoot } from "@axios";
 import { useMusic } from '../../hooks/useMusics';
 import { useSearch } from '../../hooks/useSearch'; // ✅ 새 훅
 import { FiPlay, FiMusic } from "react-icons/fi";
 
 export function Search() {
+    const { user } = useRouteLoaderData('default'); // 로그인 사용자
     const navigate = useNavigate();
+    const revalidator = useRevalidator();
     const { musics, getMusics } = useMusic();
     const { searchDatas, getSearchDatas } = useSearch();
     const [searchParams] = useSearchParams();
@@ -16,7 +19,8 @@ export function Search() {
     const handleNav = useCallback((e, id, type) => {
         e.preventDefault();
         if (type === 'users') navigate(`/my/${id}`);
-        else navigate(`/communities/${id}`);
+        else if (type === 'communities') navigate(`/group/${id}`);
+        else navigate(`/${id}`);
     }, [navigate]);
 
     useEffect(() => {
@@ -35,6 +39,52 @@ export function Search() {
             setSearchData({ users, communities, hashTag });
         }
     }, [searchDatas]);
+
+    // 팔로우 api 호출
+    const follow = async (target) => {
+        console.log(target)
+        try {
+            const response = await springBoot.post('/followers', {
+                follower: user.id,
+                followee: target
+            })
+            const result = response.data;
+            return result;
+        } catch (error) {
+            console.log("팔로우 api 호출 실패", error);
+            return null;
+        }
+    }
+    // 팔로우 취소 api 호출
+    const unfollow = async (target) => {
+        try {
+            const response = await springBoot.post(`/followers/delete`, {
+                follower: user.id,
+                followee: target,
+            });
+            return response.data;
+        } catch (error) {
+            console.log("팔로우 취소 api 호출 실패", error);
+            return null;
+        }
+    }
+    const followOrUnfollow = async (target, isFollowing, userName) => {
+        try {
+            let result;
+            if (isFollowing) {
+                if (!confirm(`${userName} 님을 팔로우 취소 하시겠습니까?`)) return;
+                result = await unfollow(target);
+                alert('');
+            } else {
+                if (!confirm(`${userName} 님을 팔로우 하시겠습니까?`)) return;
+                result = await follow(target);
+            }
+            revalidator.revalidate();
+            console.log(result);
+        } catch (error) {
+            console.log("팔로우/언팔로우 실패", error);
+        }
+    }
 
     const tabLabel = {
         all: '전체',
@@ -75,6 +125,8 @@ export function Search() {
                             title={tabLabel[key]}
                             list={list}
                             handleNav={handleNav}
+                            user={user}
+                            followOrUnfollow={followOrUnfollow}
                         />
                     ))}
                 </>
@@ -86,6 +138,8 @@ export function Search() {
                     title={tabLabel[activeTab]}
                     list={listMap[activeTab]}
                     handleNav={handleNav}
+                    user={user}
+                    followOrUnfollow={followOrUnfollow}
                 />
             );
         }
@@ -134,7 +188,7 @@ export function Search() {
 }
 
 // 🔧 공통 섹션 컴포넌트
-function Section({ type, title, list, handleNav }) {
+function Section({ type, title, list, handleNav, user, followOrUnfollow }) {
     if (type === 'musics') {
         return (
             <div className="mb-12 px-10">
@@ -212,16 +266,26 @@ function Section({ type, title, list, handleNav }) {
                                 </div>
                             </div>
 
-                            <button
-                                className="text-sm px-4 py-1 rounded-full border border-blue-500 text-blue-500 hover:bg-blue-50 transition"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    alert(`${item.name || item.title} 팔로우`);
-                                }}
-                            >
-                                팔로우
-                            </button>
+                            <div className="ml-auto">
+                                {item?.id === user?.id ? (
+                                    {}
+                                ) : (
+                                    <button
+                                        className={`border rounded-full px-3 py-0.5 text-sm font-semibold cursor-pointer transition-colors 
+                                            ${item.is_following
+                                                ? 'text-gray-500 border-gray-500'
+                                                : 'text-blue-500 border-blue-500 hover:bg-blue-500 hover:text-white'
+                                            }`}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            followOrUnfollow(item.id, item.is_following, item.name);
+                                        }}
+                                    >
+                                        { item.is_following ? '팔로잉' : '팔로우' }
+                                    </button>
+                                )}
+                            </div>
                         </li>
                     ))}
                 </ul>

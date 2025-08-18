@@ -6,6 +6,8 @@ import { FaListUl, FaUserCircle } from 'react-icons/fa';
 import { GiConsoleController } from 'react-icons/gi';
 import { HiDotsVertical } from 'react-icons/hi';
 import { FiPause, FiPlay } from 'react-icons/fi';
+import { Likes } from '../likes/index';
+import { Comments } from '../comments/index';
 
 
 export { loader } from './loader'
@@ -31,6 +33,7 @@ export function GroupDetail() {
     };
 
 
+    // 게시글 id로 get으로 불러오기
     useEffect(() => {
         async function fetchData() {
             try {
@@ -95,11 +98,12 @@ export function GroupDetail() {
         setIsMenuOpen(prev => !prev);;
     };
 
+    // 플리 삭제
     const handleDelete = async () => {
         const result = confirm("플레이리스트를 삭제하시겠습니까?");
 
         if (result) {
-            await springBoot.delete(`/communities/${id}`);
+            await springBoot.put(`/communities/${id}`);
             alert("삭제가 완료되었습니다.")
             navigate('/group');
         } else {
@@ -112,15 +116,42 @@ export function GroupDetail() {
             {playlistData ? (
                 <div className="p-6 w-full max-w-4xl">
                     {/* 대표이미지 */}
-                    <div className="w-full mb-6 flex justify-center">
+                    <div className="w-full mb-6 relative">
                         <img
                             src={`${playlistData.images.length !== 0
                                 ? getImages(playlistData.images[0])
                                 : playlistData.musics[0]?.albumCover
                                 }`}
                             alt="image error"
-                            className="h-48 w-48 object-cover sm:h-80 sm:w-80 rounded-md"
+                            className="h-48 w-48 object-cover sm:h-80 sm:w-80 rounded-md mx-auto"
                         />
+
+                        {/* 드롭메뉴 */}
+                        {user && playlistData.users.id === user.id && (
+                            <div className="absolute top-2 right-2">
+                                <button onClick={toggleMenu} className="text-gray-600">
+                                    <HiDotsVertical size={20} />
+                                </button>
+
+                                {isMenuOpen && (
+                                    <div className="absolute right-0 mt-2 bg-white shadow-gray-300 rounded shadow z-10 w-18">
+                                        <button
+                                            onClick={handleDelete}
+                                            className="block w-full text-center px-3 py-2 text-sm hover:bg-red-100 hover:text-red-500 "
+                                        >
+                                            삭제
+                                        </button>
+                                        {/* state로 playlistData 값 넘기기 */}
+                                        <button onClick={() => navigate(`/group/update/${playlistData.id}`, { state: { playlistData } })}
+                                            className="block w-full text-center px-3 py-2 text-sm hover:bg-red-100 hover:text-red-500 ">
+                                            수정
+                                        </button>
+
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                     </div>
 
                     {/* 제목 */}
@@ -133,29 +164,6 @@ export function GroupDetail() {
                             })()}</span>
 
                         </div>
-                        {/* 드롭메뉴 */}
-                        {user && playlistData.users.id === user.id && (
-                            <div className="relative">
-                                <button onClick={toggleMenu} className="text-gray-600">
-                                    <HiDotsVertical size={18} />
-                                </button>
-
-                                {isMenuOpen && (
-                                    <div className="absolute right-0 mt-2 bg-white shadow-gray-300 rounded shadow z-10 w-18">
-                                        <button
-                                            onClick={handleDelete}
-                                            className="block w-full text-center px-3 py-2 text-sm hover:bg-red-100 hover:text-red-500 "
-                                        >
-                                            삭제
-                                        </button>
-                                        <button onClick={() => navigate(`/group/update/${playlistData.id}`, { state: { playlistData } })}>
-                                            수정
-                                        </button>
-
-                                    </div>
-                                )}
-                            </div>
-                        )}
 
                     </div>
 
@@ -178,14 +186,20 @@ export function GroupDetail() {
                             {user && playlistData.users.id !== user.id && (
                                 <button
                                     onClick={handleFollowToggle}
-                                    className={`text-xs px-3 py-0.5 rounded-2xl border ${isFollowing ? 'text-gray-500 border-gray-500 hover:bg-gray-500 hover:text-white' : 'bg-blue-500 text-white'
+                                    className={`text-xs px-3 py-0.5 rounded-2xl border ${isFollowing ? 'text-gray-500 border-gray-500 hover:text-red-500 hover:border-red-500 hover:bg-red-50' : 'bg-blue-500 text-white hover:bg-blue-400'
                                         }`}
                                 >
                                     {isFollowing ? '팔로잉' : '팔로우'}
                                 </button>
                             )}
                         </div>
-
+                        <div className='mr-2'>
+                            <Likes
+                                users={user.id}
+                                board_types='1'
+                                board={playlistData.id}
+                            />
+                        </div>
                     </div>
 
                     {/* 설명 */}
@@ -200,6 +214,10 @@ export function GroupDetail() {
                     </div>
 
                     {/* 음악 리스트 */}
+                    {previewUrl && (
+                        <audio controls src={previewUrl} autoPlay className="hidden"
+                            onEnded={() => setPreviewUrl(null)} />
+                    )}
                     <div className="my-2 p-4 bg-blue-200/30 rounded-xl border border-gray-300">
                         <div className='flex justify-between font-medium '>
                             <span className='flex items-center gap-2'><FaListUl />음악 목록</span>
@@ -247,15 +265,19 @@ export function GroupDetail() {
                                             브라우저가 오디오를 지원 X
                                         </audio>
                                     )} */}
-                                    {previewUrl && (
-                                        <audio controls src={previewUrl} autoPlay className="hidden"
-                                            onEnded={() => setPreviewUrl(null)} />
-                                    )}
+
                                 </div>
 
                             </div>
                         ))}
                     </div>
+
+
+                    {/* <Comments
+                        userId={user.id}
+                        board_types='1'
+                        board={playlistData.id}
+                    /> */}
                 </div>
             ) : (
                 <p className="text-gray-400">로딩 중...</p>

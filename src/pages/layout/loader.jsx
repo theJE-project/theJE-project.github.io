@@ -31,7 +31,9 @@ const getNotifications = async () => {
             console.warn('비로그인 입니다.')
             return []
         }
-        const response = await springBoot.get(`/notifications/${id}`);
+        const response = await springBoot.post(`/notifications/search`, {
+            receiver: id,
+        });
         return response.data
     } catch (error) {
         console.error("알림테이블 불러오기 실패", error);
