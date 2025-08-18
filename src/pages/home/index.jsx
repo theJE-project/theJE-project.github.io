@@ -30,7 +30,7 @@ export function Home() {
     const [previewUrl, setPreviewUrl] = useState(null);
     const { images, setImages, getImages, deleteImage, resetImages } = useImage();
     const [tab, setTab] = useState('all'); // all or following
-    const list = tab === 'all' ? (communities1 ?? []) : (followingCommunities ?? []);
+    // const list = tab === 'all' ? (communities1 ?? []) : (followingCommunities ?? []);
 
     // 탭별 스크롤 위치 저장(메모리)
     const scrollPositions = useRef({ all: 0, following: 0 });
@@ -70,17 +70,20 @@ export function Home() {
     }, [tab]);
 
 
+    const list = tab === 'all' ? (communities1 ?? []) : (followingCommunities ?? []);
+
+
     // 탭 한번 더 누르면 맨위로+새고
     const onClickTab = (next) => {
         if (next === tab) {
-            // window.scrollTo({ top: 0, behavior: 'smooth' });
-            jumpTo(0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             revalidator.revalidate();
             return;
         }
         setTab(next);
     };
-
+    const toUserPage = (targetId) =>
+        user?.id && targetId === user.id ? '/my' : `/user/${targetId}`;
 
     // 피드 새로고침
     const handleRefresh = () => {
@@ -295,12 +298,12 @@ export function Home() {
                         <form onSubmit={handleSubmit}>
                             <div className="flex items-start gap-3">
                                 {/* 프로필 둥근 이미지 (임시, 사용자 첫글자 원) */}
-                                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
+                                <Link to="/my" className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
                                     {user?.img
                                         ? <img src={getImages({ url: user.img })} alt="profile" className="w-10 h-10 rounded-full object-cover" />
                                         : user?.name?.charAt(0)
                                     }
-                                </div>
+                                </Link>
                                 <div className="flex-1">
                                     <TextareaAutosize
                                         value={content}
@@ -462,7 +465,7 @@ export function Home() {
                                         <button type="button" className='cursor-pointer group' onClick={(e) => {
                                             // 재생 누르면 모달 꺼짐 방지
                                             e.stopPropagation();
-                                            { previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview); }
+                                            previewUrl === m.preview ? setPreviewUrl(null) : setPreviewUrl(m.preview);
                                         }}
                                         >{previewUrl === m.preview ?
                                             <FiPause className="inline text-xl text-blue-300 group-hover:text-blue-500" />
@@ -529,7 +532,7 @@ export function Home() {
                         <div className="flex gap-3">
                             {/* 왼쪽 프로필 */}
                             <div className="flex-shrink-0">
-                                <Link to={`/user/${c.users?.id}`}
+                                <Link to={toUserPage(c.users?.id)}
                                     onClick={(e) => e.stopPropagation()}
                                     className="w-10 h-10 rounded-full bg-blue-500 overflow-hidden flex items-center justify-center text-white font-bold text-lg"
                                     aria-label={`${c.users?.name} 프로필로 이동`}
@@ -542,12 +545,16 @@ export function Home() {
                             {/* 오른쪽: 모든 내용 */}
                             <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <Link to={`/user/${c.users?.id}`}
+                                    <Link to={toUserPage(c.users?.id)}
                                         onClick={(e) => e.stopPropagation()}
-                                        className="font-bold truncate hover:underline">{c?.users?.name}</Link>
+                                        className="font-bold truncate">{c?.users?.name}</Link>
                                     <span className="text-gray-500 text-sm">@{c?.users?.account}</span>
+<<<<<<< HEAD
                                     <span className="text-gray-400 text-sm"> {dayjs(c.created_at).fromNow()}</span>
 
+=======
+                                    <span className="text-gray-400 text-xs"> {dayjs(c.created_at).fromNow()}</span>
+>>>>>>> origin/shina
                                     {tab === 'all' && user?.id && (
                                         <div className="ml-auto">
                                             {c?.users?.id === user?.id ? (

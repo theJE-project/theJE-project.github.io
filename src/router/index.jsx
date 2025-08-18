@@ -1,4 +1,5 @@
 import { createHashRouter } from "react-router-dom";
+
 import {
     Layout, layoutLoader,
     Home, homeLoader,
@@ -13,7 +14,10 @@ import {
     Redirect,
     ErrorBoundary,
     Notifications,
-    Search, 
+    Search,
+
+
+    User, userLoader,
 } from "@pages";
 
 export const router = createHashRouter([
@@ -27,13 +31,13 @@ export const router = createHashRouter([
             {
                 path: '',
                 id: 'home',
-                loader:homeLoader,
+                loader: homeLoader,
                 element: <Home />,
             },
             {
                 path: '/:id',
                 id: 'homeDetail',
-                loader:homeDetailLoader,
+                loader: homeDetailLoader,
                 element: <HomeDetail />,
             },
             {
@@ -50,9 +54,9 @@ export const router = createHashRouter([
             },
             {
                 path: 'group/:id',
-                id:'groupDetail',
+                id: 'groupDetail',
                 loader: groupDetailLoader,
-                element:<GroupDetail />
+                element: <GroupDetail />
             },
             {
                 path: 'group/update/:id',
@@ -66,6 +70,14 @@ export const router = createHashRouter([
                 loader: myloader,
                 element: <My />
             },
+
+            {
+                path: 'user/:id',
+                id: 'user',
+                loader: userLoader,
+                element: <User />,
+            },
+
             {
                 path: 'login',
                 id: 'login',
@@ -75,14 +87,13 @@ export const router = createHashRouter([
                 path: 'login/signUp',
                 id: 'signUp',
                 element: <SignUp />
-
             },
             {
                 path: 'login/redirect',
                 id: 'redirect',
                 element: <Redirect />
             },
-                        {
+            {
                 path: 'notifications',
                 id: 'notifications',
                 element: <Notifications />
@@ -94,4 +105,4 @@ export const router = createHashRouter([
             }
         ]
     }
-])
+]);

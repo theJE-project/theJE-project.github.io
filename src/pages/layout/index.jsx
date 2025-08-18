@@ -2,6 +2,7 @@ export { loader } from './loader'
 import React, { useCallback, useRef, useState } from 'react';
 import { Link, Outlet, useLoaderData, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { springBoot } from '@axios';
+import { useImage } from '../../hooks/useImage'; 
 
 export function Layout() {
     const loader = useLoaderData();
@@ -16,6 +17,8 @@ export function Layout() {
     const findUser = Object.keys(loader.user).length === 0;
     const [search, setSearch] = useState(false);
     const notifications = loader.notifications.filter(notification => !notification.is_read);
+
+    const { getImages } = useImage(); 
 
     const handleSerachBlur = (e) => {
         const value = e.target.value;
@@ -197,7 +200,6 @@ export function Layout() {
                                                     모든 알림 보기
                                                 </button>
                                             </div>
-
                                         </div>
                                     )}
                                 </div>
@@ -214,15 +216,41 @@ export function Layout() {
                                         onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                                         className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold cursor-pointer"
                                     >
-                                        {loader?.user?.img !== null ? <img /> : loader?.user?.name?.charAt(0)}
+                                        {loader?.user?.img && loader.user.img.trim() !== ""
+                                            ? (
+                                                <img
+                                                    src={getImages({ url: loader.user.img })} 
+                                                    alt={loader.user.name || "프로필"}
+                                                    className="w-8 h-8 rounded-full object-cover"
+                                                />
+                                            )
+                                            : (
+                                                (loader?.user?.name && loader.user.name.length > 0)
+                                                    ? loader.user.name.charAt(0)
+                                                    : "?"
+                                            )
+                                        }
                                     </button>
-
                                     {showProfileDropdown && (
                                         <div className="absolute right-0 top-12 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                                             {/* 상단 사용자 정보 */}
                                             <div className="p-4 border-b border-gray-100 flex items-center space-x-3">
                                                 <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                                                    {loader?.user?.img !== null ? <img /> : loader?.user?.name?.charAt(0)}
+                                                    {/* ✅ 변경: 여기서도 Supabase 경로 사용 */}
+                                                    {loader?.user?.img && loader.user.img.trim() !== ""
+                                                        ? (
+                                                            <img
+                                                                src={getImages({ url: loader.user.img })} 
+                                                                alt={loader.user.name || "프로필"}
+                                                                className="w-10 h-10 rounded-full object-cover"
+                                                            />
+                                                        )
+                                                        : (
+                                                            (loader?.user?.name && loader.user.name.length > 0)
+                                                                ? loader.user.name.charAt(0)
+                                                                : "?"
+                                                        )
+                                                    }
                                                 </div>
                                                 <div className="flex-1">
                                                     <p className="font-semibold text-gray-900">{loader.user.name}</p>
@@ -238,8 +266,6 @@ export function Layout() {
                                                     프로필
                                                 </Link>
                                             </div>
-
-                                            {/* 로그아웃 */}
                                             <div className="border-t border-gray-100 py-2">
                                                 <button
                                                     className="w-full flex items-center px-4 py-2 hover:bg-gray-50 text-gray-700"
