@@ -549,12 +549,8 @@ export function Home() {
                                         onClick={(e) => e.stopPropagation()}
                                         className="font-bold truncate">{c?.users?.name}</Link>
                                     <span className="text-gray-500 text-sm">@{c?.users?.account}</span>
-<<<<<<< HEAD
                                     <span className="text-gray-400 text-sm"> {dayjs(c.created_at).fromNow()}</span>
 
-=======
-                                    <span className="text-gray-400 text-xs"> {dayjs(c.created_at).fromNow()}</span>
->>>>>>> origin/shina
                                     {tab === 'all' && user?.id && (
                                         <div className="ml-auto">
                                             {c?.users?.id === user?.id ? (
