@@ -100,10 +100,10 @@ export function HomeDetail() {
 
 
     return (
-        <div className="w-full max-w-[600px] mx-auto">
+        <div className="w-full max-w-2xl mx-auto">
             {/* 피드 */}
             <div className="h-12 sticky top-17 bg-white/90 backdrop-blur">
-                <div className="max-w-[600px] mx-auto h-12 flex items-center gap-3 px-4">
+                <div className="max-w-2xl mx-auto h-12 flex items-center gap-3 px-4">
                     <button onClick={() => navigate(-1)} className="cursor-pointer p-2 -ml-2">
                         <FiArrowLeft className="text-xl" />
                     </button>
@@ -121,8 +121,8 @@ export function HomeDetail() {
                                 }
                             </div>
                             <div className='flex flex-col'>
-                                <span className="font-bold">{community?.users?.name}</span>
-                                <span className="text-gray-500 text-sm">@{community?.users?.account}</span>
+                                <span className="font-bold text-m">{community?.users?.name}</span>
+                                <span className="text-gray-500 text-m">@{community?.users?.account}</span>
 
                             </div>
                             {user.id && (
@@ -289,7 +289,7 @@ export function HomeDetail() {
 
 
 
-                        <span className="text-gray-400 text-xs">{dayjs(community.created_at).format('YYYY년 MM월 DD일, A hh시 mm분')} · 조회수 {community.count}</span>
+                        <span className="text-gray-400 text-sm">{dayjs(community.created_at).format('YYYY년 MM월 DD일, A hh시 mm분')} · 조회수 {community.count}</span>
                         {/* 댓글/좋아요 아이콘들 */}
                         <Likes
                             users={user.id}
