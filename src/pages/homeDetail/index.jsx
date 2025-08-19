@@ -33,6 +33,15 @@ export function HomeDetail() {
         return () => { history.scrollRestoration = prev; };
     }, []);
 
+        // 프로필 이미지 나오게 추가
+    const asImgUrl = (val) => {
+        if (!val) return null;
+        try {
+            return getImages(typeof val === 'string' ? { url: val } : val);
+        } catch {
+            return null;
+        }
+    };
 
     // 글삭제 api 호출
     const deleteCommunity = async (id) => {
@@ -115,10 +124,13 @@ export function HomeDetail() {
                     <div className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                         <div className="flex items-center gap-3">
                             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
-                                {community.users?.img
-                                    ? <img src={community.users?.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
+                                {asImgUrl(community.users?.img)
+                                    ? <img src={asImgUrl(community.users?.img)} alt="profile"
+                                        className="w-10 h-10 rounded-full object-cover"
+                                        onError={(e) => { e.currentTarget.src = ''; }} />
                                     : community.users?.name?.charAt(0)
                                 }
+
                             </div>
                             <div className='flex flex-col'>
                                 <span className="font-bold">{community?.users?.name}</span>
@@ -301,7 +313,7 @@ export function HomeDetail() {
                             board_types='1'
                             board={community.id}
                         />
-                        
+
                         <div className="flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
                             <div className="flex items-center gap-1"><FiMessageCircle className="inline" /> {community.comments}</div>
                             <div className="flex items-center gap-1"><FiHeart className="inline" /> {community.likes}</div>
