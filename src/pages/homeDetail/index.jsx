@@ -1,5 +1,5 @@
 import { useLoaderData, useRouteLoaderData, useRevalidator, useNavigate } from 'react-router-dom'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useImage } from '../../hooks/useImage';
 export { loader } from './loader'
 import { springBoot } from '@axios';
@@ -22,6 +22,16 @@ export function HomeDetail() {
 
     dayjs.extend(relativeTime);
     dayjs.locale('ko');
+
+    useEffect(() => {
+        // 히스토리 스크롤 복원을 끔
+        const prev = history.scrollRestoration;
+        history.scrollRestoration = 'manual';
+        // 진입 즉시 맨 위
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        // 언마운트 시 원복
+        return () => { history.scrollRestoration = prev; };
+    }, []);
 
 
     // 글삭제 api 호출
@@ -90,10 +100,10 @@ export function HomeDetail() {
 
 
     return (
-        <div className="w-full max-w-[600px] mx-auto">
+        <div className="w-full max-w-2xl mx-auto">
             {/* 피드 */}
             <div className="h-12 sticky top-17 bg-white/90 backdrop-blur">
-                <div className="max-w-[600px] mx-auto h-12 flex items-center gap-3 px-4">
+                <div className="max-w-2xl mx-auto h-12 flex items-center gap-3 px-4">
                     <button onClick={() => navigate(-1)} className="cursor-pointer p-2 -ml-2">
                         <FiArrowLeft className="text-xl" />
                     </button>
@@ -111,8 +121,8 @@ export function HomeDetail() {
                                 }
                             </div>
                             <div className='flex flex-col'>
-                                <span className="font-bold">{community?.users?.name}</span>
-                                <span className="text-gray-500 text-sm">@{community?.users?.account}</span>
+                                <span className="font-bold text-m">{community?.users?.name}</span>
+                                <span className="text-gray-500 text-m">@{community?.users?.account}</span>
 
                             </div>
                             {user.id && (
@@ -129,7 +139,7 @@ export function HomeDetail() {
 
                                             className={`border rounded-2xl px-3 py-1 font-semibold cursor-pointer transition-colors ${community?.users?._following
                                                 ? 'text-gray-500 border-gray-500 hover:text-red-500 hover:border-red-500 hover:bg-red-50'
-                                                : 'bg-blue-500 text-white hover:bg-blue-400'
+                                                : 'bg-blue-500 text-white hover:bg-blue-400 border-blue-500'
                                                 }`}
                                             onClick={() => {
                                                 followOrUnfollow(community?.users?.id, community?.users?._following, community?.users?.name);
@@ -194,92 +204,92 @@ export function HomeDetail() {
                         )} */}
 
                         {community?.images?.length > 0 && (() => {
-                                    const imgs = community.images.slice(0, 4);
-                                    
+                            const imgs = community.images.slice(0, 4);
 
-                                    // 1장
-                                    if (imgs.length === 1) {
-                                        return (
-                                            <div className="mt-3 rounded-xl overflow-hidden">
-                                                <div>
-                                                    <img
-                                                        src={getImages(imgs[0])}
-                                                        alt=""
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    }
 
-                                    // 2장
-                                    if (imgs.length === 2) {
-                                        return (
-                                            <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
-                                                {imgs.map(it => (
-                                                    <div key={it.id}>
-                                                        <img
-                                                            src={getImages(it)}
-                                                            alt=""
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        );
-                                    }
-
-                                    // 3장 (왼쪽 크게/오른쪽 위/아래 두 장)
-                                    if (imgs.length === 3) {
-                                        return (
-                                            <div className="mt-3 rounded-xl overflow-hidden">
-                                                <div className="grid grid-cols-2 grid-rows-2 gap-1 aspect-[4/3]">
-                                                    {/* 왼쪽: 두 행 차지 */}
-                                                    <img
-                                                        src={getImages(imgs[0])}
-                                                        alt=""
-                                                        className="col-span-1 row-span-2 w-full h-full object-cover"
-                                                        loading="lazy" decoding="async"
-                                                    />
-
-                                                    {/* 오른쪽 위/아래 */}
-                                                    <img
-                                                        src={getImages(imgs[1])}
-                                                        alt=""
-                                                        className="w-full h-full object-cover"
-                                                        loading="lazy" decoding="async"
-                                                    />
-                                                    <img
-                                                        src={getImages(imgs[2])}
-                                                        alt=""
-                                                        className="w-full h-full object-cover"
-                                                        loading="lazy" decoding="async"
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-
-                                    // 4장 (2x2)
-                                    return (
-                                        <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
-                                            {imgs.map(it => (
-                                                <div key={it.id} className="aspect-[4/3]">
-                                                    <img
-                                                        src={getImages(it)}
-                                                        alt=""
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                </div>
-                                            ))}
+                            // 1장
+                            if (imgs.length === 1) {
+                                return (
+                                    <div className="mt-3 rounded-xl overflow-hidden">
+                                        <div>
+                                            <img
+                                                src={getImages(imgs[0])}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                            />
                                         </div>
-                                    );
-                                })()}
+                                    </div>
+                                );
+                            }
+
+                            // 2장
+                            if (imgs.length === 2) {
+                                return (
+                                    <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
+                                        {imgs.map(it => (
+                                            <div key={it.id}>
+                                                <img
+                                                    src={getImages(it)}
+                                                    alt=""
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            }
+
+                            // 3장 (왼쪽 크게/오른쪽 위/아래 두 장)
+                            if (imgs.length === 3) {
+                                return (
+                                    <div className="mt-3 rounded-xl overflow-hidden">
+                                        <div className="grid grid-cols-2 grid-rows-2 gap-1 aspect-[4/3]">
+                                            {/* 왼쪽: 두 행 차지 */}
+                                            <img
+                                                src={getImages(imgs[0])}
+                                                alt=""
+                                                className="col-span-1 row-span-2 w-full h-full object-cover"
+                                                loading="lazy" decoding="async"
+                                            />
+
+                                            {/* 오른쪽 위/아래 */}
+                                            <img
+                                                src={getImages(imgs[1])}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                                loading="lazy" decoding="async"
+                                            />
+                                            <img
+                                                src={getImages(imgs[2])}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                                loading="lazy" decoding="async"
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            // 4장 (2x2)
+                            return (
+                                <div className="mt-3 grid grid-cols-2 gap-1 rounded-xl overflow-hidden">
+                                    {imgs.map(it => (
+                                        <div key={it.id} className="aspect-[4/3]">
+                                            <img
+                                                src={getImages(it)}
+                                                alt=""
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        })()}
 
 
 
 
-                        <span className="text-gray-400 text-xs">{dayjs(community.created_at).format('YYYY년 MM월 DD일, A hh시 mm분')} · 조회수 {community.count}</span>
+                        <span className="text-gray-400 text-sm">{dayjs(community.created_at).format('YYYY년 MM월 DD일, A hh시 mm분')} · 조회수 {community.count}</span>
                         {/* 댓글/좋아요 아이콘들 */}
                         <Likes
                             users={user.id}
