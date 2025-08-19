@@ -106,7 +106,7 @@ export function Home() {
     // 팔로우 취소 api 호출
     const unfollow = async (target) => {
         try {
-            const response = await springBoot.post(`/followers/delete`, {
+            const response = await springBoot.delete(`/followers/delete`, {
                 follower: user.id,
                 followee: target,
             });

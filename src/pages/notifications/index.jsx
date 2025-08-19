@@ -72,8 +72,6 @@ export function Notifications() {
     }, [navigate]);
 
     const handleMarkAllAsRead = async () => {
-        console.log('Notifications user : ' + user)
-        console.log('Notifications user id : ' + user.id)
         try {
             await springBoot.put('/notifications/allRead', {
                 receiver: user.id,
