@@ -115,8 +115,9 @@ export function HomeDetail() {
                     <div className="bg-white p-5 rounded-lg flex flex-col gap-3 border-1 border-gray-200">
                         <div className="flex items-center gap-3">
                             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-lg">
+                                {/* {getImages({ url: user.img })} */}
                                 {community.users?.img
-                                    ? <img src={community.users?.img} alt="profile" className="w-10 h-10 rounded-full object-cover" />
+                                    ? <img src={getImages({ url: community.users.img })} alt="profile" className="w-10 h-10 rounded-full object-cover" />
                                     : community.users?.name?.charAt(0)
                                 }
                             </div>
