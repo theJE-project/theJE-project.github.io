@@ -132,6 +132,90 @@ export function My() {
         const imageUrl = raw ? getImages({ url: raw }) : null;
         const musics = Array.isArray(item?.musics) ? item.musics : (item?.music ? [item.music] : []);
 
+        if (activeTab === "posts") {
+            return (
+                <Link
+                    key={item.id}
+                    to={`/communities/${item.id}`}   //  HomeDetail 라우트로 이동
+                    className="block bg-white hover:bg-gray-50 p-5 rounded-lg border border-gray-200 cursor-pointer"
+                >
+                    <div className="flex gap-3">
+                        {/* 아바타 */}
+                        <div
+                            className="w-10 h-10 rounded-full bg-blue-500 overflow-hidden flex items-center justify-center text-white font-bold text-lg"
+                            aria-label={`${profile.name} 프로필`}
+                        >
+                            {profile.img
+                                ? <img src={getImages({ url: profile.img })} alt="" className="w-full h-full object-cover" />
+                                : (profile.name?.charAt(0) || "?")}
+                        </div>
+
+                        {/* 오른쪽: 이름/핸들/시간 + 본문 */}
+                        <div className="flex-1">
+                            {/* 헤더: 이름/핸들/시간 */}
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="font-bold truncate">{profile.name}</span>
+                                <span className="text-gray-500 text-sm">@{profile.account}</span>
+                                <span className="text-gray-400 text-xs">
+                                    {fromNow(item.createdAt || item.created_at)}
+                                </span>
+                            </div>
+
+                            {/* 본문 */}
+                            <div className="mt-1 text-base text-gray-900 whitespace-pre-line break-words">
+                                {item.content || item.artist || ''}
+                            </div>
+
+                            {/* 이미지 */}
+                            {imageUrl && (
+                                <img
+                                    src={imageUrl}
+                                    alt="게시글 이미지"
+                                    className="mt-3 w-full h-auto rounded-lg object-cover"
+                                />
+                            )}
+
+                            {/* 음악 카드 (내부 버튼은 클릭 시 라우팅 방지) */}
+                            {musics.length > 0 && musics.map((m, i) => (
+                                <div
+                                    key={i}
+                                    className="mt-2 flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200"
+                                >
+                                    <img
+                                        src={m?.albumCover || "/no-album.png"}
+                                        alt={m?.titleShort || "음원"}
+                                        className="w-16 h-16 rounded-lg object-cover"
+                                    />
+                                    <div className="min-w-0">
+                                        <div className="font-semibold truncate">{m?.titleShort || "제목 없음"}</div>
+                                        <div className="text-xs text-gray-600 truncate">{m?.artistName || "아티스트"}</div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="cursor-pointer ml-auto group"
+                                        onClick={(e) => {
+                                            // 링크 네비게이션 방지!
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            if (m?.preview) setPreviewUrl(m.preview);
+                                        }}
+                                    >
+                                        <FiPlay className="text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />
+                                    </button>
+                                </div>
+                            ))}
+
+                            {/* 하단 카운트 */}
+                            <div className="mt-2 flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
+                                <div className="flex items-center gap-1">💬 {item.commentsCount || 0}</div>
+                                <div className="flex items-center gap-1">❤️ {item.likesCount || 0}</div>
+                            </div>
+                        </div>
+                    </div>
+                </Link>
+            );
+        }
+
         // 플레이리스트 카드 (그대로)
         if (activeTab === "playlists") {
             return (
@@ -154,95 +238,17 @@ export function My() {
             );
         }
 
+        // liked 탭은 posts 카드 형태를 재활용
         return (
             <div
                 key={item.id}
                 className="bg-white hover:bg-gray-50 p-5 rounded-lg border border-gray-200 cursor-default"
             >
-                <div className="flex gap-3">
-                    {/* 아바타 */}
-                    <Link
-                        to={`/user/${profile.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="w-10 h-10 rounded-full bg-blue-500 overflow-hidden flex items-center justify-center text-white font-bold text-lg"
-                        aria-label={`${profile.name} 프로필로 이동`}
-                    >
-                        {profile.img
-                            ? <img src={getImages({ url: profile.img })} alt="" className="w-full h-full object-cover" />
-                            : (profile.name?.charAt(0) || "?")}
-                    </Link>
-
-                    {/* 오른쪽: 이름/핸들/시간 + 본문 */}
-                    <div className="flex-1">
-                        {/* 헤더: 이름/핸들/시간 한 줄 */}
-                        <div className="flex items-center gap-2 mb-2">
-                            <Link
-                                to={`/user/${profile.id}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="font-bold truncate"
-                            >
-                                {profile.name}
-                            </Link>
-                            <span className="text-gray-500 text-sm">@{profile.account}</span>
-                            <span className="text-gray-400 text-xs">
-                                {fromNow(item.createdAt || item.created_at)}
-                            </span>
-                        </div>
-
-                        {/* 본문 */}
-                        <div className="mt-1 text-base text-gray-900 whitespace-pre-line break-words">
-                            {item.content || item.artist || ''}
-                        </div>
-
-                        {/* 이미지 */}
-                        {imageUrl && (
-                            <img
-                                src={imageUrl}
-                                alt="게시글 이미지"
-                                className="mt-3 w-full h-auto rounded-lg object-cover"
-                            />
-                        )}
-
-                        {/* 음악 카드 */}
-                        {musics.length > 0 && musics.map((m, i) => (
-                            <div
-                                key={i}
-                                className="mt-2 flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors border border-gray-200"
-                            >
-                                <img
-                                    src={m?.albumCover || "/no-album.png"}
-                                    alt={m?.titleShort || "음원"}
-                                    className="w-16 h-16 rounded-lg object-cover"
-                                />
-                                <div className="min-w-0">
-                                    <div className="font-semibold truncate">{m?.titleShort || "제목 없음"}</div>
-                                    <div className="text-xs text-gray-600 truncate">{m?.artistName || "아티스트"}</div>
-                                </div>
-                                <button
-                                    type="button"
-                                    className="cursor-pointer ml-auto group"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        if (m?.preview) setPreviewUrl(m.preview);
-                                    }}
-                                >
-                                    <FiPlay className="text-xl text-[#7faaf9] group-hover:text-[#3583f5]" />
-                                </button>
-                            </div>
-                        ))}
-
-                        {/* 하단 카운트 */}
-                        <div className="mt-2 flex items-center gap-8 pt-2 text-gray-400 text-sm border-t border-gray-100">
-                            <div className="flex items-center gap-1">💬 {item.commentsCount || 0}</div>
-                            <div className="flex items-center gap-1">❤️ {item.likesCount || 0}</div>
-                        </div>
-                    </div>
-                </div>
+                {/* 필요 시 liked 전용 UI 추가 */}
+                <div className="text-gray-700">좋아요한 항목</div>
             </div>
         );
     };
-
 
     return (
         <div className="max-w-3xl mx-auto py-10">
@@ -385,7 +391,7 @@ export function My() {
                         posts.length === 0
                             ? <div className="py-8 text-center text-gray-500">작성한 글이 없습니다.</div>
                             : <div className="flex flex-col gap-3">{posts.map(renderCard)}</div>
-                    )} {/* Home처럼 gap-3 */}
+                    )}
                     {activeTab === 'playlists' && (playlists.length === 0 ? <div className="py-8 text-center text-gray-500">플레이리스트가 없습니다.</div> : playlists.map(renderCard))}
                     {activeTab === 'liked' && (liked.length === 0 ? <div className="py-8 text-center text-gray-500">좋아요한 음악이 없습니다.</div> : <div className="space-y-6">{liked.map(renderCard)}</div>)}
                 </div>

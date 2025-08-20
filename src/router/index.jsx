@@ -12,97 +12,91 @@ import {
     Login,
     SignUp,
     Redirect,
-    ErrorBoundary,
     Notifications,
     Search,
-
-
     User, userLoader,
 } from "@pages";
 
 export const router = createHashRouter([
     {
-        path: '/',
-        id: 'default',
+        path: "/",
+        id: "default",
         loader: layoutLoader,
         element: <Layout />,
-        // errorElement: <ErrorBoundary />,
         children: [
             {
-                path: '',
-                id: 'home',
+                path: "",
+                id: "home",
                 loader: homeLoader,
                 element: <Home />,
             },
             {
-                path: '/:id',
-                id: 'homeDetail',
+                path: "communities/:id",
+                id: "homeDetail",
                 loader: homeDetailLoader,
                 element: <HomeDetail />,
             },
             {
-                path: 'group',
-                id: 'group',
+                path: "group",
+                id: "group",
                 loader: groupLoader,
                 element: <Group />,
             },
             {
-                path: 'group/create',
-                id: 'groupCreate',
+                path: "group/create",
+                id: "groupCreate",
                 loader: groupCreateLoader,
                 element: <GroupCreate />,
             },
             {
-                path: 'group/:id',
-                id: 'groupDetail',
+                path: "group/:id",
+                id: "groupDetail",
                 loader: groupDetailLoader,
                 element: <GroupDetail />
             },
             {
-                path: 'group/update/:id',
-                id:'groupUpdate',
+                path: "group/update/:id",
+                id: 'groupUpdate',
                 loader: groupUpdateLoader,
-                element:<GroupUpdate />
+                element: <GroupUpdate />
             },
             {
-                path: 'my',
-                id: 'my',
+                path: "my",
+                id: "my",
                 loader: myloader,
                 element: <My />
             },
-
             {
-                path: 'user/:id',
-                id: 'user',
+                path: "user/:id",
+                id: "user",
                 loader: userLoader,
                 element: <User />,
             },
-
             {
-                path: 'login',
-                id: 'login',
+                path: "login",
+                id: "login",
                 element: <Login />,
             },
             {
-                path: 'login/signUp',
-                id: 'signUp',
+                path: "login/signUp",
+                id: "signUp",
                 element: <SignUp />
             },
             {
-                path: 'login/redirect',
-                id: 'redirect',
+                path: "login/redirect",
+                id: "redirect",
                 element: <Redirect />
             },
             {
-                path: 'notifications',
-                id: 'notifications',
+                path: "notifications",
+                id: "notifications",
                 element: <Notifications />
             },
             {
-                path: '/search',
-                id: 'search',
+                path: "search",
+                id: "search",
                 element: <Search />
-            }
+            },
         ]
     }
 ]);
