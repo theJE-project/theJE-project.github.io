@@ -61,7 +61,7 @@ export function Comments({ users, board_types, board }) {
                 users: user.id,
                 board,
                 board_types,
-                parent, parent,
+                parent,
                 content: newComment.trim(),
             });
             setNewComment('');
