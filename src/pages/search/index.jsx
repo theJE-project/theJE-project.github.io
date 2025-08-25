@@ -4,6 +4,7 @@ import { springBoot } from "@axios";
 import { useMusic } from '../../hooks/useMusics';
 import { useSearch } from '../../hooks/useSearch'; // ✅ 새 훅
 import { FiPlay, FiMusic } from "react-icons/fi";
+import { useImage } from '../../hooks/useImage';
 
 export function Search() {
     const { user } = useRouteLoaderData('default'); // 로그인 사용자
@@ -189,6 +190,7 @@ export function Search() {
 
 // 🔧 공통 섹션 컴포넌트
 function Section({ type, title, list, handleNav, user, followOrUnfollow }) {
+    const { getImages } = useImage()
     if (type === 'musics') {
         return (
             <div className="mb-12 px-10">
@@ -228,6 +230,7 @@ function Section({ type, title, list, handleNav, user, followOrUnfollow }) {
         );
     }
 
+    console.log(list)
     return (
         <div className="mb-12 px-10">
             <h3 className="text-xl font-bold mb-4 text-gray-800">{title}</h3>
@@ -242,11 +245,16 @@ function Section({ type, title, list, handleNav, user, followOrUnfollow }) {
                                 className="flex items-center gap-4 cursor-pointer"
                                 onClick={(e) => handleNav(e, item.id, type)}
                             >
-                                <img
-                                    src={item.img || 'https://placehold.co/40x40'}
-                                    alt="프로필"
-                                    className="w-12 h-12 rounded-full object-cover"
-                                />
+                                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                                { item.img.trim()
+                                    ?(<img
+                                        src={getImages({ url: item.img })}
+                                        alt={user.name[0] || "프로필"}
+                                        className="w-10 h-10 rounded-full object-cover"
+                                    />)
+                                    :(item.name.charAt(0))
+                                }
+                                </div>
                                 <div className="text-sm">
                                     {type === 'users' ? (
                                         <>
@@ -282,7 +290,7 @@ function Section({ type, title, list, handleNav, user, followOrUnfollow }) {
                                             followOrUnfollow(item.id, item.is_following, item.name);
                                         }}
                                     >
-                                        { item.is_following ? '팔로잉' : '팔로우' }
+                                        {item.is_following ? '팔로잉' : '팔로우'}
                                     </button>
                                 )}
                             </div>

@@ -13,6 +13,7 @@ export function Likes({ users, board_types, board }) {
     useEffect(() => {
         const fetchLikes = async () => {
             setLoading(true);
+            console.log(users)
             const result = await getLikes(users, board_types, board);
             setLikesId(result.id);
             setLikes(result.count);
@@ -34,11 +35,12 @@ export function Likes({ users, board_types, board }) {
             if (liked) {
                 await springBoot.delete(`/likes/${likesId}`);
             } else {
-                await springBoot.post('/likes', {
+                const result = await springBoot.post('/likes', {
                     users,
                     board_types,
                     board,
                 });
+                console.log(result)
             }
             // 좋아요 상태가 바뀐 후 서버에서 최신 상태를 다시 받아옴
             const result = await getLikes(users, board_types, board);

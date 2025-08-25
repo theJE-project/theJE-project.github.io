@@ -136,7 +136,7 @@ export function My() {
             return (
                 <Link
                     key={item.id}
-                    to={`/communities/${item.id}`}   //  HomeDetail 라우트로 이동
+                    to={`/${item.id}`}   //  HomeDetail 라우트로 이동
                     className="block bg-white hover:bg-gray-50 p-5 rounded-lg border border-gray-200 cursor-pointer"
                 >
                     <div className="flex gap-3">
@@ -224,13 +224,11 @@ export function My() {
                     to={`/group/${item.id}`}
                     className="w-60 block hover:opacity-90 transition cursor-pointer"
                 >
-                    {imageUrl && (
-                        <img
-                            src={imageUrl}
-                            alt={item.title || "플레이리스트"}
-                            className="w-60 h-60 object-cover"
-                        />
-                    )}
+                    <img
+                        src={raw === "" ? item.musics[0].albumCover : imageUrl}
+                        alt={item.title || "플레이리스트"}
+                        className="w-60 h-60 object-cover"
+                    />
                     <div className="mt-2 font-semibold text-sm truncate">
                         {item.title || '제목 없음'}
                     </div>
