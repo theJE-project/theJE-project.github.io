@@ -246,7 +246,7 @@ function Section({ type, title, list, handleNav, user, followOrUnfollow }) {
                                 onClick={(e) => handleNav(e, item.id, type)}
                             >
                                 <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                                { item.img.trim()
+                                { item.img === ""
                                     ?(<img
                                         src={getImages({ url: item.img })}
                                         alt={user.name[0] || "프로필"}

@@ -15,7 +15,7 @@ export function Home() {
     dayjs.extend(relativeTime);
     dayjs.locale('ko');
 
-    const { communities1, followingCommunities } = useLoaderData();
+    const { communities, communities1, followingCommunities } = useLoaderData();
     const { user, categories } = useRouteLoaderData('default');
 
     const navigate = useNavigate();
@@ -71,7 +71,6 @@ export function Home() {
 
 
     const list = tab === 'all' ? (communities1 ?? []) : (followingCommunities ?? []);
-
 
     // 탭 한번 더 누르면 맨위로+새고
     const onClickTab = (next) => {
@@ -226,14 +225,14 @@ export function Home() {
     const inputRef = useRef(null);
 
     const focusSearch = () => {
-    setOpen(true);
-    // React의 상태 업데이트가 비동기라서 다음 tick에서 실행
-    requestAnimationFrame(() => {
-        if (inputRef.current) {
-            inputRef.current.focus();
-        }
-    });
-};
+        setOpen(true);
+        // React의 상태 업데이트가 비동기라서 다음 tick에서 실행
+        requestAnimationFrame(() => {
+            if (inputRef.current) {
+                inputRef.current.focus();
+            }
+        });
+    };
 
     // 폼 제출
     const handleSubmit = async (e) => {
@@ -260,14 +259,10 @@ export function Home() {
         }
     }
 
-
-    // console.log(loader);
-    // console.log(musics);
-    // console.log(user.name);
     return (
         <div className="w-full max-w-2xl mx-auto">
             {/* 전체/팔로잉 탭 */}
-            {user?.id && (
+            
                 <>
                     <div className="flex h-12 sticky top-17 bg-white/90">
                         <button
@@ -291,9 +286,8 @@ export function Home() {
                             팔로잉
                         </button>
                     </div>
-                    {/* <h3 className="font-bold text-lg mb-3">피드</h3> */}
-
                     {/* 글쓰기 */}
+                    { user.id && (
                     <div className="bg-white p-5 border-b border-gray-300">
                         <form onSubmit={handleSubmit}>
                             <div className="flex items-start gap-3">
@@ -394,11 +388,8 @@ export function Home() {
                             </div>
                         </form>
                     </div>
+                    )}
                 </>
-            )}
-
-
-
             {/* 음악 검색 모달 */}
             {
                 open && (
@@ -435,7 +426,7 @@ export function Home() {
                                     type="text"
                                     placeholder="아티스트, 곡명, 앨범으로 검색하세요"
                                     onChange={handleMusicSearch}
-                                    ref = {inputRef}
+                                    ref={inputRef}
                                     className="w-full border rounded-lg px-4 py-3 text-base outline-none placeholder:text-gray-400 bg-gray-50"
                                 />
                                 {/* {previewUrl && (

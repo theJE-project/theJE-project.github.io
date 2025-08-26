@@ -5,7 +5,6 @@ import { Loading } from '@pages';
 import './main.css';
 
 function App(){
-
   return(<>
     <RouterProvider 
       router={router}
