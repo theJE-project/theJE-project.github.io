@@ -134,6 +134,7 @@ export function Home() {
                 followee: target
             })
             const result = response.data;
+            revalidator.revalidate();
             return result;
         } catch (error) {
             console.log("팔로우 api 호출 실패", error);
@@ -150,6 +151,7 @@ export function Home() {
                     followee: target,
                 }
             });
+            revalidator.revalidate();
             return response.data;
         } catch (error) {
             console.log("팔로우 취소 api 호출 실패", error);
