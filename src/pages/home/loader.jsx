@@ -1,7 +1,7 @@
 import { springBoot } from "@axios";
 
 
-const user = localStorage.getItem('user-id');
+
 const getCommunities = async () => {
 
     try {
@@ -19,7 +19,7 @@ const getCommunities = async () => {
     }
 }
 
-const getCommunities1 = async () => {
+const getCommunities1 = async (user) => {
     try {
         const response = await springBoot.get('/communities/byUser', {
             params: {
@@ -37,7 +37,8 @@ const getCommunities1 = async () => {
 }
 
 // 팔로잉 유저 글
-const getFollowingCommunities = async () => {
+const getFollowingCommunities = async (user) => {
+    if(!user) return [];
     try{
         const response = await springBoot.get('/communities/followee', {
             params: {
@@ -55,8 +56,9 @@ const getFollowingCommunities = async () => {
 }
 
 export const loader = async ({ params, request }) => {
-    const communities1 = user ?await getCommunities1() :await getCommunities();
-    const followingCommunities = await getFollowingCommunities();
+    const user = localStorage.getItem('user-id');
+    const communities1 = user ?await getCommunities1(user) :await getCommunities();
+    const followingCommunities = await getFollowingCommunities(user);
     return {
         communities1: communities1,
         followingCommunities: followingCommunities,
