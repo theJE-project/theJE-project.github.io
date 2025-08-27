@@ -11,6 +11,7 @@ export default defineConfig({
   build: {
     outDir: 'docs',
   },
+  base: '/theje-project/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),

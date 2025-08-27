@@ -99,6 +99,7 @@ export function Home() {
 
     // 글작성 api 호출
     const postCommunity = async (data) => {
+        console.log("글작성 : " + JSON.stringify(data))
         try {
             const response = await springBoot.post('/communities', data);
             const result = response.data;
