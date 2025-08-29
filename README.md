@@ -5,10 +5,11 @@
 > 💡 이 레포지토리는 **React 기반 프론트엔드** 프로젝트입니다.  
 > 백엔드(Spring Boot)는 [Music Share Admin Repository](https://github.com/theJE-project/theJE-project.admin) 에서 확인해주세요.
 
+> 프로젝트에 대한 자세한 내용은 **[🔗PPT](https://docs.google.com/presentation/d/1qF-VFww1ggozeEBRSYD2sO2cZnSSmJZlJ4X1F7FQ5u0/edit?usp=sharing)** 에서 확인할 수 있습니다.
+
 ---
 ## 프로젝트 기간
 - 2025.07.28~2025.08.18
-
 ---
 
 ## 📌 주요 기능
